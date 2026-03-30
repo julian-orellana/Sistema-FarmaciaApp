@@ -18,16 +18,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/suscripciones")
 @AllArgsConstructor
-public class SuscripcionPagoController {
+public class SuscripcionPagoController extends  BaseController{
     private final SuscripcionPagoService suscripcionPagoService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+
 
     @GetMapping
     public ResponseEntity<Page<SuscripcionPagoSimpleDTO>> listarSuscripciones(

@@ -3,8 +3,10 @@ package farmacias.AppOchoa.controller;
 import farmacias.AppOchoa.dto.usuario.*;
 import farmacias.AppOchoa.services.UsuarioService;
 import farmacias.AppOchoa.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -17,16 +19,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/usuarios")
 @AllArgsConstructor
-public class UsuarioController {
+public class UsuarioController extends BaseController {
     private final UsuarioService usuarioService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+    @Autowired
+    private HttpServletRequest request;
+
 
     @GetMapping
     public ResponseEntity<Page<UsuarioSimpleDTO>> listarUsuarioPaginados(

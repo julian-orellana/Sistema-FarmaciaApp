@@ -20,17 +20,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/sucursales")
 @RequiredArgsConstructor
-public class SucursalController {
+public class SucursalController extends  BaseController{
 
     private final SucursalService sucursalService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
 
     @GetMapping
     public ResponseEntity<Page<SucursalSimpleDTO>> listarActivasPaginadas(

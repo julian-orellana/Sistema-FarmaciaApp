@@ -21,16 +21,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/ventas")
 @AllArgsConstructor
-public class VentaController {
+public class VentaController extends  BaseController{
     private final VentaService ventaService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+
 
     @GetMapping
     public ResponseEntity<Page<VentaSimpleDTO>> listarActivasPaginadas(

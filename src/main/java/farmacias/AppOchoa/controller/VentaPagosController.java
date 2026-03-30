@@ -20,16 +20,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/ventapagos")
 @AllArgsConstructor
 @Tag(name = "Ventas pagos-controller")
-public class VentaPagosController {
+public class VentaPagosController extends  BaseController{
     private final VentaPagoService ventaPagoService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+
 
     @GetMapping
     public ResponseEntity<Page<VentaPagoSimpleDTO>> listarActivas(

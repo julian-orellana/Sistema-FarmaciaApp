@@ -20,16 +20,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/presentaciones")
 @AllArgsConstructor
-public class PresentacionController {
+public class PresentacionController extends  BaseController{
     private final PresentacionService presentacionService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+
 
     @GetMapping
     public ResponseEntity<Page<PresentacionSimpleDTO>> listarActivasPaginadas(

@@ -20,16 +20,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/ventasnotascreditos")
 @AllArgsConstructor
 @Tag(name = "Ventas Fel Notas Credito-controller")
-public class VentaFelNotasCreditoController {
+public class VentaFelNotasCreditoController extends  BaseController {
     private final VentaFelNotasCreditoService ventaFelNotasCreditoService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
 
     @GetMapping("/buscar")
     public ResponseEntity<Page<VentaFelNotasCreditoSimpleDTO>> buscar(

@@ -20,16 +20,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/cajacorte")
 @AllArgsConstructor
 @Tag(name = "Caja Corte-Controller")
-public class CajaCorteController {
+public class CajaCorteController extends BaseController {
     private final CajaCorteService cajaCorteService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
 
     @GetMapping
     public ResponseEntity<Page<CajaCorteSimpleDTO>> listarCortes(

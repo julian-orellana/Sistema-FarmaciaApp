@@ -22,16 +22,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/caja")
 @AllArgsConstructor
 @Tag(name = "Caja-controller")
-public class CajaController {
+public class CajaController extends  BaseController{
     private final CajaService cajaService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+
 
     @GetMapping
     public ResponseEntity<Page<CajaSimpleDTO>> listarCajasActivas(

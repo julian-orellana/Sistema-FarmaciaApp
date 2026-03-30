@@ -20,16 +20,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/inventarios")
 @AllArgsConstructor
-public class InventarioController {
+public class InventarioController extends  BaseController{
     private final InventarioService inventarioService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
 
     @GetMapping
     public ResponseEntity<Page<InventarioSimpleDTO>> listarActivosPaginado(

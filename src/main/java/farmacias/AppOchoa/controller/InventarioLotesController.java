@@ -23,16 +23,11 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/inventarioslotes")
 @AllArgsConstructor
-public class InventarioLotesController {
+public class InventarioLotesController extends  BaseController{
     private final InventarioLotesService inventarioLotesService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+
 
     @GetMapping
     public ResponseEntity<Page<InventarioLotesSimpleDTO>> listarPorSucursalPaginado(

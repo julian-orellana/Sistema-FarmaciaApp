@@ -20,17 +20,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/productos")
 @AllArgsConstructor
-public class ProductoController {
+public class ProductoController extends  BaseController {
 
     private final ProductoService productoService;
     private final JwtUtil jwtUtil;
 
-    private Long getFarmaciaId(){
-        String token = (String) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getCredentials();
-        return jwtUtil.extractFarmaciaId(token);
-    }
+
 
     @GetMapping
     public ResponseEntity<Page<ProductoSimpleDTO>> listarProductosActivos(

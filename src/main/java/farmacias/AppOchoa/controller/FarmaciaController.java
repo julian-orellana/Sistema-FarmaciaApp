@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/farmacias")
 @AllArgsConstructor
 
-public class FarmaciaController {
+public class FarmaciaController extends  BaseController{
     private final FarmaciaService farmaciaService;
 
     @GetMapping
