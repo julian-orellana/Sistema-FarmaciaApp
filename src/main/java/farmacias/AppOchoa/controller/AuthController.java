@@ -42,6 +42,8 @@ public class AuthController {
             Map<String, String> error = new HashMap<>();
             error.put("mensaje", "Error interno del servidor");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+
+            //Agregation
         }
     }
 }
