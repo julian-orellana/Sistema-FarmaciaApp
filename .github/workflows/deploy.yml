@@ -3,6 +3,7 @@ name: Deploy to Production
 on:
   push:
     branches: [ main ]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -10,6 +11,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -42,11 +44,5 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            docker pull julixxx23/app-ochoa:latest
-            docker stop appochoa || true
-            docker rm appochoa || true
-            docker run -d --name appochoa --restart always -p 8080:8080 \
-              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              -e DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
-              -e DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
-              julixxx23/app-ochoa:latest
+            docker-compose pull
+            docker-compose up -d
