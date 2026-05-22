@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.CompraServiceImplTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:46.062Z" hostname="JULIAN" time="0.144">
+  <properties/>
+  <testcase name="Deberia de crear una compra correctamente con los datos registrados" classname="farmacias.AppOchoa.serviceImplTes.CompraServiceImplTest" time="0.131"/>
+  <testcase name="Deberia de elimimar (cambiar de estado) la compra" classname="farmacias.AppOchoa.serviceImplTes.CompraServiceImplTest" time="0.005"/>
+  <testcase name="Deberia de lanzar una excepcion al buscar un ID que no existe" classname="farmacias.AppOchoa.serviceImplTes.CompraServiceImplTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

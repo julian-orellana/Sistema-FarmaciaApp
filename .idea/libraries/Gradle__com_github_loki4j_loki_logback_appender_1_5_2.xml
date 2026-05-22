@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.loki4j:loki-logback-appender:1.5.2" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="com.github.loki4j" artifactId="loki-logback-appender" version="1.5.2" baseVersion="1.5.2" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.loki4j/loki-logback-appender/1.5.2/ef5f776bb86be6481421d07f2ab34d5b5a4b2588/loki-logback-appender-1.5.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

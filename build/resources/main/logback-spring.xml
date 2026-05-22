@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty name="LOKI_URL"      source="loki.url"      defaultValue="https://logs-prod-042.grafana.net/loki/api/v1/push"/>
+    <springProperty name="LOKI_USERNAME" source="loki.username"  defaultValue="1499882"/>
+    <springProperty name="LOKI_PASSWORD" source="loki.password"  defaultValue=""/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>${LOKI_URL}</url>
+            <auth>
+                <username>${LOKI_USERNAME}</username>
+                <password>${LOKI_PASSWORD}</password>
+            </auth>
+        </http>
+        <format>
+            <label>
+                <pattern>app=AppOchoa,env=production,level=%level</pattern>
+            </label>
+            <message>
+                <pattern>%d{HH:mm:ss} %-5level %logger - %msg%n</pattern>
+            </message>
+        </format>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOKI"/>
+    </root>
+
+</configuration>

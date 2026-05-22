@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.AlertaServiceImplTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:44.843Z" hostname="JULIAN" time="0.461">
+  <properties/>
+  <testcase name="Deberia crear una alerta correcta con los datos ingresados" classname="farmacias.AppOchoa.serviceImplTes.AlertaServiceImplTest" time="0.445"/>
+  <testcase name="Deberia de eliminar una alerta correctamente" classname="farmacias.AppOchoa.serviceImplTes.AlertaServiceImplTest" time="0.003"/>
+  <testcase name="Deberia de lanzar una excepcion al eliminar una alerta por ID no encontrado" classname="farmacias.AppOchoa.serviceImplTes.AlertaServiceImplTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

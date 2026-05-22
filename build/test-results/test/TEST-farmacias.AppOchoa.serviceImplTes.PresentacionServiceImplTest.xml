@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.PresentacionServiceImplTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:46.382Z" hostname="JULIAN" time="0.104">
+  <properties/>
+  <testcase name="Deberia de crear una presentacion correctamente cuando los datos son validos" classname="farmacias.AppOchoa.serviceImplTes.PresentacionServiceImplTest" time="0.075"/>
+  <testcase name="Deberia lanzar una excepcion si buscamos un ID que no existe" classname="farmacias.AppOchoa.serviceImplTes.PresentacionServiceImplTest" time="0.007"/>
+  <testcase name="Deberia crear la actualizacion correctamente" classname="farmacias.AppOchoa.serviceImplTes.PresentacionServiceImplTest" time="0.004"/>
+  <testcase name="Deberia de lanzar una excepcion si ya existe una presentacion con ese nombre" classname="farmacias.AppOchoa.serviceImplTes.PresentacionServiceImplTest" time="0.004"/>
+  <testcase name="Deberia de lanzar una excepcion al actualizar un ID que no existe" classname="farmacias.AppOchoa.serviceImplTes.PresentacionServiceImplTest" time="0.005"/>
+  <testcase name="Eliminar una presentacion deberia cambiar a estado false (Borrado Logico" classname="farmacias.AppOchoa.serviceImplTes.PresentacionServiceImplTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

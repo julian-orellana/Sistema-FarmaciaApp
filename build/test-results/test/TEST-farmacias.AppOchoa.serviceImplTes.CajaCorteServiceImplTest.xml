@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.CajaCorteServiceImplTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:45.316Z" hostname="JULIAN" time="0.423">
+  <properties/>
+  <testcase name="Deberia de buscar por Texto un corte de Caja" classname="farmacias.AppOchoa.serviceImplTes.CajaCorteServiceImplTest" time="0.384"/>
+  <testcase name="Deberia crear un corte de caja correctamente" classname="farmacias.AppOchoa.serviceImplTes.CajaCorteServiceImplTest" time="0.028"/>
+  <testcase name="Deberia de lanzar una excepcion al eliminar" classname="farmacias.AppOchoa.serviceImplTes.CajaCorteServiceImplTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
