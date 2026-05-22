@@ -8,6 +8,9 @@ import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.InventarioRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
+import farmacias.AppOchoa.exception.BadRequestException;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
+import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.InventarioService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +38,7 @@ public class InventarioServiceImpl implements InventarioService {
     public InventarioResponseDTO crear(Long farmaciaId, InventarioCreateDTO dto) {
         if (inventarioRepository.existsByProducto_ProductoIdAndSucursal_SucursalId(
                 dto.getProductoId(), dto.getSucursalId())) {
-            throw new RuntimeException("Ya existe un registro de inventario para este producto en la sucursal seleccionada.");
+            throw new DuplicateResourceException("Ya existe un registro de inventario para este producto en la sucursal seleccionada");
         }
 
         Producto producto = buscarProducto(farmaciaId, dto.getProductoId());
@@ -55,7 +58,7 @@ public class InventarioServiceImpl implements InventarioService {
     @Transactional(readOnly = true)
     public InventarioResponseDTO listaPorId(Long farmaciaId, Long id) {
         Inventario inventario = inventarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inventario no encontrado ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado ID: " + id));
         return InventarioResponseDTO.fromEntity(inventario);
     }
 
@@ -83,7 +86,7 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     public InventarioResponseDTO actualizar(Long farmaciaId, Long id, InventarioUpdateDTO dto) {
         Inventario inventario = inventarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inventario no encontrado ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado ID: " + id));
 
         inventario.setInventarioCantidadActual(dto.getCantidadActual());
         inventario.setInventarioCantidadMinima(dto.getCantidadMinima());
@@ -95,7 +98,7 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     public void eliminar(Long farmaciaId, Long id){
         if(!inventarioRepository.existsById(id)){
-            throw new RuntimeException("Inventario no encontrado con ID: " +id);
+            throw new ResourceNotFoundException("Inventario no encontrado con ID: " + id);
         }
         inventarioRepository.deleteById(id);
     }

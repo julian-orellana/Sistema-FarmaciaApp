@@ -6,6 +6,8 @@ import farmacias.AppOchoa.dto.sucursal.SucursalSimpleDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalUpdateDTO;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.SucursalRepository;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
+import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.SucursalService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +27,7 @@ public class SucursalServiceImpl implements SucursalService {
     @Override
     public SucursalResponseDTO crear(Long farmaciaId, SucursalCreateDTO dto){
         if(sucursalRepository.existsBySucursalNombre(dto.getNombre())){
-            throw new RuntimeException("Ya existe una sucursal con ese nombre: " + dto.getNombre());
+            throw new DuplicateResourceException("Ya existe una sucursal con ese nombre: " + dto.getNombre());
         }
 
         Sucursal sucursal = Sucursal.builder()
@@ -43,7 +45,7 @@ public class SucursalServiceImpl implements SucursalService {
     public SucursalResponseDTO obtenerPorId(Long farmaciaId, Long id){
         return sucursalRepository.findById(id)
                 .map(SucursalResponseDTO::fromEntity)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada por ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada por ID: " + id));
     }
 
     @Override
@@ -70,12 +72,12 @@ public class SucursalServiceImpl implements SucursalService {
     @Override
     public SucursalResponseDTO actualizar(Long farmaciaId, Long id, SucursalUpdateDTO dto){
         Sucursal sucursal = sucursalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada por ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada por ID: " + id));
 
         String nuevoNombre = dto.getNombre().trim();
         if(!sucursal.getSucursalNombre().equalsIgnoreCase(nuevoNombre)){
             if(sucursalRepository.existsBySucursalNombre(nuevoNombre)){
-                throw new RuntimeException("Ya existe otra sucursal con ese nombre: " + nuevoNombre);
+                throw new DuplicateResourceException("Ya existe otra sucursal con ese nombre: " + nuevoNombre);
             }
             sucursal.setSucursalNombre(nuevoNombre);
         }
@@ -93,7 +95,7 @@ public class SucursalServiceImpl implements SucursalService {
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
         Sucursal sucursal = sucursalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada por ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada por ID: " + id));
         sucursal.setSucursalEstado(estado);
         sucursalRepository.save(sucursal);
     }

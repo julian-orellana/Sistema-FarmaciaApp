@@ -4,6 +4,8 @@ import farmacias.AppOchoa.dto.categoria.CategoriaCreateDTO;
 import farmacias.AppOchoa.dto.categoria.CategoriaResponseDTO;
 import farmacias.AppOchoa.dto.categoria.CategoriaSimpleDTO;
 import farmacias.AppOchoa.dto.categoria.CategoriaUpdateDTO;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
+import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Categoria;
 import farmacias.AppOchoa.repository.CategoriaRepository;
 import farmacias.AppOchoa.services.CategoriaService;
@@ -28,7 +30,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public CategoriaResponseDTO crear(Long farmaciaId, CategoriaCreateDTO dto){
         if(categoriaRepository.existsByCategoriaNombre(dto.getNombre())){
-            throw new RuntimeException("Ya existe una categoria con ese nombre: " + dto.getNombre());
+            throw new DuplicateResourceException("Ya existe una categoría con ese nombre: " + dto.getNombre());
         }
 
         Categoria categoria = Categoria.builder()
@@ -44,11 +46,11 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Transactional(readOnly = true)
     public CategoriaResponseDTO obtenerPorId(Long farmaciaId, Long id){
         Categoria categoria = categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada por id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         return CategoriaResponseDTO.fromEntity(categoria);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Page<CategoriaSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
@@ -75,11 +77,11 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public CategoriaResponseDTO actualizar(Long farmaciaId, Long id, CategoriaUpdateDTO dto){
         Categoria categoria = categoriaRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Categoria no encontrada con ID: " +id));
+                .orElseThrow(()-> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         if(!categoria.getCategoriaNombre().equals(dto.getNombre())){
             if(categoriaRepository.existsByCategoriaNombre(dto.getNombre())){
-                throw new RuntimeException("Ya existe otra categoria con el nombre: " + dto.getNombre());
+                throw new DuplicateResourceException("Ya existe otra categoría con el nombre: " + dto.getNombre());
             }
         }
 
@@ -93,7 +95,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
         Categoria categoria = categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         categoria.setCategoriaEstado(estado);
         categoriaRepository.save(categoria);

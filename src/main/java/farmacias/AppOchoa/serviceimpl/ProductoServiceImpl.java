@@ -4,6 +4,9 @@ import farmacias.AppOchoa.dto.producto.ProductoCreateDTO;
 import farmacias.AppOchoa.dto.producto.ProductoResponseDTO;
 import farmacias.AppOchoa.dto.producto.ProductoSimpleDTO;
 import farmacias.AppOchoa.dto.producto.ProductoUpdateDTO;
+import farmacias.AppOchoa.exception.BadRequestException;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
+import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Categoria;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Presentacion;
@@ -40,7 +43,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     private Farmacia buscarFarmacia(Long farmaciaId) {
         return farmaciaRepository.findById(farmaciaId)
-                .orElseThrow(() -> new RuntimeException("Farmacia no encontrada ID: " + farmaciaId));
+                .orElseThrow(() -> new ResourceNotFoundException("Farmacia no encontrada con ID: " + farmaciaId));
     }
 
     @Override
@@ -48,12 +51,12 @@ public class ProductoServiceImpl implements ProductoService {
         Farmacia farmacia = buscarFarmacia(farmaciaId);
 
         if (productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, dto.getNombre())) {
-            throw new RuntimeException("Ya existe un producto con el nombre: " + dto.getNombre());
+            throw new DuplicateResourceException("Ya existe un producto con el nombre: " + dto.getNombre());
         }
 
         if (dto.getCodigoBarras() != null && !dto.getCodigoBarras().isBlank() &&
                 productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, dto.getCodigoBarras())) {
-            throw new RuntimeException("El código de barras ya está registrado: " + dto.getCodigoBarras());
+            throw new DuplicateResourceException("El código de barras ya está registrado: " + dto.getCodigoBarras());
         }
 
         Categoria categoria = buscarCategoria(dto.getCategoriaId());
@@ -78,21 +81,21 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public ProductoResponseDTO actualizarProducto(Long farmaciaId, Long id, ProductoUpdateDTO dto) {
         Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
         if (!producto.getFarmacia().getFarmaciaId().equals(farmaciaId)) {
-            throw new RuntimeException("No tienes permiso para modificar este producto");
+            throw new BadRequestException("No tienes permiso para modificar un producto de otra farmacia");
         }
 
         if (!producto.getProductoNombre().equalsIgnoreCase(dto.getNombre()) &&
                 productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, dto.getNombre())) {
-            throw new RuntimeException("Ya existe otro producto con el nombre: " + dto.getNombre());
+            throw new DuplicateResourceException("Ya existe otro producto con el nombre: " + dto.getNombre());
         }
 
         if (dto.getCodigoBarras() != null &&
                 !dto.getCodigoBarras().equals(producto.getProductoCodigoBarras()) &&
                 productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, dto.getCodigoBarras())) {
-            throw new RuntimeException("El código de barras ya pertenece a otro producto.");
+            throw new DuplicateResourceException("El código de barras ya pertenece a otro producto: " + dto.getCodigoBarras());
         }
 
         producto.setCategoria(buscarCategoria(dto.getCategoriaId()));
@@ -117,10 +120,10 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean nuevoEstado) {
         Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
         if (!producto.getFarmacia().getFarmaciaId().equals(farmaciaId)) {
-            throw new RuntimeException("No tienes permiso para modificar este producto");
+            throw new BadRequestException("No tienes permiso para modificar un producto de otra farmacia");
         }
 
         producto.setProductoEstado(nuevoEstado);
@@ -132,12 +135,12 @@ public class ProductoServiceImpl implements ProductoService {
     public ProductoResponseDTO obtenerPorCodigoBarras(Long farmaciaId, String codigo) {
         return productoRepository.findByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, codigo)
                 .map(ProductoResponseDTO::fromEntity)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado con código: " + codigo));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con código de barras: " + codigo));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductoSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
+    public Page<ProductoSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
         return productoRepository.buscarPorTexto(texto, pageable)
                 .map(ProductoSimpleDTO::fromEntity);
     }
@@ -146,10 +149,10 @@ public class ProductoServiceImpl implements ProductoService {
     @Transactional(readOnly = true)
     public ProductoResponseDTO obtenerPorId(Long farmaciaId, Long id) {
         Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
         if (!producto.getFarmacia().getFarmaciaId().equals(farmaciaId)) {
-            throw new RuntimeException("No tienes permiso para ver este producto");
+            throw new BadRequestException("No tienes permiso para ver un producto de otra farmacia");
         }
 
         return ProductoResponseDTO.fromEntity(producto);
@@ -165,12 +168,12 @@ public class ProductoServiceImpl implements ProductoService {
     private Categoria buscarCategoria(Long id) {
         if (id == null) return null;
         return categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
     }
 
     private Presentacion buscarPresentacion(Long id) {
         if (id == null) return null;
         return presentacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Presentación no encontrada ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada con ID: " + id));
     }
 }
