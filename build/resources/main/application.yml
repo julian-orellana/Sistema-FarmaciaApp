@@ -1,4 +1,7 @@
 spring:
+  application:
+    name: "AppOchoa"
+
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
@@ -31,6 +34,21 @@ spring:
 
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: "AppOchoa"
+      environment: "production"
 
 #Configuración JWT
 jwt:

@@ -3,6 +3,7 @@ package farmacias.AppOchoa.serviceimpl;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaCreateDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaResponseDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaSimpleDTO;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.PlanTipo;
@@ -25,7 +26,7 @@ public class FarmaciaServiceImpl implements FarmaciaService {
     @Override
     public FarmaciaResponseDTO crear(FarmaciaCreateDTO dto){
         if(farmaciaRepository.existsByFarmaciaNit(dto.getFarmaciaNit())){
-            throw new IllegalArgumentException("El nit ya esta en uso" + dto.getFarmaciaNit());
+            throw new DuplicateResourceException("El NIT ya está en uso: " + dto.getFarmaciaNit());
         }
 
         Farmacia farmacia = Farmacia.builder()

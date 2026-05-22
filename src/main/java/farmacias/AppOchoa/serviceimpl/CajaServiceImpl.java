@@ -4,6 +4,7 @@ import farmacias.AppOchoa.dto.caja.CajaCreateDTO;
 import farmacias.AppOchoa.dto.caja.CajaResponseDTO;
 import farmacias.AppOchoa.dto.caja.CajaSimpleDTO;
 import farmacias.AppOchoa.dto.caja.CajaUpdateDTO;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Caja;
 import farmacias.AppOchoa.model.CajaEstado;
@@ -32,7 +33,7 @@ public class CajaServiceImpl implements CajaService {
     @Override
     public CajaResponseDTO crearCaja(Long farmaciaId, CajaCreateDTO dto){
         if(cajaRepository.existsBySucursalSucursalIdAndCajaNombre(dto.getSucursalId(), dto.getCajaNombre())){
-            throw new IllegalArgumentException("Ya existe una caja con este nombre");
+            throw new DuplicateResourceException("Ya existe una caja con ese nombre");
         }
         Sucursal sucursal =  buscarSucursal(dto.getSucursalId());
 
@@ -78,7 +79,7 @@ public class CajaServiceImpl implements CajaService {
         //Validar unicidad de nombre
         if(!caja.getCajaNombre().equalsIgnoreCase(dto.getCajaNombre()) &&
                 cajaRepository.existsBySucursalSucursalIdAndCajaNombre(caja.getSucursal().getSucursalId(), dto.getCajaNombre())){
-            throw new IllegalArgumentException("Ya existe otra caja con ese nombre" + dto.getCajaNombre());
+            throw new DuplicateResourceException("Ya existe otra caja con ese nombre: " + dto.getCajaNombre());
         }
         //Actualizar relaciones
         caja.setCajaNombre(dto.getCajaNombre());

@@ -5,6 +5,7 @@ import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.UsuarioService;
 import org.springframework.context.annotation.Lazy;
@@ -37,7 +38,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     @Override
     public UsuarioResponseDTO crearUsuario(Long farmaciaId, UsuarioCreateDTO dto) {
         if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
-            throw new ResourceNotFoundException("El nombre de usuario '" + dto.getNombreUsuario() + "' ya esta en uso");
+            throw new DuplicateResourceException("El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso");
         }
 
         Sucursal sucursal = null;
@@ -87,7 +88,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
         if (!usuario.getNombreUsuarioUsuario().equals(dto.getNombreUsuario())) {
             if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
-                throw new ResourceNotFoundException("El nuevo nombre de usuario ya esta siendo usado por otra cuenta");
+                throw new DuplicateResourceException("El nuevo nombre de usuario ya está siendo utilizado por otra cuenta");
             }
             usuario.setNombreUsuarioUsuario(dto.getNombreUsuario());
         }

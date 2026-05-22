@@ -4,84 +4,91 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Object> manejarResourceNotFoundException(ResourceNotFoundException ex, WebRequest request){
-        Map<String, Object> cuerpoRespuesta = new HashMap<>();
-        cuerpoRespuesta.put("timestamp", LocalDateTime.now());
-        cuerpoRespuesta.put("mensaje", ex.getMessage());
-        cuerpoRespuesta.put("detalles", request.getDescription(false));
-        cuerpoRespuesta.put("estado", HttpStatus.NOT_FOUND.value());
-
-        return new ResponseEntity<>(cuerpoRespuesta, HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Object> manejarBadRequestException(BadRequestException ex, WebRequest request) {
-        Map<String, Object> cuerpoRespuesta = new HashMap<>();
-        cuerpoRespuesta.put("timestamp", LocalDateTime.now());
-        cuerpoRespuesta.put("mensaje", ex.getMessage());
-        cuerpoRespuesta.put("detalles", request.getDescription(false));
-        cuerpoRespuesta.put("estado", HttpStatus.BAD_REQUEST.value());
-
-        return new ResponseEntity<>(cuerpoRespuesta, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> manejarBadRequest(BadRequestException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(HttpClientErrorException.Forbidden.class)
-    public ResponseEntity<Object> manejarForbiddenException(HttpClientErrorException.Forbidden forbidden, WebRequest request){
-        Map<String, Object> cuerpoRespuesta = new HashMap<>();
-        cuerpoRespuesta.put("timestamp", LocalDateTime.now());
-        cuerpoRespuesta.put("mensaje", forbidden.getMessage());
-        cuerpoRespuesta.put("detalles", request.getDescription(false));
-        cuerpoRespuesta.put("estado", HttpStatus.FORBIDDEN.value()); // 403
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> manejarValidaciones(MethodArgumentNotValidException ex, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("estado", HttpStatus.BAD_REQUEST.value());
+        body.put("mensaje", "Error de validación en los datos enviados");
+        body.put("ruta", request.getDescription(false).replace("uri=", ""));
 
-        return new ResponseEntity<>(cuerpoRespuesta, HttpStatus.FORBIDDEN);
+        Map<String, String> erroresCampos = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            erroresCampos.put(error.getField(), error.getDefaultMessage());
+        }
+        body.put("errores", erroresCampos);
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> manejarIllegalArgument(IllegalArgumentException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Object> manejarAccessDeniedException(AccessDeniedException ex, WebRequest request) {
-        Map<String, Object> cuerpoRespuesta = new HashMap<>();
-        cuerpoRespuesta.put("timestamp", LocalDateTime.now());
-        cuerpoRespuesta.put("mensaje", "No tienes permisos para acceder a este recurso");
-        cuerpoRespuesta.put("detalles", request.getDescription(false));
-        cuerpoRespuesta.put("estado", HttpStatus.FORBIDDEN.value());
-
-        return new ResponseEntity<>(cuerpoRespuesta, HttpStatus.FORBIDDEN);
+    public ResponseEntity<Object> manejarAccesoDenegado(AccessDeniedException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.FORBIDDEN, "No tienes permisos para acceder a este recurso", request);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> manejarGlobalException(Exception ex, WebRequest request) {
-        Map<String, Object> cuerpoRespuesta = new HashMap<>();
-        cuerpoRespuesta.put("timestamp", LocalDateTime.now());
-        cuerpoRespuesta.put("mensaje", "Ocurrió un error interno en el servidor");
-        cuerpoRespuesta.put("error", ex.getMessage());
-        cuerpoRespuesta.put("estado", HttpStatus.INTERNAL_SERVER_ERROR.value());
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> manejarNoEncontrado(ResourceNotFoundException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
 
-        return new ResponseEntity<>(cuerpoRespuesta, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<Object> manejarOperacionNoPermitida(UnsupportedOperationException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<Object> manejarDuplicado(DuplicateResourceException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Object> manejarDuplicados_ErroresDB(DataIntegrityViolationException data, WebRequest request){
-        Map<String, Object> cuerpoRespuesta = new HashMap<>();
-        cuerpoRespuesta.put("timestamp", LocalDateTime.now());
-        cuerpoRespuesta.put("mensaje", "Error de integridad de datos: el registro ya existe o viola una restricción");
-        cuerpoRespuesta.put("error", data.getMessage());
-        cuerpoRespuesta.put("estado", HttpStatus.CONFLICT.value());
-
-        return new ResponseEntity<>(cuerpoRespuesta, HttpStatus.CONFLICT);
-
+    public ResponseEntity<Object> manejarViolacionIntegridad(DataIntegrityViolationException ex, WebRequest request) {
+        return construirRespuesta(
+                HttpStatus.CONFLICT,
+                "El registro ya existe o viola una restricción de unicidad en la base de datos",
+                request
+        );
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> manejarExcepcionGlobal(Exception ex, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("estado", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("mensaje", "Ocurrió un error interno. Contacta al administrador del sistema.");
+        body.put("ruta", request.getDescription(false).replace("uri=", ""));
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
+    private ResponseEntity<Object> construirRespuesta(HttpStatus status, String mensaje, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("estado", status.value());
+        body.put("mensaje", mensaje);
+        body.put("ruta", request.getDescription(false).replace("uri=", ""));
+        return new ResponseEntity<>(body, status);
+    }
 }

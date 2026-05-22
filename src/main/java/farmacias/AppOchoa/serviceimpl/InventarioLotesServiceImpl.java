@@ -11,6 +11,8 @@ import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.InventarioLotesRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
+import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.InventarioLotesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,7 +34,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     public InventarioLotesResponseDTO crear(Long farmaciaId, InventarioLotesCreateDTO dto) {
         if (inventarioLotesRepository.existsByLoteNumeroAndSucursal_SucursalId(dto.getNumeroLote(), dto.getSucursalId())) {
-            throw new RuntimeException("El número de lote " + dto.getNumeroLote() + " ya existe en esta sucursal.");
+            throw new DuplicateResourceException("El número de lote " + dto.getNumeroLote() + " ya existe en esta sucursal");
         }
 
         Producto producto = buscarProducto(farmaciaId, dto.getProductoId());
@@ -56,7 +58,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Transactional(readOnly = true)
     public InventarioLotesResponseDTO buscarPorId(Long farmaciaId, Long id) {
         InventarioLotes lote = inventarioLotesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lote no encontrado ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
         return InventarioLotesResponseDTO.fromEntity(lote);
     }
 
@@ -84,7 +86,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     public InventarioLotesResponseDTO actualizar(Long farmaciaId, Long id, InventarioLotesUpdateDTO dto) {
         InventarioLotes lote = inventarioLotesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lote no encontrado ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
 
         lote.setLoteCantidadActual(dto.getCantidadActual());
         lote.setLoteEstado(dto.getEstado());
@@ -95,7 +97,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     public void eliminar(Long farmaciaId, Long id) {
         if (!inventarioLotesRepository.existsById(id)) {
-            throw new RuntimeException("Lote no encontrado ID: " + id);
+            throw new ResourceNotFoundException("Lote no encontrado con ID: " + id);
         }
         inventarioLotesRepository.deleteById(id);
     }

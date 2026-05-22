@@ -6,6 +6,8 @@ import farmacias.AppOchoa.dto.presentacion.PresentacionSimpleDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionUpdateDTO;
 import farmacias.AppOchoa.model.Presentacion;
 import farmacias.AppOchoa.repository.PresentacionRepository;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
+import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.PresentacionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +30,7 @@ public class PresentacionServiceImpl implements PresentacionService {
     @Override
     public PresentacionResponseDTO crear(Long farmaciaId, PresentacionCreateDTO dto){
         if(presentacionRepository.existsByPresentacionNombre(dto.getNombre())){
-            throw new RuntimeException("Ya existe una presentación con ese nombre: " + dto.getNombre());
+            throw new DuplicateResourceException("Ya existe una presentación con ese nombre: " + dto.getNombre());
         }
 
         Presentacion presentacion = Presentacion.builder()
@@ -42,7 +44,7 @@ public class PresentacionServiceImpl implements PresentacionService {
     @Override
     public PresentacionResponseDTO obtenerPorId(Long farmaciaId, Long id){
         Presentacion presentacion = presentacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Presentación no encontrada por ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
         return PresentacionResponseDTO.fromEntity(presentacion);
     }
     @Override
@@ -69,11 +71,11 @@ public class PresentacionServiceImpl implements PresentacionService {
     @Override
     public PresentacionResponseDTO actualizar(Long farmaciaId, Long id, PresentacionUpdateDTO dto){
         Presentacion presentacion = presentacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Presentación no encontrada por ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
 
         if(!presentacion.getPresentacionNombre().equalsIgnoreCase(dto.getNombre())){
             if(presentacionRepository.existsByPresentacionNombre(dto.getNombre())){
-                throw new RuntimeException("Ya existe otra presentación con el nombre: " + dto.getNombre());
+                throw new DuplicateResourceException("Ya existe otra presentación con el nombre: " + dto.getNombre());
             }
         }
 
@@ -89,7 +91,7 @@ public class PresentacionServiceImpl implements PresentacionService {
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
         Presentacion presentacion = presentacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Presentación no encontrada por ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
         presentacion.setPresentacionEstado(estado);
         presentacionRepository.save(presentacion);
     }
