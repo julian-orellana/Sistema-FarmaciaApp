@@ -26,8 +26,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -104,8 +103,18 @@ public class CajaSesionesImplTest {
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
 
+    }
+
+    @Test
+    @DisplayName("Deberia lanzar una excepcion si se elimina una sesion")
+    void eliminadoError(){
+        assertThrows(UnsupportedOperationException.class, () -> {
+            cajaSesionesService.eliminar(1L,1L);
+        });
+
 
     }
+
 
 
 }

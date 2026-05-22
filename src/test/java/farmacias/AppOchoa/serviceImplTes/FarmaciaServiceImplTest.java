@@ -24,11 +24,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 public class FarmaciaServiceImplTest {
@@ -89,4 +88,14 @@ public class FarmaciaServiceImplTest {
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
     }
+
+    @Test
+    @DisplayName("Deberia de lanzar una excepcion si se  intenta eliminar una farmacia")
+    void eliminadoError(){
+        assertThrows(UnsupportedOperationException.class, () -> {
+            farmaciaService.eliminar(1L);
+        });
+    }
+
+
 }

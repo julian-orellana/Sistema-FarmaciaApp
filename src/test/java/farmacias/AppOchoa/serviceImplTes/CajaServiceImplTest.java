@@ -3,7 +3,9 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.caja.CajaCreateDTO;
 import farmacias.AppOchoa.dto.caja.CajaResponseDTO;
 import farmacias.AppOchoa.dto.caja.CajaSimpleDTO;
+import farmacias.AppOchoa.dto.caja.CajaUpdateDTO;
 import farmacias.AppOchoa.model.Caja;
+import farmacias.AppOchoa.model.CajaEstado;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CajaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
@@ -23,11 +25,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CajaServiceImplTest {
@@ -94,6 +94,60 @@ public class CajaServiceImplTest {
         Page<CajaSimpleDTO> resultado = cajaService.buscarPorTexto(farmaciaId, texto, pageable);
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
+    }
+
+    @Test
+    @DisplayName("Deberia de lanzar una excepcion si se intenta eliminar")
+    void eliminadoError() {
+        // ARRANGE
+        Long farmaciaId = 1L;
+        Long id = 1L;
+
+        Caja cajaMock = new Caja();
+        cajaMock.setCajaId(id);
+
+        when(cajaRepository.findById(id)).thenReturn(Optional.of(cajaMock));
+        // ACT
+        cajaService.eliminar(farmaciaId, id);
+        // ASSERT
+        verify(cajaRepository, times(1)).save(any(Caja.class));
+    }
+
+    @Test
+    @DisplayName("Deberia de actualizar una Caja")
+    void actualizaCaja(){
+
+        Long farmaciaId = 1L;
+
+        CajaUpdateDTO dto = new CajaUpdateDTO();
+        dto.setSucursalId(1L);
+        dto.setCajaNombre("Caja 1");
+
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(1L);
+
+        Caja cajaRegistrada = Caja.builder()
+                .cajaId(1L)
+                .cajaNombre("Caja 1")
+                .cajaEstado(CajaEstado.activa)
+                .build();
+
+        Caja cajaActualizada = Caja.builder()
+                .cajaId(1L)
+                .cajaNombre("Caja 2")
+                .cajaEstado(CajaEstado.desactivada)
+                .build();
+
+        when(cajaRepository.findById(1L)).thenReturn(Optional.of(cajaRegistrada));
+        when(cajaRepository.save(any(Caja.class))).thenReturn(cajaActualizada);
+
+        CajaResponseDTO resultado = cajaService.actualizarCaja(farmaciaId, 1L, dto);
+
+        assertNotNull(resultado);
+        assertEquals("Caja 2", resultado.getCajaNombre());
+        assertEquals(CajaEstado.desactivada, resultado.getCajaEstado());
+
+        verify(cajaRepository, times(1)).save(any(Caja.class));
     }
 
 

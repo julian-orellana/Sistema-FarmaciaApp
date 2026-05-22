@@ -2,6 +2,7 @@ package farmacias.AppOchoa.serviceImplTes;
 
 import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
+import farmacias.AppOchoa.dto.usuario.UsuarioUpdateDTO;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.repository.SucursalRepository;
@@ -15,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -24,13 +27,10 @@ class UsuarioServiceImplTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
-
     @Mock
     private SucursalRepository sucursalRepository;
-
     @Mock
     private PasswordEncoder passwordEncoder;
-
     @InjectMocks
     private UsuarioServiceImpl usuarioService;
 
@@ -118,5 +118,51 @@ class UsuarioServiceImplTest {
                 .save(any(Usuario.class));
         verify(passwordEncoder, never())
                 .encode(any());
+    }
+
+    @Test
+    @DisplayName("Deberia de actualizar un usuario correctamente")
+    void actualizarUsuario(){
+
+        Long farmaciaId = 1L;
+        Long usuarioId = 1L;
+
+        UsuarioUpdateDTO dto = new UsuarioUpdateDTO();
+        dto.setNombreUsuario("steveSenior");
+        dto.setNombre("Steve");
+        dto.setApellido("Leon");
+        dto.setRol(UsuarioRol.encargado);
+        dto.setSucursalId(null);
+
+        Usuario usuarioRegistrado = Usuario.builder()
+                .usuarioId(1L)
+                .nombreUsuarioUsuario("juanaOdont")
+                .usuarioNombre("Juana")
+                .usuarioApellido("Baltazar")
+                .usuarioRol(UsuarioRol.administrador)
+                .build();
+
+        Usuario usuarioActualizado = Usuario.builder()
+                .usuarioId(1L)
+                .nombreUsuarioUsuario("juanaNico")
+                .usuarioNombre("Juana Cristina")
+                .usuarioApellido("Baltazar")
+                .usuarioRol(UsuarioRol.administrador)
+                .build();
+
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioRegistrado));
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioActualizado);
+
+        UsuarioResponseDTO resultado  = usuarioService.actualizarUsuario(farmaciaId, usuarioId,  dto);
+
+        assertNotNull(resultado);
+        assertEquals("juanaNico", resultado.getNombreUsuario());
+        assertEquals("Juana Cristina", resultado.getNombre());
+        assertEquals(UsuarioRol.administrador, resultado.getRol());
+        verify(usuarioRepository, times(1)).findById(1L);
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
+
+
+
     }
 }

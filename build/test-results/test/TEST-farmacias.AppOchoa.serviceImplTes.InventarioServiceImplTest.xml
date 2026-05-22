@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:46.259Z" hostname="JULIAN" time="0.115">
+  <properties/>
+  <testcase name="Deberia de Actualizar un registro correctamente" classname="farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest" time="0.091"/>
+  <testcase name="Deberia de lanzar una excepcion al registrar un producto ya existente" classname="farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest" time="0.01"/>
+  <testcase name="Deberia de lanzar una excepcion si buscamos un ID no existente" classname="farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest" time="0.005"/>
+  <testcase name="Deberia registrar un Item correctamente en el inventario" classname="farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

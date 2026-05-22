@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.ProductoServiceImplTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:46.491Z" hostname="JULIAN" time="0.042">
+  <properties/>
+  <testcase name="Debería actualizar producto correctamente" classname="farmacias.AppOchoa.serviceImplTes.ProductoServiceImplTest" time="0.014"/>
+  <testcase name="Debería agregar producto correctamente cuando datos son válidos" classname="farmacias.AppOchoa.serviceImplTes.ProductoServiceImplTest" time="0.009"/>
+  <testcase name="Eliminar producto debería cambiar estado a false (Borrado Lógico)" classname="farmacias.AppOchoa.serviceImplTes.ProductoServiceImplTest" time="0.004"/>
+  <testcase name="Debería lanzar excepción si buscamos un ID que no existe" classname="farmacias.AppOchoa.serviceImplTes.ProductoServiceImplTest" time="0.005"/>
+  <testcase name="Debería lanzar excepción si el nombre del producto ya existe" classname="farmacias.AppOchoa.serviceImplTes.ProductoServiceImplTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.CategoriaServiceImplTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:45.923Z" hostname="JULIAN" time="0.129">
+  <properties/>
+  <testcase name="Deberia de eliminar una categoria cambiandole de estado" classname="farmacias.AppOchoa.serviceImplTes.CategoriaServiceImplTest" time="0.086"/>
+  <testcase name="Deberia lanzar una Excepcion si ya existe una Categoria con ese nombre" classname="farmacias.AppOchoa.serviceImplTes.CategoriaServiceImplTest" time="0.011"/>
+  <testcase name="Deberia de lanzar una excepcion si buscamos un ID que no existe" classname="farmacias.AppOchoa.serviceImplTes.CategoriaServiceImplTest" time="0.006"/>
+  <testcase name="Deberia de actualizar una categoria correctamente con los datos validos" classname="farmacias.AppOchoa.serviceImplTes.CategoriaServiceImplTest" time="0.012"/>
+  <testcase name="Deberia de crear una categoria cuando los datos son validos" classname="farmacias.AppOchoa.serviceImplTes.CategoriaServiceImplTest" time="0.003"/>
+  <testcase name="Deberia lanzar una excepcion al actualizar un ID que no existe" classname="farmacias.AppOchoa.serviceImplTes.CategoriaServiceImplTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

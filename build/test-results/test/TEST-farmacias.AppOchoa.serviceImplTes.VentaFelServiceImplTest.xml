@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.VentaFelServiceImplTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:46.815Z" hostname="JULIAN" time="0.095">
+  <properties/>
+  <testcase name="Deberia crear una venta correctamente" classname="farmacias.AppOchoa.serviceImplTes.VentaFelServiceImplTest" time="0.08"/>
+  <testcase name="Deberia crear una busqueda correctamente" classname="farmacias.AppOchoa.serviceImplTes.VentaFelServiceImplTest" time="0.01"/>
+  <testcase name="Deberia de lanzar una excepcion al eliminar una venta" classname="farmacias.AppOchoa.serviceImplTes.VentaFelServiceImplTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

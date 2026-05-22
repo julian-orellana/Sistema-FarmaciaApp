@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.VentaServiceImplTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:46.956Z" hostname="JULIAN" time="0.05">
+  <properties/>
+  <testcase name="Deberia de lanzar una excepcion al eliminar una venta, con ID incorrecto" classname="farmacias.AppOchoa.serviceImplTes.VentaServiceImplTest" time="0.009"/>
+  <testcase name="Deberia de buscar una venta por ID correctamente" classname="farmacias.AppOchoa.serviceImplTes.VentaServiceImplTest" time="0.019"/>
+  <testcase name="Deberia de lanzar una excepcion al buscar una venta con ID no existente" classname="farmacias.AppOchoa.serviceImplTes.VentaServiceImplTest" time="0.004"/>
+  <testcase name="Debebria crear una correcta venta, con los datos ingresados" classname="farmacias.AppOchoa.serviceImplTes.VentaServiceImplTest" time="0.009"/>
+  <testcase name="Deberia de eliminar una venta, correctamente" classname="farmacias.AppOchoa.serviceImplTes.VentaServiceImplTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

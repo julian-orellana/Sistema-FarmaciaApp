@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.SuscripcionPagoServiceImplTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-03-28T02:46:35.975Z" hostname="JULIAN" time="1.972">
+  <properties/>
+  <testcase name="Deberia de buscar una suscripcion por texto correctamente" classname="farmacias.AppOchoa.SuscripcionPagoServiceImplTest" time="1.905"/>
+  <testcase name="Deberia de crear una suscripcion pago correctamente" classname="farmacias.AppOchoa.SuscripcionPagoServiceImplTest" time="0.065"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

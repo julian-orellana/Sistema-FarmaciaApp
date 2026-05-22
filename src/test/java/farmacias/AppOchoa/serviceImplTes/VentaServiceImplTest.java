@@ -138,9 +138,4 @@ public class VentaServiceImplTest {
         verify(ventaRepository,  never()).save(any(Venta.class));
     }
 
-
-
-
-
-
 }
