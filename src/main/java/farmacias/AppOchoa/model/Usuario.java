@@ -63,7 +63,7 @@ public class Usuario implements UserDetails {
     // para que hasRole() funcione en SecurityConfig y @PreAuthorize
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + usuarioRol.name()));
+        return List.of(new SimpleGrantedAuthority(usuarioRol.name()));
     }
 
     // Retorna la contraseña hasheada almacenada en DB

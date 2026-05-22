@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
-import static sun.net.www.protocol.http.AuthCacheValue.Type.Server;
 //Confis swagger
 @Configuration
 public class OpenApiConfig {
