@@ -1,7 +1,7 @@
 package farmacias.AppOchoa.controller;
 
 import farmacias.AppOchoa.config.JwtConfig;
-import farmacias.AppOchoa.dto.auth.RefreshTokenRequestDTO;
+import farmacias.AppOchoa.dto.token.RefreshTokenRequestDTO;
 import farmacias.AppOchoa.dto.usuario.LoginDTO;
 import farmacias.AppOchoa.model.RefreshToken;
 import farmacias.AppOchoa.model.Usuario;
