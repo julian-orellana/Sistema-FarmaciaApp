@@ -45,5 +45,6 @@
             <appender-ref ref="LOKI"/>
         </root>
     </springProfile>
+    -->
 
 </configuration>

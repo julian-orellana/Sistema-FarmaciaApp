@@ -5,9 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/resourceHashesCache.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/token/RefreshTokenRequestDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/token/RefreshTokenRequestDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/farmacias/AppOchoa/exception/DuplicateResourceException.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logback-spring.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logback-spring.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -216,6 +222,18 @@
       <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <EXTENSION ID="com.intellij.execution.ExternalSystemRunConfigurationJavaExtension">
+        <extension name="net.ashald.envfile">
+          <option name="IS_ENABLED" value="false" />
+          <option name="IS_SUBST" value="false" />
+          <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+          <option name="IS_IGNORE_MISSING_FILES" value="false" />
+          <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+          <ENTRIES>
+            <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+          </ENTRIES>
+        </extension>
+      </EXTENSION>
       <DebugAllEnabled>false</DebugAllEnabled>
       <RunAsTest>true</RunAsTest>
       <GradleProfilingDisabled>false</GradleProfilingDisabled>
@@ -230,6 +248,14 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Gradle.CajaSesionesImplTest.eliminadoError" />
+      <item itemvalue="Gradle.FarmaciaServiceImplTest.eliminadoError" />
+      <item itemvalue="Gradle.VentaFelNotasCreditoServiceImplTest.eliminadoError" />
+      <item itemvalue="Gradle.VentaFelServiceImplTest.eliminadoError" />
+      <item itemvalue="Gradle.VentaPagosServiceImplTest.eliminadoError" />
+      <item itemvalue="Spring Boot.AppOchoaApplication" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.VentaPagosServiceImplTest.eliminadoError" />
@@ -258,7 +284,7 @@
       <workItem from="1774637641882" duration="15523000" />
       <workItem from="1774737128007" duration="5881000" />
       <workItem from="1779504355469" duration="37000" />
-      <workItem from="1779504409849" duration="3357000" />
+      <workItem from="1779504409849" duration="5754000" />
     </task>
     <servers />
   </component>
