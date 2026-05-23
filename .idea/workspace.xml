@@ -5,21 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/exception/DuplicateResourceException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/applicationprod.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/config/LoginRateLimitFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/token/RefreshTokenRequestDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/exception/TokenRefreshException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/model/RefreshToken.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/repository/RefreshTokenRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/RefreshTokenServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/sucursal/SucursalCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/sucursal/SucursalCreateDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/AppOchoaApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/AppOchoaApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/config/DataInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/config/DataInitializer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/config/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/config/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/compra/CompraCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/compra/CompraCreateDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/farmacia/FarmaciaCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/farmacia/FarmaciaCreateDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/venta/VentaCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/dto/venta/VentaCreateDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/CajaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/CajaServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/CategoriaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/CategoriaServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/FarmaciaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/FarmaciaServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/InventarioLotesServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/InventarioLotesServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/InventarioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/InventarioServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/PresentacionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/PresentacionServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/ProductoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/ProductoServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/SucursalServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/SucursalServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/UsuarioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/UsuarioServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/VentaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/VentaServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/AuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/AuthServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logback-spring.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logback-spring.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,6 +58,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -80,6 +90,7 @@
     &quot;Gradle.VentaFelNotasCreditoServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
     &quot;Gradle.VentaFelServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
     &quot;Gradle.VentaPagosServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
@@ -267,6 +278,8 @@
       <updated>1774637640634</updated>
       <workItem from="1774637641882" duration="15523000" />
       <workItem from="1774737128007" duration="5881000" />
+      <workItem from="1779504355469" duration="37000" />
+      <workItem from="1779504409849" duration="2486000" />
     </task>
     <servers />
   </component>

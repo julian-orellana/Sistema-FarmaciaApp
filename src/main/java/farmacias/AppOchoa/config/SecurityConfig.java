@@ -30,6 +30,9 @@ public class SecurityConfig {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
+    private LoginRateLimitFilter loginRateLimitFilter;
+
+    @Autowired
     private UsuarioServiceImpl usuarioServiceImpl;
 
     @Bean
@@ -39,13 +42,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) //JWT reemplaza la protección CSRF
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/v1/auth/**").permitAll() //Publico para el Login
-                        .anyRequest().authenticated() //A partir de aquí todo request reqyiere JWT Valido
+                        // Solo health y prometheus son públicos (los usa el healthcheck de Docker y Grafana)
+                        // El resto de actuator requiere autenticación
+                        .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
+                        .requestMatchers("/actuator/**").authenticated()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .anyRequest().authenticated()
                 )
                 //Sin sesiones — cada request se autentica solo con su JWT.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
+                // Rate limit va primero — bloquea IPs abusivas antes de cualquier autenticación
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -1,9 +1,12 @@
 package farmacias.AppOchoa.exception;
 
+import farmacias.AppOchoa.exception.TokenRefreshException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -17,13 +20,26 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 400 — Lógica de negocio inválida (stock insuficiente, estado incorrecto, etc.)
+    @ExceptionHandler(TokenRefreshException.class)
+    public ResponseEntity<Object> manejarTokenRefresh(TokenRefreshException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Object> manejarCredencialesIncorrectas(BadCredentialsException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos", request);
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<Object> manejarUsuarioDesactivado(DisabledException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.UNAUTHORIZED, "La cuenta de usuario está desactivada", request);
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> manejarBadRequest(BadRequestException ex, WebRequest request) {
         return construirRespuesta(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    // 400 — Campos @Valid fallidos: devuelve mapa campo → mensaje
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> manejarValidaciones(MethodArgumentNotValidException ex, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -41,37 +57,31 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    // 400 — IllegalArgumentException (argumentos inválidos desde servicios)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> manejarIllegalArgument(IllegalArgumentException ex, WebRequest request) {
         return construirRespuesta(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    // 403 — Intento de acceder a recurso de otra farmacia
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> manejarAccesoDenegado(AccessDeniedException ex, WebRequest request) {
         return construirRespuesta(HttpStatus.FORBIDDEN, "No tienes permisos para acceder a este recurso", request);
     }
 
-    // 404 — Recurso no encontrado
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> manejarNoEncontrado(ResourceNotFoundException ex, WebRequest request) {
         return construirRespuesta(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    // 405 — Operación no permitida por reglas de auditoría
     @ExceptionHandler(UnsupportedOperationException.class)
     public ResponseEntity<Object> manejarOperacionNoPermitida(UnsupportedOperationException ex, WebRequest request) {
         return construirRespuesta(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request);
     }
 
-    // 409 — Registro duplicado (nombre, NIT, código de barras, etc.)
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<Object> manejarDuplicado(DuplicateResourceException ex, WebRequest request) {
         return construirRespuesta(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
-    // 409 — Violación de constraint único en la base de datos
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Object> manejarViolacionIntegridad(DataIntegrityViolationException ex, WebRequest request) {
         return construirRespuesta(
@@ -81,7 +91,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // 500 — Cualquier error no contemplado (no exponer detalle interno en producción)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> manejarExcepcionGlobal(Exception ex, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -93,7 +102,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // ─── Helper privado ──────────────────────────────────────────────────────────
 
     private ResponseEntity<Object> construirRespuesta(HttpStatus status, String mensaje, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();

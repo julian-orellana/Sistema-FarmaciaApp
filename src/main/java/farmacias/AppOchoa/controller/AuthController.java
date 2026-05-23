@@ -1,8 +1,14 @@
 package farmacias.AppOchoa.controller;
 
+import farmacias.AppOchoa.config.JwtConfig;
+import farmacias.AppOchoa.dto.auth.RefreshTokenRequestDTO;
+import farmacias.AppOchoa.dto.usuario.LoginDTO;
+import farmacias.AppOchoa.model.RefreshToken;
+import farmacias.AppOchoa.model.Usuario;
+import farmacias.AppOchoa.serviceimpl.RefreshTokenServiceImpl;
 import farmacias.AppOchoa.services.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import farmacias.AppOchoa.util.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,37 +19,67 @@ import java.util.Map;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+    private final RefreshTokenServiceImpl refreshTokenService;
+    private final JwtUtil jwtUtil;
+    private final JwtConfig jwtConfig;
+
+    public AuthController(AuthService authService,
+                          RefreshTokenServiceImpl refreshTokenService,
+                          JwtUtil jwtUtil,
+                          JwtConfig jwtConfig) {
+        this.authService = authService;
+        this.refreshTokenService = refreshTokenService;
+        this.jwtUtil = jwtUtil;
+        this.jwtConfig = jwtConfig;
+    }
+
+    // Devuelve access token (24h) + refresh token (7d)
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        try {
-            String nombreUsuario = credentials.get("nombreUsuario");
-            String contrasena = credentials.get("contrasena");
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginDTO dto) {
+        Map<String, Object> response = authService.login(dto.getNombreUsuario(), dto.getContrasena());
+        return ResponseEntity.ok(response);
+    }
 
-            //Validar que vengan los datos
-            if (nombreUsuario == null || contrasena == null) {
-                Map<String, String> error = new HashMap<>();
-                error.put("mensaje", "Nombre de usuario y contraseña son obligatorios");
-                return ResponseEntity.badRequest().body(error);
-            }
+    //Refresh
+    //Recibe el refresh token, lo valida, lo rota y emite nuevo access token
 
-            //Llamar al servicio de autenticación
-            Map<String, Object> response = authService.login(nombreUsuario, contrasena);
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, Object>> refresh(@Valid @RequestBody RefreshTokenRequestDTO dto) {
 
-            return ResponseEntity.ok(response);
+        // Valida el refresh token en BD y lo rota (emite uno nuevo, borra el viejo)
+        RefreshToken nuevoRefreshToken = refreshTokenService.verificarYRotar(dto.getRefreshToken());
 
-        } catch (RuntimeException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("mensaje", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("mensaje", "Error interno del servidor");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        Usuario usuario = nuevoRefreshToken.getUsuario();
 
-            //Agregation
-        }
+        // Reconstruir los claims igual que en el login
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", usuario.getUsuarioId());
+        claims.put("rol", usuario.getUsuarioRol().name());
+        claims.put("nombre", usuario.getUsuarioNombre());
+        claims.put("apellido", usuario.getUsuarioApellido());
+        claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+
+        String nuevoAccessToken = jwtUtil.generateToken(claims, usuario.getNombreUsuarioUsuario());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", nuevoAccessToken);
+        response.put("refreshToken", nuevoRefreshToken.getToken());
+        response.put("tipo", "Bearer");
+        response.put("expiresIn", jwtConfig.getExpiration());
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Revoca el refresh token — el access token expira solo (es stateless)
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout(@Valid @RequestBody RefreshTokenRequestDTO dto) {
+        // Buscar el token en BD para obtener el usuarioId y revocar todos sus tokens
+        refreshTokenService.verificarParaLogout(dto.getRefreshToken());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Sesión cerrada correctamente");
+        return ResponseEntity.ok(response);
     }
 }

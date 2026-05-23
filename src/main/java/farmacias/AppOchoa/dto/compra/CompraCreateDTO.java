@@ -1,6 +1,7 @@
 package farmacias.AppOchoa.dto.compra;
 
 import farmacias.AppOchoa.dto.compradetalle.CompraDetalleCreateDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -28,7 +29,6 @@ public class CompraCreateDTO {
     private String observaciones;
 
     @NotEmpty(message = "Debe incluir al menos un detalle de compra")
+    @Valid
     private List<CompraDetalleCreateDTO> detalles;
-
-    public BigDecimal getCompraTotal;
 }
