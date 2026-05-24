@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: "AppOchoa"
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:defaultSecretKeyForDevelopmentOnly}
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${REFRESH_TOKEN_EXPIRATION:604800000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: "AppOchoa"
+
+springdoc:
+  packages-to-scan: farmacias.AppOchoa
+  paths-to-match: /**
+
+loki:
+  url: ${LOKI_URL:https://logs-prod-042.grafana.net/loki/api/v1/push}
+  username: ${LOKI_USERNAME:1499882}
+  password: ${LOKI_PASSWORD:}
