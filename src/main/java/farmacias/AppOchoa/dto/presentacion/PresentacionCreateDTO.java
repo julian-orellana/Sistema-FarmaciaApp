@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 public class PresentacionCreateDTO {
 
+    //
     @NotBlank(message = "La descripcion de la presentacion es obligatoria")
     @Size(max = 50, message = "La descripcion no debe contener mas de 50 caracteres")
     private String nombre;

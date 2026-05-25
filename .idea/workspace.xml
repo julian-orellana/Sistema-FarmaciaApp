@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/resources/main/logback-spring.xml" beforeDir="false" afterPath="$PROJECT_DIR$/build/resources/main/logback-spring.xml" afterDir="false" />
-    </list>
+    <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -296,7 +291,7 @@
       <workItem from="1774737128007" duration="5881000" />
       <workItem from="1779504355469" duration="37000" />
       <workItem from="1779504409849" duration="8089000" />
-      <workItem from="1779581849977" duration="637000" />
+      <workItem from="1779581849977" duration="1304000" />
     </task>
     <servers />
   </component>
