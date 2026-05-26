@@ -34,7 +34,6 @@ public class RefreshTokenServiceImpl {
     }
 
     //Crear nuevo refresh token para un usuario
-
     @Transactional
     public RefreshToken crear(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -42,7 +41,7 @@ public class RefreshTokenServiceImpl {
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .usuario(usuario)
-                .token(UUID.randomUUID().toString())    // UUID aleatorio — imposible de adivinar
+                .token(UUID.randomUUID().toString()) // UUID aleatorio
                 .expiraEn(LocalDateTime.now().plusSeconds(refreshExpirationMs / 1000))
                 .build();
 
@@ -84,14 +83,12 @@ public class RefreshTokenServiceImpl {
     }
 
     //Revocar todos los tokens del usuario (logout / cambio de contraseña)
-
     @Transactional
     public void revocarPorUsuario(Long usuarioId) {
         refreshTokenRepository.deleteByUsuarioId(usuarioId);
     }
 
     // Limpieza automática de tokens expirados (corre cada 24h)
-
     @Scheduled(cron = "0 0 3 * * *")   // 3:00 AM todos los días
     @Transactional
     public void limpiarTokensExpirados() {
