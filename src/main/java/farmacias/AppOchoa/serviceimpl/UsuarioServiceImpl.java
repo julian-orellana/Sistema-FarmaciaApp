@@ -61,6 +61,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
                 .usuarioRol(dto.getRol())
                 .usuarioEstado(true)
                 .sucursal(sucursal)
+                .farmacia(farmacia)
                 .build();
 
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));

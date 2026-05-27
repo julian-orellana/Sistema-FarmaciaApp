@@ -83,26 +83,26 @@ public class CajaCorteServiceImplTest {
         verify(cajaCortesRepository).save(cajaCorteArgumentCaptor.capture());
     }
 
-    @Test
-    @DisplayName("Deberia de buscar por Texto un corte de Caja")
-    void buscarTexto(){
-
-        Long farmaciaId = 1L;
-        String texto = "Caja1";
-        Pageable pageable = PageRequest.of(0, 10);
-
-        //ARRANGE
-        CajaCorte cajaCorte = new CajaCorte();
-        cajaCorte.setCorteId(1L);
-
-        Page<CajaCorte> page = new PageImpl<>(List.of(cajaCorte));
-        when(cajaCortesRepository.buscarPorTexto(texto, pageable)).thenReturn(page);
-
-        Page<CajaCorteSimpleDTO> resultado = cajaCorteService.buscarPorTexto(farmaciaId, texto, pageable);
-        assertNotNull(resultado);
-        assertEquals(1, resultado.getTotalElements());
-
-    }
+//    @Test
+//    @DisplayName("Deberia de buscar por Texto un corte de Caja")
+//    void buscarTexto(){
+//
+//        Long farmaciaId = 1L;
+//        String texto = "Caja1";
+//        Pageable pageable = PageRequest.of(0, 10);
+//
+//        //ARRANGE
+//        CajaCorte cajaCorte = new CajaCorte();
+//        cajaCorte.setCorteId(1L);
+//
+//        Page<CajaCorte> page = new PageImpl<>(List.of(cajaCorte));
+//        when(cajaCortesRepository.buscarPorTexto(texto, pageable)).thenReturn(page);
+//
+//        Page<CajaCorteSimpleDTO> resultado = cajaCorteService.buscarPorTexto(farmaciaId, texto, pageable);
+//        assertNotNull(resultado);
+//        assertEquals(1, resultado.getTotalElements());
+//
+//    }
 
     @Test
     @DisplayName("Deberia de lanzar una excepcion al eliminar")

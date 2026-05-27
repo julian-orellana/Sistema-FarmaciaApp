@@ -5,6 +5,7 @@ import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioUpdateDTO;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.model.UsuarioRol;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.serviceimpl.UsuarioServiceImpl;
@@ -31,6 +32,8 @@ class UsuarioServiceImplTest {
     private SucursalRepository sucursalRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private UsuarioServiceImpl usuarioService;
 
