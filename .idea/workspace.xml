@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/CategoriaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/CategoriaServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/PresentacionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/PresentacionServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/SucursalServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/SucursalServiceImpl.java" afterDir="false" />
-    </list>
+    <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -297,7 +293,7 @@
       <workItem from="1779504409849" duration="8089000" />
       <workItem from="1779581849977" duration="2596000" />
       <workItem from="1779772566485" duration="2124000" />
-      <workItem from="1779855939581" duration="2338000" />
+      <workItem from="1779855939581" duration="2699000" />
     </task>
     <servers />
   </component>
