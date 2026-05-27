@@ -4,7 +4,9 @@ import farmacias.AppOchoa.dto.presentacion.PresentacionCreateDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionResponseDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionSimpleDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionUpdateDTO;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Presentacion;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.PresentacionRepository;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
@@ -22,9 +24,13 @@ import java.util.stream.Collectors;
 public class PresentacionServiceImpl implements PresentacionService {
 
     private final PresentacionRepository presentacionRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
-    public PresentacionServiceImpl(PresentacionRepository presentacionRepository){
+    public PresentacionServiceImpl(
+            PresentacionRepository presentacionRepository,
+            FarmaciaRepository farmaciaRepository){
         this.presentacionRepository = presentacionRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
@@ -32,10 +38,12 @@ public class PresentacionServiceImpl implements PresentacionService {
         if(presentacionRepository.existsByFarmacia_FarmaciaIdAndPresentacionNombre(farmaciaId, dto.getNombre())){
             throw new DuplicateResourceException("Ya existe una presentación con ese nombre: " + dto.getNombre());
         }
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Presentacion presentacion = Presentacion.builder()
                 .presentacionNombre(dto.getNombre())
                 .presentacionEstado(true)
+                .farmacia(farmacia)
                 .build();
 
         return PresentacionResponseDTO.fromEntity(presentacionRepository.save(presentacion));

@@ -7,7 +7,9 @@ import farmacias.AppOchoa.dto.categoria.CategoriaUpdateDTO;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Categoria;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.repository.CategoriaRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.services.CategoriaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,20 +24,25 @@ import java.util.stream.Collectors;
 public class CategoriaServiceImpl implements CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
-    public CategoriaServiceImpl(CategoriaRepository categoriaRepository){
+    public CategoriaServiceImpl(
+            CategoriaRepository categoriaRepository,
+            FarmaciaRepository farmaciaRepository){
         this.categoriaRepository = categoriaRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
-
     @Override
     public CategoriaResponseDTO crear(Long farmaciaId, CategoriaCreateDTO dto){
         if(categoriaRepository.existsByFarmacia_FarmaciaIdAndCategoriaNombre(farmaciaId, dto.getNombre())){
             throw new DuplicateResourceException("Ya existe una categoría con ese nombre: " + dto.getNombre());
         }
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Categoria categoria = Categoria.builder()
                 .categoriaNombre(dto.getNombre())
                 .categoriaEstado(true)
+                .farmacia(farmacia)
                 .build();
 
         Categoria guardada = categoriaRepository.save(categoria);
@@ -103,7 +110,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public void eliminar(Long farmaciaId, Long id){
-        // Usamos tu lógica de borrado lógico
+        //lógica de borrado lógico
         this.cambiarEstado(farmaciaId, id, false);
     }
 }
