@@ -4,7 +4,9 @@ import farmacias.AppOchoa.dto.sucursal.SucursalCreateDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalResponseDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalSimpleDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalUpdateDTO;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
@@ -19,9 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class SucursalServiceImpl implements SucursalService {
 
     private final SucursalRepository sucursalRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
-    public SucursalServiceImpl(SucursalRepository sucursalRepository){
+    public SucursalServiceImpl(SucursalRepository sucursalRepository, FarmaciaRepository farmaciaRepository){
         this.sucursalRepository = sucursalRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
@@ -30,11 +34,15 @@ public class SucursalServiceImpl implements SucursalService {
             throw new DuplicateResourceException("Ya existe una sucursal con ese nombre en tu farmacia: " + dto.getNombre());
         }
 
+        Farmacia farmacia = farmaciaRepository.findById(farmaciaId)
+                .orElseThrow(()-> new ResourceNotFoundException("Farmacia no encontrada: " + farmaciaId));
+
         Sucursal sucursal = Sucursal.builder()
                 .sucursalNombre(dto.getNombre())
                 .sucursalDireccion(dto.getDireccion())
                 .sucursalTelefono(dto.getTelefono())
                 .sucursalEstado(true)
+                .farmacia(farmacia)
                 .build();
 
         return SucursalResponseDTO.fromEntity(sucursalRepository.save(sucursal));
