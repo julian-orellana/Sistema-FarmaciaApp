@@ -1,7 +1,11 @@
 package farmacias.AppOchoa.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.util.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +13,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,17 +23,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .findAndRegisterModules(); // Registra JavaTimeModule para LocalDateTime
 
-    //Lógica JWT — generación, extracción y validación de tokens
     @Autowired
     private JwtUtil jwtUtil;
 
-    // Carga el usuario desde DB — implementado en UsuarioServiceImpl
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -38,48 +47,64 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Sin token — puede ser endpoint público, pasa al siguiente filtro
+        // Sin header Authorization — puede ser endpoint público, continúa
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Elimina el prefijo "Bearer " y extrae el token limpio
         final String jwt = authHeader.substring(7);
         final String username;
 
-        // Token expirado, malformado o firma inválida — pasa sin autenticar
         try {
             username = jwtUtil.extractUsername(jwt);
+        } catch (ExpiredJwtException e) {
+            log.warn("[JWT] Token expirado en {}: {}", request.getRequestURI(), e.getMessage());
+            escribirErrorJson(response, HttpStatus.UNAUTHORIZED, "El token ha expirado. Inicia sesión nuevamente.");
+            return;
+        } catch (MalformedJwtException e) {
+            log.warn("[JWT] Token malformado en {}: {}", request.getRequestURI(), e.getMessage());
+            escribirErrorJson(response, HttpStatus.UNAUTHORIZED, "El token es inválido o está malformado.");
+            return;
+        } catch (SignatureException e) {
+            log.warn("[JWT] Firma de token inválida en {}: {}", request.getRequestURI(), e.getMessage());
+            escribirErrorJson(response, HttpStatus.UNAUTHORIZED, "La firma del token no es válida.");
+            return;
         } catch (Exception e) {
-            log.warn("Token inválido en {}: {}", request.getRequestURI(), e.getMessage());
-            filterChain.doFilter(request, response);
+            log.warn("[JWT] Error inesperado procesando token en {}: {}", request.getRequestURI(), e.getMessage());
+            escribirErrorJson(response, HttpStatus.UNAUTHORIZED, "Token inválido.");
             return;
         }
 
-        // Solo autentica si el contexto está vacío — evita procesar dos veces
+        // Solo autentica si el SecurityContext está vacío (evita doble procesamiento)
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // Trae el usuario completo desde DB con roles y estado actualizados
             Usuario usuario = (Usuario) userDetailsService.loadUserByUsername(username);
 
-            // Verifica que el token pertenezca al usuario y no haya expirado
             if (jwtUtil.validateToken(jwt, usuario.getUsername())) {
-
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         usuario,
-                        null,                    // credentials null — token ya validado
-                        usuario.getAuthorities() // ROLE_administrador, ROLE_vendedor...
+                        null,
+                        usuario.getAuthorities()
                 );
-
-                // Agrega IP y datos del request al contexto de autenticación
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // A partir de acá Spring sabe quién es el usuario en este request
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void escribirErrorJson(HttpServletResponse response, HttpStatus status, String mensaje)
+            throws IOException {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("estado", status.value());
+        body.put("mensaje", mensaje);
+
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(body));
     }
 }

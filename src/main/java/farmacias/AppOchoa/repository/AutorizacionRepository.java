@@ -16,10 +16,11 @@ public interface AutorizacionRepository extends JpaRepository<Autorizacion, Long
     List<Autorizacion> findByAutorizacionFechaBetween(LocalDateTime inicio, LocalDateTime fin);
     List<Autorizacion> findByAutorizacionTipo(AutorizacionTipo autorizacionTipo);
     @Query("SELECT a FROM Autorizacion a WHERE " +
+            "a.cajero.farmacia.farmaciaId = :farmaciaId AND (" +
             "LOWER(a.cajero.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(a.supervisor.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
-            "LOWER(CAST(a.autorizacionTipo AS string)) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    Page<Autorizacion> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+            "LOWER(CAST(a.autorizacionTipo AS string)) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Autorizacion> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
     Page<Autorizacion> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
 
 }

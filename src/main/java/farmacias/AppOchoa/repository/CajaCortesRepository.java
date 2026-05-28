@@ -22,9 +22,10 @@ public interface CajaCortesRepository extends JpaRepository<CajaCorte, Long> {
     // Buscar cortes por rango de fechas
     List<CajaCorte> findByCorteFechaBetween(LocalDateTime inicio, LocalDateTime fin);
     @Query("SELECT c FROM CajaCorte c WHERE " +
+            "c.cajaSesiones.farmacia.farmaciaId = :farmaciaId AND (" +
             "LOWER(c.usuario.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(c.usuario.usuarioNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
-            "LOWER(c.usuario.usuarioApellido) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    Page<CajaCorte> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+            "LOWER(c.usuario.usuarioApellido) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<CajaCorte> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
     Page<CajaCorte> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
 }

@@ -1,8 +1,10 @@
 package farmacias.AppOchoa.serviceimpl;
 
 import farmacias.AppOchoa.dto.usuario.*;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
@@ -25,13 +27,16 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     private final UsuarioRepository usuarioRepository;
     private final SucursalRepository sucursalRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FarmaciaRepository farmaciaRepository;
 
     public UsuarioServiceImpl(
             UsuarioRepository usuarioRepository,
             SucursalRepository sucursalRepository,
+            FarmaciaRepository farmaciaRepository,
             @Lazy PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.sucursalRepository = sucursalRepository;
+        this.farmaciaRepository = farmaciaRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -40,6 +45,8 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
             throw new DuplicateResourceException("El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso");
         }
+
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Sucursal sucursal = null;
         if (dto.getSucursalId() != null) {
@@ -54,6 +61,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
                 .usuarioRol(dto.getRol())
                 .usuarioEstado(true)
                 .sucursal(sucursal)
+                .farmacia(farmacia)
                 .build();
 
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));

@@ -24,6 +24,7 @@ public interface CajaSesionesRepository extends JpaRepository<CajaSesiones, Long
 
     // Buscar la sesión abierta de una caja
     Optional<CajaSesiones> findByCajaCajaIdAndSesionEstado(Long cajaId, SesionEstado estado);
+    Optional<CajaSesiones> findBySesionIdAndFarmacia_FarmaciaId(Long sesionId, Long farmaciaId);
 
     // Verificar si una caja tiene sesión abierta
     boolean existsByCajaCajaIdAndSesionEstado(Long cajaId, SesionEstado estado);

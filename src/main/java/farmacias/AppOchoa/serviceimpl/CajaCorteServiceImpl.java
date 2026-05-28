@@ -60,19 +60,19 @@ public class CajaCorteServiceImpl implements CajaCorteService {
     // Metodos Auxiliares
     private CajaSesiones buscarSesiones(Long farmaciaId, Long id) {
         if (id == null) return null;
-        return cajaSesionesRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesion no encontrada por ID"));
+        return cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sesion no encontrada en tu farmacia"));
     }
 
     private Usuario buscarUsuario(Long farmaciaId, Long id) {
         if (id == null) return null;
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado por ID"));
+        return usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado en tu farmacia"));
     }
     @Override
     @Transactional(readOnly = true)
     public Page<CajaCorteSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return cajaCortesRepository.buscarPorTexto(texto, pageable)
+        return cajaCortesRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(CajaCorteSimpleDTO::fromEntity);
     }
 
@@ -87,7 +87,7 @@ public class CajaCorteServiceImpl implements CajaCorteService {
     @Override
     @Transactional(readOnly = true)
     public Page<CajaCorteSimpleDTO> listarCortes(Long farmaciaId, Pageable pageable) {
-        return cajaCortesRepository.findAll(pageable)
+        return cajaCortesRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(CajaCorteSimpleDTO::fromEntity);
     }
 
