@@ -42,7 +42,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     public UsuarioResponseDTO crearUsuario(Long farmaciaId, UsuarioCreateDTO dto) {
-        if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
+        if (usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, dto.getNombreUsuario())) {
             throw new DuplicateResourceException("El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso");
         }
 

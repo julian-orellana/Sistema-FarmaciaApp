@@ -87,7 +87,7 @@ public class InventarioServiceImplTest {
         RuntimeException excepcion = assertThrows(RuntimeException.class, () ->{
             inventarioService.crear(farmaciaId, dto);
         });
-        assertTrue(excepcion.getMessage().contains("Ya existe un registro de inventario para este producto en la sucursal seleccionada."));
+        assertTrue(excepcion.getMessage().contains("Ya existe un registro de inventario para este producto en la sucursal seleccionada"));
         verify(inventarioRepository, never()).save(any(Inventario.class));
     }
     @Test

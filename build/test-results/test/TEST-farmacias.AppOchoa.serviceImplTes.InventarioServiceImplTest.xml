@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-05-30T05:51:26.935Z" hostname="JULIAN" time="2.401">
+  <properties/>
+  <testcase name="Deberia de lanzar una excepcion al registrar un producto ya existente" classname="farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest" time="2.401"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

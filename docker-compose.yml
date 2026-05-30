@@ -20,7 +20,7 @@ services:
 
       JAVA_OPTS: >-
         -XX:+UseContainerSupport
-        -XX:MaxRAMPercentage=75.0
+        -XX:MaxRAMPercentage=75.0 //Area a revisar
         -XX:+ExitOnOutOfMemoryError
         -Djava.security.egd=file:/dev/./urandom
     healthcheck:

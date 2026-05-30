@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +53,7 @@ public class CajaCorteServiceImplTest {
 
         Long farmaciaId = 1L;
 
+
         //ASSERT
         CajaCorteCreateDTO dto = new CajaCorteCreateDTO();
         dto.setSesionId(1L);
@@ -60,7 +62,6 @@ public class CajaCorteServiceImplTest {
 
         CajaSesiones cajaSesiones = new CajaSesiones();
         cajaSesiones.setSesionId(1L);
-
         Usuario usuario = new Usuario();
         usuario.setUsuarioId(1L);
 
@@ -68,8 +69,8 @@ public class CajaCorteServiceImplTest {
         cajaCorte.setCorteId(1L);
         cajaCorte.setCorteTotalEfectivo(new BigDecimal(800.00));
 
-        when(cajaSesionesRepository.findById(1L)).thenReturn(Optional.of(cajaSesiones));
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(any(), eq(1L))).thenReturn(Optional.of(cajaSesiones));
+        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(any(), eq(1L))).thenReturn(Optional.of(usuario));
         when(ventaPagoRepository.sumarPorSesionYMetodo(any(), any())).thenReturn(BigDecimal.ZERO);
         when(ventaPagoRepository.sumarTotalPorSesion(any())).thenReturn(BigDecimal.ZERO);
         when(cajaCortesRepository.save(any(CajaCorte.class))).thenReturn(cajaCorte);
@@ -83,26 +84,25 @@ public class CajaCorteServiceImplTest {
         verify(cajaCortesRepository).save(cajaCorteArgumentCaptor.capture());
     }
 
-//    @Test
-//    @DisplayName("Deberia de buscar por Texto un corte de Caja")
-//    void buscarTexto(){
-//
-//        Long farmaciaId = 1L;
-//        String texto = "Caja1";
-//        Pageable pageable = PageRequest.of(0, 10);
-//
-//        //ARRANGE
-//        CajaCorte cajaCorte = new CajaCorte();
-//        cajaCorte.setCorteId(1L);
-//
-//        Page<CajaCorte> page = new PageImpl<>(List.of(cajaCorte));
-//        when(cajaCortesRepository.buscarPorTexto(texto, pageable)).thenReturn(page);
-//
-//        Page<CajaCorteSimpleDTO> resultado = cajaCorteService.buscarPorTexto(farmaciaId, texto, pageable);
-//        assertNotNull(resultado);
-//        assertEquals(1, resultado.getTotalElements());
-//
-//    }
+    @Test
+    @DisplayName("Deberia de buscar por Texto un corte de Caja")
+    void buscarTexto() {
+        Long farmaciaId = 1L;
+        String texto = "Caja1";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        //ARRANGE
+        CajaCorte cajaCorte = new CajaCorte();
+        cajaCorte.setCorteId(1L);
+
+        Page<CajaCorte> page = new PageImpl<>(List.of(cajaCorte));
+        when(cajaCortesRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
+
+        Page<CajaCorteSimpleDTO> resultado = cajaCorteService.buscarPorTexto(farmaciaId, texto, pageable);
+        assertNotNull(resultado);
+        assertEquals(1, resultado.getTotalElements());
+
+    }
 
     @Test
     @DisplayName("Deberia de lanzar una excepcion al eliminar")
