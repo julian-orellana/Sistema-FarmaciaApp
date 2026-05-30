@@ -6,6 +6,7 @@ import farmacias.AppOchoa.dto.presentacion.PresentacionResponseDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionUpdateDTO;
 import farmacias.AppOchoa.model.Categoria;
 import farmacias.AppOchoa.model.Presentacion;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.PresentacionRepository;
 import farmacias.AppOchoa.serviceimpl.PresentacionServiceImpl;
 import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmSetType;
@@ -29,6 +30,8 @@ import static org.mockito.Mockito.*;
 class PresentacionServiceImplTest {
     @Mock
     private PresentacionRepository presentacionRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private PresentacionServiceImpl presentacionService;
 
@@ -47,7 +50,7 @@ class PresentacionServiceImplTest {
                 .presentacionEstado(true)
                 .build();
 
-        when(presentacionRepository.existsByPresentacionNombre(anyString())).thenReturn(false);
+        when(presentacionRepository.existsByFarmacia_FarmaciaIdAndPresentacionNombre(any(),anyString())).thenReturn(false);
         when(presentacionRepository.save(ArgumentMatchers.any(Presentacion.class))).thenReturn(presentacionGuardado);
 
         //ACT
@@ -74,7 +77,7 @@ class PresentacionServiceImplTest {
                 .presentacionEstado(true)
                 .build();
 
-        when(presentacionRepository.existsByPresentacionNombre(any())).thenReturn(true);
+        when(presentacionRepository.existsByFarmacia_FarmaciaIdAndPresentacionNombre(any(),any())).thenReturn(true);
 
         //ASSERT & ACT
         assertThrows(RuntimeException.class, () ->{

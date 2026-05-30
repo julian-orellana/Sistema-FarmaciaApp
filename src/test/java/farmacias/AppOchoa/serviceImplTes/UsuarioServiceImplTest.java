@@ -3,6 +3,7 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioUpdateDTO;
+import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
@@ -102,21 +103,18 @@ class UsuarioServiceImplTest {
         dto.setApellido("Leon");
         dto.setRol(UsuarioRol.encargado);
 
-        when(usuarioRepository.existsByNombreUsuarioUsuario("steveSenior"))
+        when(usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(any(), eq("steveSenior")))
                 .thenReturn(true);
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> usuarioService.crearUsuario(farmaciaId, dto)
-        );
+        DuplicateResourceException exception = assertThrows(DuplicateResourceException.class, () ->
+                usuarioService.crearUsuario(farmaciaId, dto));
 
-        assertEquals(
-                "El nombre de usuario 'steveSenior' ya esta en uso",
-                exception.getMessage()
-        );
-
+       assertEquals(
+               "El nombre de usuario steveSenior ya esta en uso",
+               exception.getMessage());
+       
         verify(usuarioRepository, times(1))
-                .existsByNombreUsuarioUsuario("steveSenior");
+                .existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(any(),eq("steveSenior"));
         verify(usuarioRepository, never())
                 .save(any(Usuario.class));
         verify(passwordEncoder, never())
