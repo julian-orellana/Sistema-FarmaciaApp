@@ -5,6 +5,7 @@ import farmacias.AppOchoa.dto.categoria.CategoriaResponseDTO;
 import farmacias.AppOchoa.dto.categoria.CategoriaUpdateDTO;
 import farmacias.AppOchoa.model.Categoria;
 import farmacias.AppOchoa.repository.CategoriaRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.serviceimpl.CategoriaServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,8 @@ import static org.mockito.Mockito.*;
 class CategoriaServiceImplTest {
     @Mock
     private CategoriaRepository categoriaRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private CategoriaServiceImpl categoriaService;
 
@@ -42,11 +45,11 @@ class CategoriaServiceImplTest {
                 .categoriaEstado(true)
                 .build();
 
-        when(categoriaRepository.existsByCategoriaNombre(any())).thenReturn(false);
+        when(categoriaRepository.existsByFarmacia_FarmaciaIdAndCategoriaNombre(any(), any())).thenReturn(false);
         when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoria);
-        //ACT
+
         CategoriaResponseDTO resultado = categoriaService.crear(farmaciaId, dto);
-        //ASSERT
+
         assertNotNull(resultado);
         assertEquals("Vitaminas", resultado.getNombre());
         verify(categoriaRepository).save(any(Categoria.class));
@@ -58,17 +61,10 @@ class CategoriaServiceImplTest {
         Long farmaciaId = 1L;
         CategoriaCreateDTO dto = new CategoriaCreateDTO();
         dto.setNombre("Suplementos");
-        Categoria categoria = Categoria.builder()
-                .categoriaId(2L)
-                .categoriaNombre("Suplementos")
-                .categoriaEstado(true)
-                .build();
 
-        when(categoriaRepository.existsByCategoriaNombre(any())).thenReturn(true);
-        //ACT y ASSERT
-        assertThrows(RuntimeException.class, () ->{
-            categoriaService.crear(farmaciaId, dto);
-        });
+        when(categoriaRepository.existsByFarmacia_FarmaciaIdAndCategoriaNombre(any(), any())).thenReturn(true);
+
+        assertThrows(RuntimeException.class, () -> categoriaService.crear(farmaciaId, dto));
         verify(categoriaRepository, never()).save(any(Categoria.class));
     }
     @Test

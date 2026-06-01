@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="" />
+    <list default="true" id="a5bf38d0-3a47-4a3e-bd2a-1c0e01f379f4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/integrationTest/AuthIntegrationTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/integrationTest/BaseIntegrationTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/integrationTest/TestDataBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/UsuarioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/farmacias/AppOchoa/serviceimpl/UsuarioServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/CajaCorteServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/CajaCorteServiceImplTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/CategoriaServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/CategoriaServiceImplTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/PresentacionServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/PresentacionServiceImplTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/UsuarioServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/farmacias/AppOchoa/serviceImplTes/UsuarioServiceImplTest.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,43 +64,55 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.Build AppOchoa.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.CajaCorteServiceImplTest.eliminadoHistorico.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.CajaServiceImplTest.actualizaCaja.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.CajaServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.CajaSesionesImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.FarmaciaServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.SuscripcionPagoServiceImplTest.eliminar_DeberiaLanzarExcepcion.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.UsuarioServiceImplTest.actualizarUsuario.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.VentaFelNotasCreditoServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.VentaFelServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.VentaPagosServiceImplTest.eliminadoError.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Spring Boot.AppOchoaApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/jo460/IdeaProjects/AppOchoa&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.AuthIntegrationTest.executor": "Run",
+    "Gradle.Build AppOchoa.executor": "Run",
+    "Gradle.CajaCorteServiceImplTest.buscarTexto.executor": "Run",
+    "Gradle.CajaCorteServiceImplTest.crearCajaCortes.executor": "Run",
+    "Gradle.CajaCorteServiceImplTest.eliminadoHistorico.executor": "Run",
+    "Gradle.CajaCorteServiceImplTest.executor": "Run",
+    "Gradle.CajaServiceImplTest.actualizaCaja.executor": "Run",
+    "Gradle.CajaServiceImplTest.eliminadoError.executor": "Run",
+    "Gradle.CajaSesionesImplTest.eliminadoError.executor": "Run",
+    "Gradle.CategoriaServiceImplTest.crearCategoriaExitosa.executor": "Run",
+    "Gradle.CategoriaServiceImplTest.executor": "Run",
+    "Gradle.FarmaciaServiceImplTest.eliminadoError.executor": "Run",
+    "Gradle.InventarioServiceImplTest.executor": "Run",
+    "Gradle.InventarioServiceImplTest.falloRegistro.executor": "Run",
+    "Gradle.PresentacionServiceImplTest.executor": "Run",
+    "Gradle.SuscripcionPagoServiceImplTest.eliminar_DeberiaLanzarExcepcion.executor": "Run",
+    "Gradle.UsuarioServiceImplTest.actualizarUsuario.executor": "Run",
+    "Gradle.UsuarioServiceImplTest.crearUsuario_ExitoCuandoDatosSonValidos.executor": "Run",
+    "Gradle.UsuarioServiceImplTest.crearUsuario_FallaCuandoNombreUsuarioYaExiste.executor": "Run",
+    "Gradle.UsuarioServiceImplTest.executor": "Run",
+    "Gradle.VentaFelNotasCreditoServiceImplTest.eliminadoError.executor": "Run",
+    "Gradle.VentaFelServiceImplTest.eliminadoError.executor": "Run",
+    "Gradle.VentaPagosServiceImplTest.eliminadoError.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.AppOchoaApplication.executor": "Run",
+    "git-widget-placeholder": "feature/refactor-services-impl",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/jo460/IdeaProjects/AppOchoa",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-  <component name="RunManager" selected="Spring Boot.AppOchoaApplication">
-    <configuration name="CajaSesionesImplTest.eliminadoError" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+}]]></component>
+  <component name="RunManager" selected="Gradle.InventarioServiceImplTest.falloRegistro">
+    <configuration name="CajaCorteServiceImplTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -102,7 +125,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;farmacias.AppOchoa.serviceImplTes.CajaSesionesImplTest.eliminadoError&quot;" />
+            <option value="&quot;farmacias.AppOchoa.serviceImplTes.CajaCorteServiceImplTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -116,7 +139,7 @@
       <GradleCoverageDisabled>false</GradleCoverageDisabled>
       <method v="2" />
     </configuration>
-    <configuration name="FarmaciaServiceImplTest.eliminadoError" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="CajaCorteServiceImplTest.buscarTexto" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -129,7 +152,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;farmacias.AppOchoa.serviceImplTes.FarmaciaServiceImplTest.eliminadoError&quot;" />
+            <option value="&quot;farmacias.AppOchoa.serviceImplTes.CajaCorteServiceImplTest.buscarTexto&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -143,7 +166,7 @@
       <GradleCoverageDisabled>false</GradleCoverageDisabled>
       <method v="2" />
     </configuration>
-    <configuration name="VentaFelNotasCreditoServiceImplTest.eliminadoError" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="CajaCorteServiceImplTest.crearCajaCortes" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -156,7 +179,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;farmacias.AppOchoa.serviceImplTes.VentaFelNotasCreditoServiceImplTest.eliminadoError&quot;" />
+            <option value="&quot;farmacias.AppOchoa.serviceImplTes.CajaCorteServiceImplTest.crearCajaCortes&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -170,7 +193,7 @@
       <GradleCoverageDisabled>false</GradleCoverageDisabled>
       <method v="2" />
     </configuration>
-    <configuration name="VentaFelServiceImplTest.eliminadoError" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="InventarioServiceImplTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -183,7 +206,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;farmacias.AppOchoa.serviceImplTes.VentaFelServiceImplTest.eliminadoError&quot;" />
+            <option value="&quot;farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -197,7 +220,7 @@
       <GradleCoverageDisabled>false</GradleCoverageDisabled>
       <method v="2" />
     </configuration>
-    <configuration name="VentaPagosServiceImplTest.eliminadoError" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="InventarioServiceImplTest.falloRegistro" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -210,7 +233,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;farmacias.AppOchoa.serviceImplTes.VentaPagosServiceImplTest.eliminadoError&quot;" />
+            <option value="&quot;farmacias.AppOchoa.serviceImplTes.InventarioServiceImplTest.falloRegistro&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -218,18 +241,6 @@
       <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
-      <EXTENSION ID="com.intellij.execution.ExternalSystemRunConfigurationJavaExtension">
-        <extension name="net.ashald.envfile">
-          <option name="IS_ENABLED" value="false" />
-          <option name="IS_SUBST" value="false" />
-          <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
-          <option name="IS_IGNORE_MISSING_FILES" value="false" />
-          <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
-          <ENTRIES>
-            <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
-          </ENTRIES>
-        </extension>
-      </EXTENSION>
       <DebugAllEnabled>false</DebugAllEnabled>
       <RunAsTest>true</RunAsTest>
       <GradleProfilingDisabled>false</GradleProfilingDisabled>
@@ -255,20 +266,20 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Gradle.CajaSesionesImplTest.eliminadoError" />
-      <item itemvalue="Gradle.FarmaciaServiceImplTest.eliminadoError" />
-      <item itemvalue="Gradle.VentaFelNotasCreditoServiceImplTest.eliminadoError" />
-      <item itemvalue="Gradle.VentaFelServiceImplTest.eliminadoError" />
-      <item itemvalue="Gradle.VentaPagosServiceImplTest.eliminadoError" />
+      <item itemvalue="Gradle.CajaCorteServiceImplTest" />
+      <item itemvalue="Gradle.InventarioServiceImplTest" />
+      <item itemvalue="Gradle.InventarioServiceImplTest.falloRegistro" />
+      <item itemvalue="Gradle.CajaCorteServiceImplTest.buscarTexto" />
+      <item itemvalue="Gradle.CajaCorteServiceImplTest.crearCajaCortes" />
       <item itemvalue="Spring Boot.AppOchoaApplication" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.VentaPagosServiceImplTest.eliminadoError" />
-        <item itemvalue="Gradle.VentaFelServiceImplTest.eliminadoError" />
-        <item itemvalue="Gradle.VentaFelNotasCreditoServiceImplTest.eliminadoError" />
-        <item itemvalue="Gradle.FarmaciaServiceImplTest.eliminadoError" />
-        <item itemvalue="Gradle.CajaSesionesImplTest.eliminadoError" />
+        <item itemvalue="Gradle.InventarioServiceImplTest.falloRegistro" />
+        <item itemvalue="Gradle.InventarioServiceImplTest" />
+        <item itemvalue="Gradle.CajaCorteServiceImplTest" />
+        <item itemvalue="Gradle.CajaCorteServiceImplTest.crearCajaCortes" />
+        <item itemvalue="Gradle.CajaCorteServiceImplTest.buscarTexto" />
       </list>
     </recent_temporary>
   </component>
@@ -294,6 +305,16 @@
       <workItem from="1779581849977" duration="2596000" />
       <workItem from="1779772566485" duration="2124000" />
       <workItem from="1779855939581" duration="3468000" />
+      <workItem from="1779994039010" duration="2654000" />
+      <workItem from="1780002644639" duration="31000" />
+      <workItem from="1780002694105" duration="5722000" />
+      <workItem from="1780031783354" duration="804000" />
+      <workItem from="1780032609243" duration="528000" />
+      <workItem from="1780033781760" duration="1000" />
+      <workItem from="1780033810779" duration="63000" />
+      <workItem from="1780034032822" duration="5943000" />
+      <workItem from="1780080534871" duration="4303000" />
+      <workItem from="1780117215608" duration="2920000" />
     </task>
     <servers />
   </component>

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="farmacias.AppOchoa.serviceImplTes.VentaPagosServiceImplTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-05-24T00:23:04.477Z" hostname="JULIAN" time="2.871">
-  <properties/>
-  <testcase name="Deberia de lanzar una excepcion al eliminar una Venta Pago" classname="farmacias.AppOchoa.serviceImplTes.VentaPagosServiceImplTest" time="2.871"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

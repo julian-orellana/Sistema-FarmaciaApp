@@ -44,19 +44,16 @@ class ProductoControllerTest {
 
     @BeforeEach
     void setup() {
-        // Simula un usuario autenticado con un token falso
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken("user", "fake-token");
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        // Mockea el JwtUtil para retornar farmaciaId = 1
         when(jwtUtil.extractFarmaciaId("fake-token")).thenReturn(1L);
     }
 
     @Test
     @DisplayName("GET /api/v1/productos/{id} - Debería retornar 200 y el JSON del producto")
     void obtenerPorId_Exito() throws Exception {
-        // ARRANGE
         Long idProducto = 1L;
         ProductoResponseDTO responseDTO = new ProductoResponseDTO();
         responseDTO.setNombre("Paracetamol Test");
@@ -64,8 +61,8 @@ class ProductoControllerTest {
 
         when(productoService.obtenerPorId(anyLong(), anyLong())).thenReturn(responseDTO);
 
-        // ACT & ASSERT
-        mockMvc.perform(get("/api/v1/productos/{id}", idProducto))
+        mockMvc.perform(get("/api/v1/productos/{id}", idProducto)
+                        .header("Authorization", "Bearer fake-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombre").value("Paracetamol Test"))
                 .andExpect(jsonPath("$.precioVenta").value(15.50));
@@ -74,7 +71,6 @@ class ProductoControllerTest {
     @Test
     @DisplayName("POST /api/v1/productos - Debería retornar 201 Created")
     void agregarProducto_Exito() throws Exception {
-        // ARRANGE
         ProductoCreateDTO createDTO = new ProductoCreateDTO();
         createDTO.setNombre("Nuevo Producto");
         createDTO.setCategoriaId(1L);
@@ -89,8 +85,8 @@ class ProductoControllerTest {
 
         when(productoService.agregarProducto(anyLong(), any(ProductoCreateDTO.class))).thenReturn(responseDTO);
 
-        // ACT & ASSERT
         mockMvc.perform(post("/api/v1/productos")
+                        .header("Authorization", "Bearer fake-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDTO)))
                 .andExpect(status().isCreated())
@@ -100,11 +96,10 @@ class ProductoControllerTest {
     @Test
     @DisplayName("DELETE /api/v1/productos/{id} - Debería retornar 204 No Content")
     void eliminarProducto_Exito() throws Exception {
-        // ARRANGE
         Long idProducto = 1L;
 
-        // ACT & ASSERT
-        mockMvc.perform(delete("/api/v1/productos/{id}", idProducto))
+        mockMvc.perform(delete("/api/v1/productos/{id}", idProducto)
+                        .header("Authorization", "Bearer fake-token"))
                 .andExpect(status().isNoContent());
     }
 }
