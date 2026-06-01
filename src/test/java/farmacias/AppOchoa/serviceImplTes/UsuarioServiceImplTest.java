@@ -51,7 +51,7 @@ class UsuarioServiceImplTest {
         dto.setRol(UsuarioRol.encargado);
         dto.setSucursalId(null);
 
-        when(usuarioRepository.existsByNombreUsuarioUsuario("steveSenior"))
+        when(usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior"))
                 .thenReturn(false);
 
         when(passwordEncoder.encode("password123"))
@@ -82,7 +82,7 @@ class UsuarioServiceImplTest {
         assertTrue(resultado.getEstado());
 
         verify(usuarioRepository, times(1))
-                .existsByNombreUsuarioUsuario("steveSenior");
+                .existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior");
         verify(passwordEncoder, times(1))
                 .encode("password123");
         verify(usuarioRepository, times(1))
@@ -103,18 +103,18 @@ class UsuarioServiceImplTest {
         dto.setApellido("Leon");
         dto.setRol(UsuarioRol.encargado);
 
-        when(usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(any(), eq("steveSenior")))
+        when(usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior"))
                 .thenReturn(true);
 
         DuplicateResourceException exception = assertThrows(DuplicateResourceException.class, () ->
                 usuarioService.crearUsuario(farmaciaId, dto));
 
-       assertEquals(
-               "El nombre de usuario steveSenior ya esta en uso",
-               exception.getMessage());
-       
+        assertEquals(
+                "El nombre de usuario 'steveSenior' ya está en uso",
+                exception.getMessage());
+
         verify(usuarioRepository, times(1))
-                .existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(any(),eq("steveSenior"));
+                .existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior");
         verify(usuarioRepository, never())
                 .save(any(Usuario.class));
         verify(passwordEncoder, never())
