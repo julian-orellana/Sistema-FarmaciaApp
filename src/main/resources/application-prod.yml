@@ -1,12 +1,8 @@
-
 spring:
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
-    properties:
-      hibernate:
-        format_sql: false
 
 management:
   endpoints:
@@ -29,3 +25,8 @@ springdoc:
     enabled: false
   api-docs:
     enabled: false
+
+loki:
+  url: ${LOKI_URL}
+  username: ${LOKI_USERNAME}
+  password: ${LOKI_PASSWORD}
