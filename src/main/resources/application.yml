@@ -48,6 +48,6 @@ springdoc:
   paths-to-match: /**
 
 loki:
-  url: ${LOKI_URL}
-  username: ${LOKI_USERNAME}
-  password: ${LOKI_PASSWORD}
+  url: ${LOKI_URL:}
+  username: ${LOKI_USERNAME:}
+  password: ${LOKI_PASSWORD:}
