@@ -2,9 +2,9 @@
 <configuration>
 
     <!-- Propiedades de Loki desde application.yml -->
-    <springProperty name="LOKI_URL"      source="loki.url"/>
-    <springProperty name="LOKI_USERNAME" source="loki.username"/>
-    <springProperty name="LOKI_PASSWORD" source="loki.password"/>
+    <springProperty name="LOKI_URL"      source="loki.url"      defaultValue=""/>
+    <springProperty name="LOKI_USERNAME" source="loki.username"  defaultValue=""/>
+    <springProperty name="LOKI_PASSWORD" source="loki.password"  defaultValue=""/>
 
     <!-- Consola activa en todos los perfiles -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
