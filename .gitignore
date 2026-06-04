@@ -5,3 +5,5 @@ build/
 *.zip
 *.jar
 mailmap.txt
+
+src/test/java/tmp/
