@@ -56,7 +56,7 @@ public class VentaFelNotasCreditoServiceImplTest {
         VentaFel ventaFel = new VentaFel();
         ventaFel.setFelId(1L);
 
-        when(ventaFelRepository.findById(1L)).thenReturn(Optional.of(ventaFel));
+        when(ventaFelRepository.findByFelIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(ventaFel));
         when(ventaFelNotasCreditoRepository.save(any(VentaFelNotasCredito.class))).thenReturn(ventaFelNotasCredito);
 
         VentaFelNotasCreditoResponseDTO resultado = ventaFelNotasCreditoService.crear(farmaciaId, dto);
@@ -81,7 +81,7 @@ public class VentaFelNotasCreditoServiceImplTest {
         ventaFelNotasCredito.setNotaId(1L);
 
         Page<VentaFelNotasCredito> page = new PageImpl<>(List.of(ventaFelNotasCredito));
-        when(ventaFelNotasCreditoRepository.buscarPorTexto(texto, pageable)).thenReturn(page);
+        when(ventaFelNotasCreditoRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
         Page<VentaFelNotasCreditoSimpleDTO> resultado = ventaFelNotasCreditoService.buscarPorTexto(
                 farmaciaId, texto, pageable);
 

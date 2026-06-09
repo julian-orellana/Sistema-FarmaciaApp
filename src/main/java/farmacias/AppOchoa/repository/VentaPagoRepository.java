@@ -31,4 +31,5 @@ public interface VentaPagoRepository extends JpaRepository<VentaPago, Long> {
             "LOWER(p.venta.ventaNitCliente) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<VentaPago> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
     Page<VentaPago> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
+    java.util.Optional<VentaPago> findByPagoIdAndFarmacia_FarmaciaId(Long pagoId, Long farmaciaId);
 }

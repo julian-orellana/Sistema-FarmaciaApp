@@ -27,6 +27,7 @@ public interface SucursalRepository extends JpaRepository<Sucursal, Long> {
     Page<Sucursal> findByFarmacia_FarmaciaIdAndSucursalEstadoTrue(Long farmaciaId, Pageable pageable);
     boolean existsByFarmacia_FarmaciaIdAndSucursalNombre(Long farmaciaId, String nombre);
     Page<Sucursal> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
+    java.util.Optional<Sucursal> findBySucursalIdAndFarmacia_FarmaciaId(Long sucursalId, Long farmaciaId);
     @Query("SELECT s FROM Sucursal s WHERE " +
             "LOWER(s.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(s.sucursalDireccion) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +

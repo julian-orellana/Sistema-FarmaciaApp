@@ -87,12 +87,12 @@ public class VentaServiceImplTest {
         Long id = 1L;
         Venta venta = new Venta();
         venta.setVentaId(1L);
-        when(ventaRepository.findById(1L)).thenReturn(Optional.of(venta));
+        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
         VentaResponseDTO resultado = ventaService.listarPorId(farmaciaId, id);
         //ASSERT
         assertNotNull(resultado);
         assertEquals(1L, resultado.getVentaId());
-        verify(ventaRepository).findById(1L);
+        verify(ventaRepository).findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId);
     }
 
     @Test
@@ -101,7 +101,7 @@ public class VentaServiceImplTest {
 
         Long farmaciaId = 1L;
         Long id = 1L;
-        when(ventaRepository.findById(1L)).thenReturn(Optional.empty());
+        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class,() ->{
             ventaService.listarPorId(farmaciaId, 1L);
         });
@@ -117,7 +117,7 @@ public class VentaServiceImplTest {
         venta.setVentaId(1L);
         venta.setVentaEstado(VentaEstado.completada);
 
-        when(ventaRepository.findById(1L)).thenReturn(Optional.of(venta));
+        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
         //ACT & ASSERT
         ventaService.eliminar(farmaciaId, 1L);
         ArgumentCaptor<Venta> captor = ArgumentCaptor.forClass(Venta.class);
@@ -130,7 +130,7 @@ public class VentaServiceImplTest {
 
         Long farmaciaId = 1L;
         Long id = 1L;
-        when(ventaRepository.findById(1L)).thenReturn(Optional.empty());
+        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.empty());
         //ACT
         assertThrows(RuntimeException.class,() ->{
             ventaService.eliminar(farmaciaId, 1L);

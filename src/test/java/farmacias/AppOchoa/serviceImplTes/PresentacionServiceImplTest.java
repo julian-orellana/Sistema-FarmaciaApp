@@ -93,7 +93,7 @@ class PresentacionServiceImplTest {
 
         Long farmaciaId = 1L;
         Long idNoExistente = 1l;
-        when(presentacionRepository.findById(idNoExistente)).thenReturn(Optional.empty());
+        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(idNoExistente, farmaciaId)).thenReturn(Optional.empty());
 
         //ACT & ASSERT
         assertThrows(RuntimeException.class, () ->
@@ -112,7 +112,7 @@ class PresentacionServiceImplTest {
         presentacionMock.setPresentacionId(id);
         presentacionMock.setPresentacionEstado(true);
 
-        when(presentacionRepository.findById(id)).thenReturn(Optional.of(presentacionMock));
+        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(presentacionMock));
         //ACT
         presentacionService.eliminar(farmaciaId, id);
         //ASSERT
@@ -141,7 +141,7 @@ class PresentacionServiceImplTest {
                 .presentacionEstado(true)
                 .build();
 
-        when(presentacionRepository.findById(id)).thenReturn(Optional.of(presentacionRegistrada));
+        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(presentacionRegistrada));
         when(presentacionRepository.save(any(Presentacion.class))).thenReturn(presentacionActualizacion);
         //ACT
         PresentacionResponseDTO resultado = presentacionService.actualizar(farmaciaId, id, dto);
@@ -159,7 +159,7 @@ class PresentacionServiceImplTest {
         PresentacionUpdateDTO dto = new PresentacionUpdateDTO();
         dto.setNombre("Lactancia");
 
-        when(presentacionRepository.findById(id)).thenReturn(Optional.empty());
+        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
         //ASSERT
         assertThrows(RuntimeException.class, () ->{
             presentacionService.actualizar(farmaciaId, id, dto);

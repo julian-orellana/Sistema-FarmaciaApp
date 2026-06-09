@@ -60,7 +60,7 @@ public class CajaServiceImplTest {
         caja.setCajaNombre(dto.getCajaNombre());
 
         //ACC
-        when(sucursalRepository.findById(1L)).thenReturn(Optional.of(sucursal));
+        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
         //any, indica que no importa la caja que llegue, solo que la devuelva simulada
         when(cajaRepository.save(any(Caja.class))).thenReturn(caja);
 
@@ -88,7 +88,7 @@ public class CajaServiceImplTest {
         Page<Caja> page = new PageImpl<>(List.of(caja));
 
         //ACC
-        when(cajaRepository.buscarPorTexto(texto, pageable)).thenReturn(page);
+        when(cajaRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
 
         //ASSET
         Page<CajaSimpleDTO> resultado = cajaService.buscarPorTexto(farmaciaId, texto, pageable);
@@ -106,7 +106,7 @@ public class CajaServiceImplTest {
         Caja cajaMock = new Caja();
         cajaMock.setCajaId(id);
 
-        when(cajaRepository.findById(id)).thenReturn(Optional.of(cajaMock));
+        when(cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(cajaMock));
         // ACT
         cajaService.eliminar(farmaciaId, id);
         // ASSERT
@@ -138,7 +138,7 @@ public class CajaServiceImplTest {
                 .cajaEstado(CajaEstado.desactivada)
                 .build();
 
-        when(cajaRepository.findById(1L)).thenReturn(Optional.of(cajaRegistrada));
+        when(cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(cajaRegistrada));
         when(cajaRepository.save(any(Caja.class))).thenReturn(cajaActualizada);
 
         CajaResponseDTO resultado = cajaService.actualizarCaja(farmaciaId, 1L, dto);

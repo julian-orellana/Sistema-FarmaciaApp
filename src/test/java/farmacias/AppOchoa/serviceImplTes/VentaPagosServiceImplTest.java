@@ -68,8 +68,8 @@ public class VentaPagosServiceImplTest {
         Venta venta = new Venta();
         venta.setVentaId(1L);
 
-        when(ventaRepository.findById(1L)).thenReturn(Optional.of(venta));
-        when(cajaSesionesRepository.findById(1L)).thenReturn(Optional.of(cajaSesiones));
+        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
+        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(cajaSesiones));
         when(ventaPagoRepository.save(any(VentaPago.class))).thenReturn(ventaPago);
 
         VentaPagoResponseDTO resultado = ventaPagosService.crear(farmaciaId, dto);

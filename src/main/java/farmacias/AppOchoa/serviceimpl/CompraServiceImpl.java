@@ -7,6 +7,7 @@ import farmacias.AppOchoa.dto.compra.CompraUpdateDTO;
 import farmacias.AppOchoa.dto.compradetalle.CompraDetalleCreateDTO;
 import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
+import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.CompraService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,8 +42,8 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     public CompraResponseDTO crear(Long farmaciaId, CompraCreateDTO dto) {
-        Sucursal sucursal = buscarSucursal(dto.getSucursalId());
-        Usuario usuario = buscarUsuario(dto.getUsuarioId());
+        Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        Usuario usuario = buscarUsuario(farmaciaId, dto.getUsuarioId());
 
         // 1. Crear Cabecera
         Compra compra = Compra.builder()
@@ -58,7 +59,7 @@ public class CompraServiceImpl implements CompraService {
 
         // 2. Procesar Detalles y Lotes
         for (CompraDetalleCreateDTO detDto : dto.getDetalles()) {
-            Producto producto = buscarProducto(detDto.getProductoId());
+            Producto producto = buscarProducto(farmaciaId, detDto.getProductoId());
 
             // Buscar lote existente o crear uno nuevo
             InventarioLotes lote = loteRepository.findByLoteNumero(detDto.getNumeroLote())
@@ -100,22 +101,22 @@ public class CompraServiceImpl implements CompraService {
     @Override
     @Transactional(readOnly = true)
     public CompraResponseDTO listarPorId(Long farmaciaId, Long id) {
-        Compra compra = compraRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Compra no encontrada ID: " + id));
+        Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
         return CompraResponseDTO.fromEntity(compra);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CompraSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return compraRepository.findAll(pageable)
+        return compraRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(CompraSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CompraSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return compraRepository.findByCompraEstado(CompraEstado.activa, pageable)
+        return compraRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(CompraSimpleDTO::fromEntity);
     }
 
@@ -129,8 +130,8 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     public CompraResponseDTO actualizar(Long farmaciaId, Long id, CompraUpdateDTO dto) {
-        Compra compra = compraRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Compra no encontrada ID: " + id));
+        Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
 
         if (dto.getObservaciones() != null) {
             compra.setCompraObservaciones(dto.getObservaciones());
@@ -141,8 +142,8 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, CompraEstado nuevoEstado) {
-        Compra compra = compraRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Compra no encontrada ID: " + id));
+        Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
 
         // Revertir stock si se anula
         if (nuevoEstado == CompraEstado.anulada && compra.getCompraEstado() == CompraEstado.activa) {
@@ -163,18 +164,19 @@ public class CompraServiceImpl implements CompraService {
     }
 
     // Métodos auxiliares privados
-    private Sucursal buscarSucursal(Long id) {
-        return sucursalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada ID: " + id));
+    private Sucursal buscarSucursal(Long farmaciaId, Long id) {
+        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
     }
 
-    private Usuario buscarUsuario(Long id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID: " + id));
+    private Usuario buscarUsuario(Long farmaciaId, Long id) {
+        return usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado en tu farmacia ID: " + id));
     }
 
-    private Producto buscarProducto(Long id) {
+    private Producto buscarProducto(Long farmaciaId, Long id) {
         return productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + id));
+                .filter(p -> p.getFarmacia().getFarmaciaId().equals(farmaciaId))
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 }

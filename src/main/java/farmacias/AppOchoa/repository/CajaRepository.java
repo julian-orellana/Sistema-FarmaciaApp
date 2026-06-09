@@ -19,6 +19,11 @@ public interface CajaRepository extends JpaRepository<Caja, Long> {
             "LOWER(c.cajaNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(CAST(c.cajaEstado AS string)) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Caja> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
-    Page<Caja> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
 
+    @Query("SELECT c FROM Caja c WHERE c.farmacia.farmaciaId = :farmaciaId AND (" +
+            "LOWER(c.cajaNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(CAST(c.cajaEstado AS string)) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Caja> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    Page<Caja> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
+    java.util.Optional<Caja> findByCajaIdAndFarmacia_FarmaciaId(Long cajaId, Long farmaciaId);
 }

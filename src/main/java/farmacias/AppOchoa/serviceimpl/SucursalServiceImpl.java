@@ -51,7 +51,7 @@ public class SucursalServiceImpl implements SucursalService {
     @Override
     @Transactional(readOnly = true)
     public SucursalResponseDTO obtenerPorId(Long farmaciaId, Long id){
-        return sucursalRepository.findById(id)
+        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .map(SucursalResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada por ID: " + id));
     }
@@ -59,14 +59,14 @@ public class SucursalServiceImpl implements SucursalService {
     @Override
     @Transactional(readOnly = true)
     public Page<SucursalSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return sucursalRepository.findBySucursalEstadoTrue(pageable)
+        return sucursalRepository.findByFarmacia_FarmaciaIdAndSucursalEstadoTrue(farmaciaId, pageable)
                 .map(SucursalSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<SucursalSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return sucursalRepository.findAll(pageable)
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(SucursalSimpleDTO::fromEntity);
     }
 
@@ -79,7 +79,7 @@ public class SucursalServiceImpl implements SucursalService {
 
     @Override
     public SucursalResponseDTO actualizar(Long farmaciaId, Long id, SucursalUpdateDTO dto){
-        Sucursal sucursal = sucursalRepository.findById(id)
+        Sucursal sucursal = sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada por ID: " + id));
 
         String nuevoNombre = dto.getNombre().trim();
@@ -102,7 +102,7 @@ public class SucursalServiceImpl implements SucursalService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
-        Sucursal sucursal = sucursalRepository.findById(id)
+        Sucursal sucursal = sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada por ID: " + id));
         sucursal.setSucursalEstado(estado);
         sucursalRepository.save(sucursal);

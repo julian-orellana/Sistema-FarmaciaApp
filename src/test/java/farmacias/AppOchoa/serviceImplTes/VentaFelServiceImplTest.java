@@ -60,7 +60,7 @@ public class VentaFelServiceImplTest {
         Venta venta = new Venta();
         venta.setVentaId(1L);
 
-        when(ventaRepository.findById(1L)).thenReturn(Optional.of(venta));
+        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
         when(ventaFelRepository.save(any(VentaFel.class))).thenReturn(ventaFel);
 
         VentaFelResponseDTO resultado = ventaFelService.crear(farmaciaId, dto);

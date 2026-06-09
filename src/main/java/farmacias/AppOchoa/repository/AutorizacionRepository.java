@@ -22,5 +22,5 @@ public interface AutorizacionRepository extends JpaRepository<Autorizacion, Long
             "LOWER(CAST(a.autorizacionTipo AS string)) LIKE LOWER(CONCAT('%', :texto, '%')))")
     Page<Autorizacion> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
     Page<Autorizacion> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
-
+    java.util.Optional<Autorizacion> findByAutorizacionIdAndFarmacia_FarmaciaId(Long autorizacionId, Long farmaciaId);
 }

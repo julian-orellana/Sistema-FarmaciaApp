@@ -3,6 +3,7 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.inventario.InventarioCreateDTO;
 import farmacias.AppOchoa.dto.inventario.InventarioResponseDTO;
 import farmacias.AppOchoa.dto.inventario.InventarioUpdateDTO;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Inventario;
 import farmacias.AppOchoa.model.Producto;
 import farmacias.AppOchoa.model.Sucursal;
@@ -60,8 +61,11 @@ public class InventarioServiceImplTest {
                 .sucursal(sucursal)
                 .build();
 
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        producto.setFarmacia(farmacia);
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        when(sucursalRepository.findById(1L)).thenReturn(Optional.of(sucursal));
+        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
         when(inventarioRepository.save(any(Inventario.class))).thenReturn(inventario);
         //ACT
         InventarioResponseDTO resultado = inventarioService.crear(farmaciaId, dto);
@@ -116,7 +120,7 @@ public class InventarioServiceImplTest {
                 .inventarioCantidadActual(60)
                 .build();
 
-        when(inventarioRepository.findById(id)).thenReturn(Optional.of(inventarioExistente));
+        when(inventarioRepository.findByInventarioIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(inventarioExistente));
         when(inventarioRepository.save(any(Inventario.class))).thenReturn(inventarioActualizado);
 
         //ACT
@@ -132,7 +136,7 @@ public class InventarioServiceImplTest {
 
         Long farmaciaId = 1L;
         Long id = 1L;
-        when(inventarioRepository.findById(id)).thenReturn(Optional.empty());
+        when(inventarioRepository.findByInventarioIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, ()->{
             inventarioService.listaPorId(farmaciaId, id);
         });

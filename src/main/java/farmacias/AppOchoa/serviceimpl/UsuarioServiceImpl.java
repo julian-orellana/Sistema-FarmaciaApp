@@ -50,7 +50,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
         Sucursal sucursal = null;
         if (dto.getSucursalId() != null) {
-            sucursal = buscarSucursal(dto.getSucursalId());
+            sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
         }
 
         Usuario usuario = Usuario.builder()
@@ -70,7 +70,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UsuarioResponseDTO obtenerPorId(Long farmaciaId, Long id) {
-        return usuarioRepository.findById(id)
+        return usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .map(UsuarioResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + id));
     }
@@ -85,13 +85,13 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public Page<UsuarioSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return usuarioRepository.buscarPorTexto(texto, pageable)
+        return usuarioRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(UsuarioSimpleDTO::fromEntity);
     }
 
     @Override
     public UsuarioResponseDTO actualizarUsuario(Long farmaciaId, Long id, UsuarioUpdateDTO dto) {
-        Usuario usuario = usuarioRepository.findById(id)
+        Usuario usuario = usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + id));
 
         if (!usuario.getNombreUsuarioUsuario().equals(dto.getNombreUsuario())) {
@@ -102,7 +102,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         }
 
         if (dto.getSucursalId() != null) {
-            Sucursal sucursal = buscarSucursal(dto.getSucursalId());
+            Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
             usuario.setSucursal(sucursal);
         } else {
             usuario.setSucursal(null);
@@ -118,7 +118,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean nuevoEstado) {
-        Usuario usuario = usuarioRepository.findById(id)
+        Usuario usuario = usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + id));
         usuario.setUsuarioEstado(nuevoEstado);
         usuarioRepository.save(usuario);
@@ -129,9 +129,9 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         cambiarEstado(farmaciaId, id, false);
     }
 
-    private Sucursal buscarSucursal(Long id) {
-        return sucursalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada ID: " + id));
+    private Sucursal buscarSucursal(Long farmaciaId, Long id) {
+        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
     }
 
     //UserDetailsService

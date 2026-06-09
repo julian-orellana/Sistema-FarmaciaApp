@@ -26,6 +26,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,8 +87,8 @@ class ProductoServiceImplTest {
         when(farmaciaRepository.findById(farmaciaId)).thenReturn(Optional.of(farmaciaMock));
         when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, dto.getNombre())).thenReturn(false);
         when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, dto.getCodigoBarras())).thenReturn(false);
-        when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoriaMock));
-        when(presentacionRepository.findById(1L)).thenReturn(Optional.of(presentacionMock));
+        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(categoriaMock));
+        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(presentacionMock));
         when(productoRepository.save(any(Producto.class))).thenReturn(productoGuardado);
 
         // ACT
@@ -160,8 +161,8 @@ class ProductoServiceImplTest {
         when(productoRepository.findById(idProducto)).thenReturn(Optional.of(productoExistente));
         when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, "Nuevo Nombre")).thenReturn(false);
         when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, "99999")).thenReturn(false);
-        when(categoriaRepository.findById(anyLong())).thenReturn(Optional.of(catMock));
-        when(presentacionRepository.findById(anyLong())).thenReturn(Optional.of(presMock));
+        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(anyLong(), eq(farmaciaId))).thenReturn(Optional.of(catMock));
+        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(anyLong(), eq(farmaciaId))).thenReturn(Optional.of(presMock));
         when(productoRepository.save(any(Producto.class))).thenReturn(productoExistente);
 
         // ACT

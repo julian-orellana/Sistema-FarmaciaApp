@@ -66,8 +66,8 @@ public class CajaSesionesImplTest {
         cajaSesiones.setSesionId(1L);
         caja.setCajaNombre("Caja1");
 
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        when(cajaRepository.findById(1L)).thenReturn(Optional.of(caja));
+        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(usuario));
+        when(cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(caja));
         when(cajaSesionesRepository.save(any(CajaSesiones.class))).thenReturn(cajaSesiones);
 
         CajaSesionesResponseDTO resultado = cajaSesionesService.crear(farmaciaId, dto);
@@ -94,7 +94,7 @@ public class CajaSesionesImplTest {
 
         Page<CajaSesiones> page = new PageImpl<>(List.of(cajaSesiones));
 
-        when(cajaSesionesRepository.buscarPorTexto(texto, pageable)).thenReturn(page);
+        when(cajaSesionesRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
 
         // ACT
         Page<CajaSesionesSimpleDTO> resultado = cajaSesionesService.buscarPorTexto(farmaciaId, texto, pageable);

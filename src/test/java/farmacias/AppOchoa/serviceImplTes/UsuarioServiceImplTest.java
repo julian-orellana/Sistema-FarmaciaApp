@@ -88,7 +88,7 @@ class UsuarioServiceImplTest {
         verify(usuarioRepository, times(1))
                 .save(any(Usuario.class));
         verify(sucursalRepository, never())
-                .findById(any());
+                .findBySucursalIdAndFarmacia_FarmaciaId(any(), any());
     }
 
     @Test
@@ -151,7 +151,7 @@ class UsuarioServiceImplTest {
                 .usuarioRol(UsuarioRol.administrador)
                 .build();
 
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioRegistrado));
+        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(usuarioRegistrado));
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioActualizado);
 
         UsuarioResponseDTO resultado  = usuarioService.actualizarUsuario(farmaciaId, usuarioId,  dto);
@@ -160,7 +160,7 @@ class UsuarioServiceImplTest {
         assertEquals("juanaNico", resultado.getNombreUsuario());
         assertEquals("Juana Cristina", resultado.getNombre());
         assertEquals(UsuarioRol.administrador, resultado.getRol());
-        verify(usuarioRepository, times(1)).findById(1L);
+        verify(usuarioRepository, times(1)).findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId);
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
 
 

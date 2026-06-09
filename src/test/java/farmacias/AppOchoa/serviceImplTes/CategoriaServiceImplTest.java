@@ -71,8 +71,8 @@ class CategoriaServiceImplTest {
     @DisplayName("Deberia de lanzar una excepcion si buscamos un ID que no existe")
     void obtenerPorIdNoEncontrado(){
         Long farmaciaId = 1L;
-        Long idNoExistente = 1l;
-        when(categoriaRepository.findById(idNoExistente)).thenReturn(Optional.empty());
+        Long idNoExistente = 1L;
+        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(idNoExistente, farmaciaId)).thenReturn(Optional.empty());
         //ACT & ASSERT
         assertThrows(RuntimeException.class, () ->
                 categoriaService.obtenerPorId(farmaciaId, idNoExistente));
@@ -86,7 +86,7 @@ class CategoriaServiceImplTest {
         categoria.setCategoriaId(id);
         categoria.setCategoriaEstado(true);
 
-        when(categoriaRepository.findById(id)).thenReturn(Optional.of(categoria));
+        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(categoria));
         //ACT
         categoriaService.eliminar(farmaciaId, id);
         //ASSERT
@@ -114,7 +114,7 @@ class CategoriaServiceImplTest {
                 .categoriaEstado(true)
                 .build();
 
-        when(categoriaRepository.findById(id)).thenReturn(Optional.of(categoriaRegistrada));
+        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(categoriaRegistrada));
         when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoriaActualizada);
         //ACT
         CategoriaResponseDTO resultado = categoriaService.actualizar(farmaciaId, id, dto);
@@ -131,7 +131,7 @@ class CategoriaServiceImplTest {
         CategoriaUpdateDTO dto = new CategoriaUpdateDTO();
         dto.setNombre("Lactancia");
 
-        when(categoriaRepository.findById(id)).thenReturn(Optional.empty());
+        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
         //ASSERT
         assertThrows(RuntimeException.class,() ->{
             categoriaService.actualizar(farmaciaId, id, dto);

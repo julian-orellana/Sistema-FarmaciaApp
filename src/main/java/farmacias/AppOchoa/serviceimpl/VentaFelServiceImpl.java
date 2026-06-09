@@ -39,14 +39,14 @@ public class VentaFelServiceImpl implements VentaFelService {
 
     private Venta buscarVenta(Long farmaciaId, Long id){
         if(id == null) return null;
-        return ventaRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Venta no encontrada por ID"));
+        return ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(()-> new ResourceNotFoundException("Venta no encontrada en tu farmacia"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public VentaFelResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return ventaFelRepository.findById(id)
+        return ventaFelRepository.findByFelIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .map(VentaFelResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Documento FEL no encontrado por ID"));
     }
@@ -54,7 +54,7 @@ public class VentaFelServiceImpl implements VentaFelService {
     @Override
     @Transactional(readOnly = true)
     public Page<VentaFelSimpleDTO> listarActivas(Long farmaciaId, Pageable pageable){
-        return ventaFelRepository.findAll(pageable)
+        return ventaFelRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(VentaFelSimpleDTO::fromEntity);
     }
 

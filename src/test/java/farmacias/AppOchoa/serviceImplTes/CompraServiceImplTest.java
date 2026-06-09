@@ -67,8 +67,8 @@ public class CompraServiceImplTest {
                 .usuario(usuario)
                 .build();
 
-        when(sucursalRepository.findById(1L)).thenReturn(Optional.of(sucursal));
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(usuario));
         when(compraRepository.save(any(Compra.class))).thenReturn(compra);
         //ACT
         CompraResponseDTO resultado = compraService.crear(farmaciaId, dto);
@@ -86,7 +86,7 @@ public class CompraServiceImplTest {
         Compra compra = new Compra();
         compra.setCompraId(1L);
         compra.setCompraEstado(CompraEstado.activa);
-        when(compraRepository.findById(1L)).thenReturn(Optional.of(compra));
+        when(compraRepository.findByCompraIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(compra));
         //ACT
         compraService.eliminar(farmaciaId, id);
         //ASSERT
@@ -99,7 +99,7 @@ public class CompraServiceImplTest {
     void buscarFallo(){
         Long farmaciaId = 1L;
         Long id =  1L;
-        when(compraRepository.findById(1L)).thenReturn(Optional.empty());
+        when(compraRepository.findByCompraIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.empty());
         //ACT
         assertThrows(RuntimeException.class,()->{
             compraService.listarPorId(farmaciaId, 1L);

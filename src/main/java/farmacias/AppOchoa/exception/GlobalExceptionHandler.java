@@ -1,6 +1,8 @@
 package farmacias.AppOchoa.exception;
 
 import farmacias.AppOchoa.exception.TokenRefreshException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(TokenRefreshException.class)
     public ResponseEntity<Object> manejarTokenRefresh(TokenRefreshException ex, WebRequest request) {
@@ -45,7 +48,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("estado", HttpStatus.BAD_REQUEST.value());
-        body.put("mensaje", "Error de validación en los datos enviados");
+        body.put("mensaje", "Error de validación en los datos iados");
         body.put("ruta", request.getDescription(false).replace("uri=", ""));
 
         Map<String, String> erroresCampos = new LinkedHashMap<>();
@@ -93,6 +96,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> manejarExcepcionGlobal(Exception ex, WebRequest request) {
+        log.error("Error 500 en {}: {}", request.getDescription(false), ex.getMessage(), ex);
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("estado", HttpStatus.INTERNAL_SERVER_ERROR.value());

@@ -4,6 +4,7 @@ import farmacias.AppOchoa.dto.alerta.AlertaCreateDTO;
 import farmacias.AppOchoa.dto.alerta.AlertaResponseDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Alerta;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.InventarioLotes;
 import farmacias.AppOchoa.model.Producto;
 import farmacias.AppOchoa.model.Sucursal;
@@ -55,6 +56,9 @@ class AlertaServiceImplTest {
         dto.setProductoId(1L);
 
         // Mock entidades relacionadas
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+
         Sucursal sucursal = new Sucursal();
         sucursal.setSucursalId(1L);
 
@@ -63,6 +67,7 @@ class AlertaServiceImplTest {
 
         Producto producto = new Producto();
         producto.setProductoId(1L);
+        producto.setFarmacia(farmacia);
 
         // Resultado simulado de save
         Alerta alertaGuardada = new Alerta();
@@ -70,9 +75,9 @@ class AlertaServiceImplTest {
         alertaGuardada.setAlertaMensaje(dto.getMensaje());
 
         // Mocks
-        when(sucursalRepository.findById(1L)).thenReturn(Optional.of(sucursal));
+        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        when(inventarioLotesRepository.findById(1L)).thenReturn(Optional.of(inventarioLotes));
+        when(inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(inventarioLotes));
         when(alertaRepository.save(any(Alerta.class))).thenReturn(alertaGuardada);
 
         // ACT
@@ -99,13 +104,13 @@ class AlertaServiceImplTest {
         Long farmaciaId = 1L;
         Long id = 1L;
 
-        when(alertaRepository.existsById(id)).thenReturn(true);
+        Alerta alerta = new Alerta();
+        alerta.setAlertaId(id);
+        when(alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(alerta));
 
-        // ACT
         alertaService.eliminar(farmaciaId, id);
 
-        // ASSERT
-        verify(alertaRepository).deleteById(id);
+        verify(alertaRepository).delete(alerta);
     }
 
     @Test
@@ -114,7 +119,7 @@ class AlertaServiceImplTest {
         Long farmaciaId = 1L;
         Long id = 1L;
 
-        when(alertaRepository.existsById(id)).thenReturn(false);
+        when(alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             alertaService.eliminar(farmaciaId, id);

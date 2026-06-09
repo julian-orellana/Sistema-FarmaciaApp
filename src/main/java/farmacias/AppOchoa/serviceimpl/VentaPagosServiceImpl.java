@@ -49,28 +49,27 @@ public class VentaPagosServiceImpl implements VentaPagoService {
     }
     private Venta buscarVentas(Long farmaciaId, Long id){
         if(id == null) return null;
-        return ventaRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Venta no encontrada por ID"));
-
+        return ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(()-> new ResourceNotFoundException("Venta no encontrada en tu farmacia"));
     }
     private CajaSesiones buscarSesiones(Long farmaciaId, Long id){
         if(id == null) return null;
-        return cajaSesionesRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesion no encontrada por ID"));
+        return cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sesion no encontrada en tu farmacia"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public VentaPagoResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return ventaPagoRepository.findById(id)
-                .map(VentaPagoResponseDTO:: fromEntity)
+        return ventaPagoRepository.findByPagoIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .map(VentaPagoResponseDTO::fromEntity)
                 .orElseThrow(()-> new ResourceNotFoundException("Pago no encontrado por ID"));
     }
     @Override
     @Transactional(readOnly = true)
     public Page<VentaPagoSimpleDTO> listarActivas(Long farmaciaId, Pageable pageable){
-        return ventaPagoRepository.findAll(pageable)
-                .map(VentaPagoSimpleDTO:: fromEntity);
+        return ventaPagoRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+                .map(VentaPagoSimpleDTO::fromEntity);
     }
     @Override
     @Transactional(readOnly = true)

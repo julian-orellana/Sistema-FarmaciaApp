@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Configuration
 public class DataInitializer {
@@ -71,9 +72,10 @@ public class DataInitializer {
 
             // 3. Crear usuario administrador vinculado a la farmacia y sucursal
             if (!usuarioRepository.existsByNombreUsuarioUsuario("admin")) {
+                String passwordInicial = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
                 Usuario admin = Usuario.builder()
                         .nombreUsuarioUsuario("admin")
-                        .usuarioContrasenaHash(passwordEncoder.encode("admin123"))
+                        .usuarioContrasenaHash(passwordEncoder.encode(passwordInicial))
                         .usuarioNombre("Administrador")
                         .usuarioApellido("Sistema")
                         .usuarioRol(UsuarioRol.administrador)
@@ -84,7 +86,7 @@ public class DataInitializer {
 
                 usuarioRepository.save(admin);
                 log.warn("[DataInitializer] ¡¡¡ USUARIO ADMIN CREADO - CAMBIA LA CONTRASEÑA INMEDIATAMENTE !!!");
-                log.warn("[DataInitializer] Usuario: admin | Contraseña: admin123");
+                log.warn("[DataInitializer] Contraseña temporal del admin: {}", passwordInicial);
             }
 
             log.warn("[DataInitializer] Bootstrap completado. Actualiza datos de farmacia y contraseña del admin.");

@@ -27,4 +27,9 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
             "LOWER(p.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(p.productoCodigoBarras) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Producto> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT p FROM Producto p WHERE p.farmacia.farmaciaId = :farmaciaId AND (" +
+            "LOWER(p.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(p.productoCodigoBarras) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Producto> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }
