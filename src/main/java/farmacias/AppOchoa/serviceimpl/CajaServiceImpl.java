@@ -35,7 +35,7 @@ public class CajaServiceImpl implements CajaService {
         if(cajaRepository.existsBySucursalSucursalIdAndCajaNombre(dto.getSucursalId(), dto.getCajaNombre())){
             throw new DuplicateResourceException("Ya existe una caja con ese nombre");
         }
-        Sucursal sucursal =  buscarSucursal(dto.getSucursalId());
+        Sucursal sucursal =  buscarSucursal(farmaciaId, dto.getSucursalId());
 
         Caja caja = Caja.builder()
                 .cajaNombre(dto.getCajaNombre())
@@ -45,17 +45,17 @@ public class CajaServiceImpl implements CajaService {
 
         return CajaResponseDTO.fromEntity(cajaRepository.save(caja));
     }
-    private Sucursal buscarSucursal(Long id){
+    private Sucursal buscarSucursal(Long farmaciaId, Long id){
         if(id == null) return  null;
-        return sucursalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada por ID"));
+        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public CajaResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return cajaRepository.findById(id)
-                .map(CajaResponseDTO:: fromEntity)
+        return cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .map(CajaResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Caja no encontrada por ID"));
     }
 
@@ -74,7 +74,7 @@ public class CajaServiceImpl implements CajaService {
 
     @Override
     public CajaResponseDTO actualizarCaja(Long farmaciaId, Long id, CajaUpdateDTO dto){
-        Caja caja = cajaRepository.findById(id)
+        Caja caja = cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Caja no encontrada por ID"));
         //Validar unicidad de nombre
         if(!caja.getCajaNombre().equalsIgnoreCase(dto.getCajaNombre()) &&
@@ -88,7 +88,7 @@ public class CajaServiceImpl implements CajaService {
     }
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, CajaEstado cajaEstado){
-        Caja caja = cajaRepository.findById(id)
+        Caja caja = cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Caja no encontrada por ID"));
         caja.setCajaEstado(cajaEstado);
         cajaRepository.save(caja);

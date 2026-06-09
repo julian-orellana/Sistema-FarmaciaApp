@@ -52,7 +52,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional(readOnly = true)
     public CategoriaResponseDTO obtenerPorId(Long farmaciaId, Long id){
-        Categoria categoria = categoriaRepository.findById(id)
+        Categoria categoria = categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         return CategoriaResponseDTO.fromEntity(categoria);
@@ -61,14 +61,14 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional(readOnly = true)
     public Page<CategoriaSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return categoriaRepository.findAll(pageable)
+        return categoriaRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(CategoriaSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CategoriaSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return categoriaRepository.findByCategoriaEstadoTrue(pageable)
+        return categoriaRepository.findByFarmacia_FarmaciaIdAndCategoriaEstadoTrue(farmaciaId, pageable)
                 .map(CategoriaSimpleDTO::fromEntity);
     }
 
@@ -83,7 +83,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public CategoriaResponseDTO actualizar(Long farmaciaId, Long id, CategoriaUpdateDTO dto){
-        Categoria categoria = categoriaRepository.findById(id)
+        Categoria categoria = categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(()-> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         if(!categoria.getCategoriaNombre().equals(dto.getNombre())){
@@ -101,7 +101,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
-        Categoria categoria = categoriaRepository.findById(id)
+        Categoria categoria = categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         categoria.setCategoriaEstado(estado);

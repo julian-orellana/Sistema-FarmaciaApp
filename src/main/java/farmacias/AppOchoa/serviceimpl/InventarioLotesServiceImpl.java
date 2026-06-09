@@ -57,7 +57,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     @Transactional(readOnly = true)
     public InventarioLotesResponseDTO buscarPorId(Long farmaciaId, Long id) {
-        InventarioLotes lote = inventarioLotesRepository.findById(id)
+        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
         return InventarioLotesResponseDTO.fromEntity(lote);
     }
@@ -85,7 +85,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
 
     @Override
     public InventarioLotesResponseDTO actualizar(Long farmaciaId, Long id, InventarioLotesUpdateDTO dto) {
-        InventarioLotes lote = inventarioLotesRepository.findById(id)
+        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
 
         lote.setLoteCantidadActual(dto.getCantidadActual());
@@ -96,20 +96,20 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
 
     @Override
     public void eliminar(Long farmaciaId, Long id) {
-        if (!inventarioLotesRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Lote no encontrado con ID: " + id);
-        }
-        inventarioLotesRepository.deleteById(id);
+        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado con ID: " + id));
+        inventarioLotesRepository.delete(lote);
     }
 
     // Métodos auxiliares privados
     private Producto buscarProducto(Long farmaciaId, Long id) {
         return productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + id));
+                .filter(p -> p.getFarmacia().getFarmaciaId().equals(farmaciaId))
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
     private Sucursal buscarSucursal(Long farmaciaId, Long id) {
-        return sucursalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada ID: " + id));
+        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
     }
 }

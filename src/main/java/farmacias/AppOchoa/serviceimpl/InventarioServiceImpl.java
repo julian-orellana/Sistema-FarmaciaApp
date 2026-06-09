@@ -57,7 +57,7 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     @Transactional(readOnly = true)
     public InventarioResponseDTO listaPorId(Long farmaciaId, Long id) {
-        Inventario inventario = inventarioRepository.findById(id)
+        Inventario inventario = inventarioRepository.findByInventarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado ID: " + id));
         return InventarioResponseDTO.fromEntity(inventario);
     }
@@ -65,14 +65,14 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     @Transactional(readOnly = true)
     public Page<InventarioSimpleDTO> listarTodosPaginado(Long farmaciaId, Pageable pageable) {
-        return inventarioRepository.findAll(pageable)
+        return inventarioRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(InventarioSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<InventarioSimpleDTO> listarActivosPaginado(Long farmaciaId, Pageable pageable) {
-        return inventarioRepository.findActivosPaginado(pageable)
+        return inventarioRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(InventarioSimpleDTO::fromEntity);
     }
 
@@ -85,7 +85,7 @@ public class InventarioServiceImpl implements InventarioService {
 
     @Override
     public InventarioResponseDTO actualizar(Long farmaciaId, Long id, InventarioUpdateDTO dto) {
-        Inventario inventario = inventarioRepository.findById(id)
+        Inventario inventario = inventarioRepository.findByInventarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado ID: " + id));
 
         inventario.setInventarioCantidadActual(dto.getCantidadActual());
@@ -97,20 +97,20 @@ public class InventarioServiceImpl implements InventarioService {
 
     @Override
     public void eliminar(Long farmaciaId, Long id){
-        if(!inventarioRepository.existsById(id)){
-            throw new ResourceNotFoundException("Inventario no encontrado con ID: " + id);
-        }
-        inventarioRepository.deleteById(id);
+        Inventario inventario = inventarioRepository.findByInventarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado con ID: " + id));
+        inventarioRepository.delete(inventario);
     }
 
     // Métodos auxiliares privados
     private Producto buscarProducto(Long farmaciaId, Long id) {
         return productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + id));
+                .filter(p -> p.getFarmacia().getFarmaciaId().equals(farmaciaId))
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
     private Sucursal buscarSucursal(Long farmaciaId, Long id) {
-        return sucursalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada ID: " + id));
+        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
     }
 }

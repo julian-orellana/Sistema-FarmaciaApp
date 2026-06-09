@@ -56,7 +56,7 @@ public class AutorizacionServiceImpl implements AutorizacionService {
     @Override
     @Transactional(readOnly = true)
     public AutorizacionResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return autorizacionRepository.findById(id)
+        return autorizacionRepository.findByAutorizacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .map(AutorizacionResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Autorizacion no encontrada por ID"));
     }

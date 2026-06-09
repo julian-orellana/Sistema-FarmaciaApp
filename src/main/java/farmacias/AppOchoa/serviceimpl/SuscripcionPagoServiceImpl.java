@@ -55,15 +55,14 @@ public class SuscripcionPagoServiceImpl implements SuscripcionPagoService {
     @Override
     @Transactional(readOnly = true)
     public SuscripcionPagoResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return suscripcionPagoRepository.findById(id)
+        return suscripcionPagoRepository.findByFarmacia_FarmaciaIdAndPagoId(farmaciaId, id)
                 .map(SuscripcionPagoResponseDTO::fromEntity)
                 .orElseThrow(()-> new ResourceNotFoundException("Suscripcion no encontrada por Id"));
-
     }
     @Override
     @Transactional(readOnly = true)
     public Page<SuscripcionPagoSimpleDTO> listarSuscripciones(Long farmaciaId, Pageable pageable){
-        return suscripcionPagoRepository.findAll(pageable)
+        return suscripcionPagoRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(SuscripcionPagoSimpleDTO::fromEntity);
     }
 

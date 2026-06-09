@@ -38,6 +38,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     // Ventas por cajero en turno específico - con paginación
     Page<Venta> findByUsuario_UsuarioIdAndVentaFechaBetween(
             Long usuarioId, LocalDateTime inicio, LocalDateTime fin, Pageable pageable);
+    Optional<Venta> findByVentaIdAndSucursal_Farmacia_FarmaciaId(Long ventaId, Long farmaciaId);
 
     // Total vendido por cajero hoy (mantiene query individual)
     @Query("SELECT SUM(v.ventaTotal) FROM Venta v " +

@@ -79,7 +79,7 @@ public class CajaCorteServiceImpl implements CajaCorteService {
     @Override
     @Transactional(readOnly = true)
     public CajaCorteResponseDTO buscarPorId(Long farmaciaId, Long id) {
-        return cajaCortesRepository.findById(id)
+        return cajaCortesRepository.findByCorteIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .map(CajaCorteResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Corte no encontrado por ID"));
     }

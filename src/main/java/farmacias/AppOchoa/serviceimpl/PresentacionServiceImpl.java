@@ -51,21 +51,21 @@ public class PresentacionServiceImpl implements PresentacionService {
 
     @Override
     public PresentacionResponseDTO obtenerPorId(Long farmaciaId, Long id){
-        Presentacion presentacion = presentacionRepository.findById(id)
+        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
         return PresentacionResponseDTO.fromEntity(presentacion);
     }
     @Override
     @Transactional(readOnly = true)
     public Page<PresentacionSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return presentacionRepository.findByPresentacionEstadoTrue(pageable)
+        return presentacionRepository.findByFarmacia_FarmaciaIdAndPresentacionEstadoTrue(farmaciaId, pageable)
                 .map(PresentacionSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<PresentacionSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return presentacionRepository.findAll(pageable)
+        return presentacionRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(PresentacionSimpleDTO::fromEntity);
     }
 
@@ -78,7 +78,7 @@ public class PresentacionServiceImpl implements PresentacionService {
 
     @Override
     public PresentacionResponseDTO actualizar(Long farmaciaId, Long id, PresentacionUpdateDTO dto){
-        Presentacion presentacion = presentacionRepository.findById(id)
+        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
 
         if(!presentacion.getPresentacionNombre().equalsIgnoreCase(dto.getNombre())){
@@ -98,7 +98,7 @@ public class PresentacionServiceImpl implements PresentacionService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
-        Presentacion presentacion = presentacionRepository.findById(id)
+        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
         presentacion.setPresentacionEstado(estado);
         presentacionRepository.save(presentacion);

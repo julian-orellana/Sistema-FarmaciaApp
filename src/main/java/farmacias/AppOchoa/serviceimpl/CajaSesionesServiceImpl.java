@@ -48,20 +48,20 @@ public class CajaSesionesServiceImpl implements CajaSesionesService {
     //Metodos Auxiliares
     private Usuario buscarUsuario(Long farmaciaId, Long id){
         if(id == null) return null;
-        return usuarioRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Usuario no encontrado por ID"));
+        return usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(()-> new ResourceNotFoundException("Usuario no encontrado en tu farmacia"));
     }
     private Caja buscarCaja(Long farmaciaId, Long id){
         if(id == null) return null;
-        return cajaRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Sesion no encontrado por ID"));
+        return cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(()-> new ResourceNotFoundException("Caja no encontrada en tu farmacia"));
     }
     @Transactional(readOnly = true)
     @Override
     public CajaSesionesResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return cajaSesionesRepository.findById(id)
+        return cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .map(CajaSesionesResponseDTO::fromEntity)
-                .orElseThrow(()-> new ResourceNotFoundException("Caja no encontrada por ID"));
+                .orElseThrow(()-> new ResourceNotFoundException("Sesion no encontrada por ID"));
     }
     @Override
     @Transactional(readOnly = true)
@@ -72,7 +72,7 @@ public class CajaSesionesServiceImpl implements CajaSesionesService {
     @Transactional(readOnly = true)
     @Override
     public Page<CajaSesionesSimpleDTO> listarSesiones(Long farmaciaId,Pageable pageable){
-        return cajaSesionesRepository.findAll(pageable)
+        return cajaSesionesRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(CajaSesionesSimpleDTO::fromEntity);
     }
     @Override

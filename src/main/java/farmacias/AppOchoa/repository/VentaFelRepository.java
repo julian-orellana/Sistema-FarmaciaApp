@@ -24,6 +24,5 @@ public interface VentaFelRepository extends JpaRepository<VentaFel, Long> {
             "LOWER(CAST(f.felEstado AS string)) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<VentaFel> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
     Page<VentaFel> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
-
-
+    java.util.Optional<VentaFel> findByFelIdAndFarmacia_FarmaciaId(Long felId, Long farmaciaId);
 }

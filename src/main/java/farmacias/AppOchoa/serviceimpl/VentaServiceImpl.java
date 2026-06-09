@@ -103,7 +103,7 @@ public class VentaServiceImpl implements VentaService {
     @Override
     @Transactional(readOnly = true)
     public VentaResponseDTO listarPorId(Long farmaciaId, Long id) {
-        Venta venta = ventaRepository.findById(id)
+        Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
         return VentaResponseDTO.fromEntity(venta);
     }
@@ -111,14 +111,14 @@ public class VentaServiceImpl implements VentaService {
     @Override
     @Transactional(readOnly = true)
     public Page<VentaSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return ventaRepository.findAll(pageable)
+        return ventaRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(VentaSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<VentaSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return ventaRepository.findByVentaEstado(VentaEstado.completada, pageable)
+        return ventaRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
                 .map(VentaSimpleDTO::fromEntity);
     }
 
@@ -131,7 +131,7 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     public VentaResponseDTO actualizar(Long farmaciaId, Long id, VentaUpdateDTO dto) {
-        Venta venta = ventaRepository.findById(id)
+        Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
 
         // Actualizar datos como el nombre del cliente o NIT si hubo error
@@ -144,7 +144,7 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, VentaEstado nuevoEstado) {
-        Venta venta = ventaRepository.findById(id)
+        Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
 
         // ANULAR una venta que estaba COMPLETADA
@@ -191,6 +191,7 @@ public class VentaServiceImpl implements VentaService {
     }
 
     private InventarioLotes buscarLote(Long id) {
+        // El lote pertenece a la sucursal que ya fue validada en el contexto de venta
         return loteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
     }

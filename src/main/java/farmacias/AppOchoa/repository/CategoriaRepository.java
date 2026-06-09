@@ -18,6 +18,7 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
     Page<Categoria> findByFarmacia_FarmaciaIdAndCategoriaEstadoTrue(Long farmaciaId, Pageable pageable);
     boolean existsByFarmacia_FarmaciaIdAndCategoriaNombre(Long farmaciaId, String nombre);
     Page<Categoria> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
+    java.util.Optional<Categoria> findByCategoriaIdAndFarmacia_FarmaciaId(Long categoriaId, Long farmaciaId);
     @Query("SELECT c FROM Categoria c WHERE " +
             "LOWER(c.categoriaNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Categoria> buscarPorTexto(@Param("texto") String texto, Pageable pageable);

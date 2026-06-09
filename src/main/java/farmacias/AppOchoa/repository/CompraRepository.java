@@ -50,6 +50,7 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
             "AND c.compraEstado = 'activa'")
     Page<Compra> findComprasConMontoMayorA(@Param("montoMinimo") BigDecimal montoMinimo, Pageable pageable);
     Page<Compra> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
+    java.util.Optional<Compra> findByCompraIdAndFarmacia_FarmaciaId(Long compraId, Long farmaciaId);
     @Query("SELECT c FROM Compra c WHERE " +
             "LOWER(c.compraObservaciones) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(c.usuario.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +

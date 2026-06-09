@@ -35,6 +35,7 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     // ESCÁNER / CÓDIGO
     Optional<InventarioLotes> findByLoteNumero(String loteNumero);
     Page<InventarioLotes> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
+    Optional<InventarioLotes> findByLoteIdAndFarmacia_FarmaciaId(Long loteId, Long farmaciaId);
     @Query("SELECT l FROM InventarioLotes l WHERE " +
             "LOWER(l.loteNumero) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<InventarioLotes> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
