@@ -2,9 +2,6 @@ spring:
   application:
     name: "AppOchoa"
 
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
-
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
@@ -20,7 +17,6 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
         jdbc:
           time_zone: UTC
     open-in-view: false
@@ -29,7 +25,7 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:defaultSecretKeyForDevelopmentOnly}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
   refresh-expiration: ${REFRESH_TOKEN_EXPIRATION:604800000}
 
@@ -52,6 +48,6 @@ springdoc:
   paths-to-match: /**
 
 loki:
-  url: ${LOKI_URL:https://logs-prod-042.grafana.net/loki/api/v1/push}
-  username: ${LOKI_USERNAME:1499882}
+  url: ${LOKI_URL:}
+  username: ${LOKI_USERNAME:}
   password: ${LOKI_PASSWORD:}

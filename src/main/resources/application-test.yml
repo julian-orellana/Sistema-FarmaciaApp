@@ -1,0 +1,4 @@
+jwt:
+  secret: test-secret-key-for-ci-only-not-production
+  expiration: 86400000
+  refresh-expiration: 604800000
