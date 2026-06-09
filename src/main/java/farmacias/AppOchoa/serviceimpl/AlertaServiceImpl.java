@@ -81,7 +81,7 @@ public class AlertaServiceImpl implements AlertaService {
     @Override
     @Transactional(readOnly = true)
     public Page<AlertaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return alertaRepository.buscarPorTexto(texto, pageable)
+        return alertaRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(AlertaSimpleDTO::fromEntity);
     }
 

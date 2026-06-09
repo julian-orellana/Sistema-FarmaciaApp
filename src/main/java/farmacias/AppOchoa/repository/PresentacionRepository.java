@@ -26,4 +26,8 @@ public interface PresentacionRepository extends JpaRepository<Presentacion, Long
     @Query("SELECT p FROM Presentacion p WHERE " +
             "LOWER(p.presentacionNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Presentacion> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT p FROM Presentacion p WHERE p.farmacia.farmaciaId = :farmaciaId AND " +
+            "LOWER(p.presentacionNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
+    Page<Presentacion> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }

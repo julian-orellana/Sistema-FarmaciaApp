@@ -22,4 +22,8 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
     @Query("SELECT c FROM Categoria c WHERE " +
             "LOWER(c.categoriaNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Categoria> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT c FROM Categoria c WHERE c.farmacia.farmaciaId = :farmaciaId AND " +
+            "LOWER(c.categoriaNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
+    Page<Categoria> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }

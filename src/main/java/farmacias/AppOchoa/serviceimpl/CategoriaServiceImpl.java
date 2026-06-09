@@ -75,7 +75,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional(readOnly = true)
     public Page<CategoriaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return categoriaRepository.buscarPorTexto(texto, pageable)
+        return categoriaRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(CategoriaSimpleDTO::fromEntity);
     }
 

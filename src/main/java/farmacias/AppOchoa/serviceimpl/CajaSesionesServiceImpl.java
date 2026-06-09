@@ -66,7 +66,7 @@ public class CajaSesionesServiceImpl implements CajaSesionesService {
     @Override
     @Transactional(readOnly = true)
     public Page<CajaSesionesSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return cajaSesionesRepository.buscarPorTexto(texto, pageable)
+        return cajaSesionesRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(CajaSesionesSimpleDTO::fromEntity);
     }
     @Transactional(readOnly = true)

@@ -61,7 +61,7 @@ public class VentaFelNotasCreditoServiceImpl implements VentaFelNotasCreditoServ
     @Override
     @Transactional(readOnly = true)
     public Page<VentaFelNotasCreditoSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return ventaFelNotasCreditoRepository.buscarPorTexto(texto, pageable)
+        return ventaFelNotasCreditoRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(VentaFelNotasCreditoSimpleDTO::fromEntity);
     }
 

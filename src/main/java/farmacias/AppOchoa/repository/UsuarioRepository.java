@@ -24,4 +24,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             "LOWER(u.usuarioApellido) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(u.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Usuario> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT u FROM Usuario u WHERE u.farmacia.farmaciaId = :farmaciaId AND (" +
+            "LOWER(u.usuarioNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(u.usuarioApellido) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(u.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Usuario> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }

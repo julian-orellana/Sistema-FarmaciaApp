@@ -29,6 +29,13 @@ public interface VentaFelNotasCreditoRepository extends JpaRepository<VentaFelNo
             "LOWER(n.notaUuid) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(CAST(n.notaEstado AS string)) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<VentaFelNotasCredito> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT n FROM VentaFelNotasCredito n WHERE n.farmacia.farmaciaId = :farmaciaId AND (" +
+            "LOWER(n.notaNumeroAutorizacion) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(n.notaMotivo) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(n.notaUuid) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(CAST(n.notaEstado AS string)) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<VentaFelNotasCredito> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
     Page<VentaFelNotasCredito> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<VentaFelNotasCredito> findByNotaIdAndFarmacia_FarmaciaId(Long notaId, Long farmaciaId);
     Page<VentaFelNotasCredito> findByFarmacia_FarmaciaIdAndNotaEstadoAndAuditoriaFechaCreacionBetween(Long farmaciaId, NotaEstado notaEstado, LocalDateTime inicio, LocalDateTime fin, Pageable pageable);

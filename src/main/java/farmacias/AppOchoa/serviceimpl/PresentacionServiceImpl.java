@@ -72,7 +72,7 @@ public class PresentacionServiceImpl implements PresentacionService {
     @Override
     @Transactional(readOnly = true)
     public Page<PresentacionSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return presentacionRepository.buscarPorTexto(texto, pageable)
+        return presentacionRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(PresentacionSimpleDTO::fromEntity);
     }
 

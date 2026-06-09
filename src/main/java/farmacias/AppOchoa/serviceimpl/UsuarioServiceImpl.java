@@ -85,7 +85,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public Page<UsuarioSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return usuarioRepository.buscarPorTexto(texto, pageable)
+        return usuarioRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(UsuarioSimpleDTO::fromEntity);
     }
 

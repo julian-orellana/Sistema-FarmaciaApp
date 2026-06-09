@@ -19,4 +19,8 @@ public interface AlertaRepository extends JpaRepository<Alerta, Long> {
     @Query("SELECT a FROM Alerta a WHERE " +
             "LOWER(a.alertaMensaje) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Alerta> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT a FROM Alerta a WHERE a.farmacia.farmaciaId = :farmaciaId AND " +
+            "LOWER(a.alertaMensaje) LIKE LOWER(CONCAT('%', :texto, '%'))")
+    Page<Alerta> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }

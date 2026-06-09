@@ -42,4 +42,9 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
             "LOWER(i.producto.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(i.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Inventario> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT i FROM Inventario i WHERE i.farmacia.farmaciaId = :farmaciaId AND (" +
+            "LOWER(i.producto.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(i.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Inventario> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }
