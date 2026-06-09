@@ -42,21 +42,21 @@ public class VentaFelNotasCreditoServiceImpl implements VentaFelNotasCreditoServ
     }
     private VentaFel buscarVentas(Long farmaciaId, Long id){
         if(id == null) return null;
-        return ventaFelRepository.findById(id)
+        return ventaFelRepository.findByFelIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta fel no encontrada ID"));
     }
     @Override
     @Transactional(readOnly = true)
     public VentaFelNotasCreditoResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return ventaFelNotasCreditoRepository.findById(id)
-                .map(VentaFelNotasCreditoResponseDTO:: fromEntity)
+        return ventaFelNotasCreditoRepository.findByNotaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .map(VentaFelNotasCreditoResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Nota credito no encontrada por ID"));
     }
     @Override
     @Transactional(readOnly = true)
     public Page<VentaFelNotasCreditoSimpleDTO> listarNotas(Long farmaciaId, Pageable pageable){
-        return ventaFelNotasCreditoRepository.findAll(pageable)
-                .map(VentaFelNotasCreditoSimpleDTO:: fromEntity);
+        return ventaFelNotasCreditoRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+                .map(VentaFelNotasCreditoSimpleDTO::fromEntity);
     }
     @Override
     @Transactional(readOnly = true)
@@ -74,16 +74,13 @@ public class VentaFelNotasCreditoServiceImpl implements VentaFelNotasCreditoServ
         boolean tieneFechas = (fechaInicio != null && fechaFin != null);
 
         if (tieneEstado && tieneFechas) {
-            // Trae Estado y Fechas
-            resultados = ventaFelNotasCreditoRepository.findByNotaEstadoAndAuditoriaFechaCreacionBetween(estado, fechaInicio, fechaFin, pageable);
+            resultados = ventaFelNotasCreditoRepository.findByFarmacia_FarmaciaIdAndNotaEstadoAndAuditoriaFechaCreacionBetween(farmaciaId, estado, fechaInicio, fechaFin, pageable);
         } else if (tieneEstado) {
-            //Trae SOLO Estado
-            resultados = ventaFelNotasCreditoRepository.findByNotaEstado(estado, pageable);
+            resultados = ventaFelNotasCreditoRepository.findByFarmacia_FarmaciaIdAndNotaEstado(farmaciaId, estado, pageable);
         } else if (tieneFechas) {
-            //Trae SOLO Fechas
-            resultados = ventaFelNotasCreditoRepository.findByAuditoriaFechaCreacionBetween(fechaInicio, fechaFin, pageable);
+            resultados = ventaFelNotasCreditoRepository.findByFarmacia_FarmaciaIdAndAuditoriaFechaCreacionBetween(farmaciaId, fechaInicio, fechaFin, pageable);
         } else {
-            resultados = ventaFelNotasCreditoRepository.findAll(pageable);
+            resultados = ventaFelNotasCreditoRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable);
         }
 
         return resultados.map(VentaFelNotasCreditoSimpleDTO::fromEntity);

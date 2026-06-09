@@ -59,8 +59,8 @@ public class ProductoServiceImpl implements ProductoService {
             throw new DuplicateResourceException("El código de barras ya está registrado: " + dto.getCodigoBarras());
         }
 
-        Categoria categoria = buscarCategoria(dto.getCategoriaId());
-        Presentacion presentacion = buscarPresentacion(dto.getPresentacionId());
+        Categoria categoria = buscarCategoria(farmaciaId, dto.getCategoriaId());
+        Presentacion presentacion = buscarPresentacion(farmaciaId, dto.getPresentacionId());
 
         Producto producto = Producto.builder()
                 .productoNombre(dto.getNombre())
@@ -98,8 +98,8 @@ public class ProductoServiceImpl implements ProductoService {
             throw new DuplicateResourceException("El código de barras ya pertenece a otro producto: " + dto.getCodigoBarras());
         }
 
-        producto.setCategoria(buscarCategoria(dto.getCategoriaId()));
-        producto.setPresentacion(buscarPresentacion(dto.getPresentacionId()));
+        producto.setCategoria(buscarCategoria(farmaciaId, dto.getCategoriaId()));
+        producto.setPresentacion(buscarPresentacion(farmaciaId, dto.getPresentacionId()));
         producto.setProductoNombre(dto.getNombre());
         producto.setProductoCodigoBarras(dto.getCodigoBarras());
         producto.setProductoPrecioCompra(dto.getPrecioCompra());
@@ -165,15 +165,15 @@ public class ProductoServiceImpl implements ProductoService {
                 .map(ProductoSimpleDTO::fromEntity);
     }
 
-    private Categoria buscarCategoria(Long id) {
+    private Categoria buscarCategoria(Long farmaciaId, Long id) {
         if (id == null) return null;
-        return categoriaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
+        return categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada en tu farmacia con ID: " + id));
     }
 
-    private Presentacion buscarPresentacion(Long id) {
+    private Presentacion buscarPresentacion(Long farmaciaId, Long id) {
         if (id == null) return null;
-        return presentacionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada con ID: " + id));
+        return presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada en tu farmacia con ID: " + id));
     }
 }

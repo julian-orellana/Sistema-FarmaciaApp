@@ -65,7 +65,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     @Transactional(readOnly = true)
     public Page<InventarioLotesSimpleDTO> listarPorSucursalPaginado(Long farmaciaId, Long sucursalId, Pageable pageable) {
-        return inventarioLotesRepository.findBySucursal_SucursalId(sucursalId, pageable)
+        return inventarioLotesRepository.findBySucursal_SucursalIdAndFarmacia_FarmaciaId(sucursalId, farmaciaId, pageable)
                 .map(InventarioLotesSimpleDTO::fromEntity);
     }
 
@@ -79,7 +79,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     @Transactional(readOnly = true)
     public Page<InventarioLotesSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return inventarioLotesRepository.buscarPorTexto(texto, pageable)
+        return inventarioLotesRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(InventarioLotesSimpleDTO::fromEntity);
     }
 

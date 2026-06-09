@@ -19,6 +19,7 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     Optional<InventarioLotes> findByProducto_ProductoIdAndSucursal_SucursalId(Long productoId, Long sucursalId);
 
     Page<InventarioLotes> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+    Page<InventarioLotes> findBySucursal_SucursalIdAndFarmacia_FarmaciaId(Long sucursalId, Long farmaciaId, Pageable pageable);
 
     // VALIDACIONES
     boolean existsByProducto_ProductoIdAndSucursal_SucursalId(Long productoId, Long sucursalId);
@@ -36,7 +37,12 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     Optional<InventarioLotes> findByLoteNumero(String loteNumero);
     Page<InventarioLotes> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     Optional<InventarioLotes> findByLoteIdAndFarmacia_FarmaciaId(Long loteId, Long farmaciaId);
+
     @Query("SELECT l FROM InventarioLotes l WHERE " +
             "LOWER(l.loteNumero) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<InventarioLotes> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT l FROM InventarioLotes l WHERE l.farmacia.farmaciaId = :farmaciaId AND " +
+            "LOWER(l.loteNumero) LIKE LOWER(CONCAT('%', :texto, '%'))")
+    Page<InventarioLotes> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }
