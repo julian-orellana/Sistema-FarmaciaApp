@@ -7,6 +7,7 @@ import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
+import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.RefreshTokenService;
@@ -46,11 +47,15 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     public UsuarioResponseDTO crearUsuario(Long farmaciaId, UsuarioCreateDTO dto) {
-        if (usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, dto.getNombreUsuario())) {
+        // Unicidad global: loadUserByUsername busca sin filtrar por farmacia,
+        // un duplicado entre farmacias rompería el login de ambos usuarios
+        if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
             throw new DuplicateResourceException("El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso");
         }
 
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
+
+        validarCupoUsuarios(farmaciaId, farmacia.getMaxUsuarios());
 
         Sucursal sucursal = null;
         if (dto.getSucursalId() != null) {
@@ -112,6 +117,11 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
             usuario.setSucursal(null);
         }
 
+        // Reactivar un usuario también consume cupo del plan
+        if (Boolean.TRUE.equals(dto.getEstado()) && !Boolean.TRUE.equals(usuario.getUsuarioEstado())) {
+            validarCupoUsuarios(farmaciaId, usuario.getFarmacia().getMaxUsuarios());
+        }
+
         usuario.setUsuarioNombre(dto.getNombre());
         usuario.setUsuarioApellido(dto.getApellido());
         usuario.setUsuarioRol(dto.getRol());
@@ -131,6 +141,12 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     public void cambiarEstado(Long farmaciaId, Long id, Boolean nuevoEstado) {
         Usuario usuario = usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + id));
+
+        // Reactivar un usuario también consume cupo del plan
+        if (Boolean.TRUE.equals(nuevoEstado) && !Boolean.TRUE.equals(usuario.getUsuarioEstado())) {
+            validarCupoUsuarios(farmaciaId, usuario.getFarmacia().getMaxUsuarios());
+        }
+
         usuario.setUsuarioEstado(nuevoEstado);
         usuarioRepository.save(usuario);
 
@@ -143,6 +159,33 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     @Override
     public void eliminarUsuario(Long farmaciaId, Long id) {
         cambiarEstado(farmaciaId, id, false);
+    }
+
+    @Override
+    public void cambiarContrasena(Long usuarioId, CambiarContrasenaDTO dto) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + usuarioId));
+
+        if (!passwordEncoder.matches(dto.getContrasenaActual(), usuario.getUsuarioContrasenaHash())) {
+            throw new BadRequestException("La contraseña actual es incorrecta");
+        }
+
+        usuario.setUsuarioContrasenaHash(passwordEncoder.encode(dto.getContrasenaNueva()));
+        usuarioRepository.save(usuario);
+
+        // Cerrar todas las sesiones: el refresh token viejo no debe sobrevivir al cambio
+        refreshTokenService.revocarPorUsuario(usuarioId);
+    }
+
+    // null en maxUsuarios se interpreta como sin límite (farmacias previas al campo)
+    private void validarCupoUsuarios(Long farmaciaId, Integer maxUsuarios) {
+        if (maxUsuarios == null) {
+            return;
+        }
+        long activos = usuarioRepository.countByFarmacia_FarmaciaIdAndUsuarioEstadoTrue(farmaciaId);
+        if (activos >= maxUsuarios) {
+            throw new BadRequestException("Tu plan permite máximo " + maxUsuarios + " usuarios activos");
+        }
     }
 
     private Sucursal buscarSucursal(Long farmaciaId, Long id) {

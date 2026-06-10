@@ -4,12 +4,14 @@ import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioUpdateDTO;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.serviceimpl.UsuarioServiceImpl;
+import farmacias.AppOchoa.services.RefreshTokenService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +37,8 @@ class UsuarioServiceImplTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private FarmaciaRepository farmaciaRepository;
+    @Mock
+    private RefreshTokenService refreshTokenService;
     @InjectMocks
     private UsuarioServiceImpl usuarioService;
 
@@ -51,8 +55,16 @@ class UsuarioServiceImplTest {
         dto.setRol(UsuarioRol.encargado);
         dto.setSucursalId(null);
 
-        when(usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior"))
+        when(usuarioRepository.existsByNombreUsuarioUsuario("steveSenior"))
                 .thenReturn(false);
+
+        Farmacia farmacia = Farmacia.builder()
+                .farmaciaId(farmaciaId)
+                .maxUsuarios(5)
+                .build();
+        when(farmaciaRepository.getReferenceById(farmaciaId)).thenReturn(farmacia);
+        when(usuarioRepository.countByFarmacia_FarmaciaIdAndUsuarioEstadoTrue(farmaciaId))
+                .thenReturn(1L);
 
         when(passwordEncoder.encode("password123"))
                 .thenReturn("$2a$10$hashedPassword");
@@ -82,7 +94,7 @@ class UsuarioServiceImplTest {
         assertTrue(resultado.getEstado());
 
         verify(usuarioRepository, times(1))
-                .existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior");
+                .existsByNombreUsuarioUsuario("steveSenior");
         verify(passwordEncoder, times(1))
                 .encode("password123");
         verify(usuarioRepository, times(1))
@@ -103,7 +115,7 @@ class UsuarioServiceImplTest {
         dto.setApellido("Leon");
         dto.setRol(UsuarioRol.encargado);
 
-        when(usuarioRepository.existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior"))
+        when(usuarioRepository.existsByNombreUsuarioUsuario("steveSenior"))
                 .thenReturn(true);
 
         DuplicateResourceException exception = assertThrows(DuplicateResourceException.class, () ->
@@ -114,7 +126,7 @@ class UsuarioServiceImplTest {
                 exception.getMessage());
 
         verify(usuarioRepository, times(1))
-                .existsByFarmacia_FarmaciaIdAndNombreUsuarioUsuario(farmaciaId, "steveSenior");
+                .existsByNombreUsuarioUsuario("steveSenior");
         verify(usuarioRepository, never())
                 .save(any(Usuario.class));
         verify(passwordEncoder, never())

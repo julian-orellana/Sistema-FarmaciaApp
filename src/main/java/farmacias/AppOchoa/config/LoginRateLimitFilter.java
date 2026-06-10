@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -67,6 +68,19 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    // Evicción periódica: sin esto el mapa acumula una entrada por cada IP
+    // que alguna vez intentó login y crece indefinidamente
+    @Scheduled(fixedDelay = 300_000)   // cada 5 minutos
+    public void limpiarIpsInactivas() {
+        long ahora = System.currentTimeMillis();
+        intentosPorIp.entrySet().removeIf(entry -> {
+            Deque<Long> timestamps = entry.getValue();
+            synchronized (timestamps) {
+                return timestamps.isEmpty() || ahora - timestamps.peekLast() > VENTANA_MS;
+            }
+        });
     }
 
     private String obtenerIp(HttpServletRequest request) {
