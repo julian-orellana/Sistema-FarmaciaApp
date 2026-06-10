@@ -74,7 +74,7 @@ public class VentaPagosServiceImpl implements VentaPagoService {
     @Override
     @Transactional(readOnly = true)
     public Page<VentaPagoSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return ventaPagoRepository.buscarPorTexto(texto, pageable)
+        return ventaPagoRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(VentaPagoSimpleDTO::fromEntity);
     }
     @Override

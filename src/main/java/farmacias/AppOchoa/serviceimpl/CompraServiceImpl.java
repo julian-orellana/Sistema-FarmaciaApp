@@ -123,7 +123,7 @@ public class CompraServiceImpl implements CompraService {
     @Override
     @Transactional(readOnly = true)
     public Page<CompraSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return compraRepository.buscarPorTexto(texto, pageable)
+        return compraRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(CompraSimpleDTO::fromEntity);
     }
 

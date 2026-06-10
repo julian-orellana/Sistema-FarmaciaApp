@@ -9,6 +9,7 @@ import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
+import farmacias.AppOchoa.services.RefreshTokenService;
 import farmacias.AppOchoa.services.UsuarioService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -28,16 +29,19 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     private final SucursalRepository sucursalRepository;
     private final PasswordEncoder passwordEncoder;
     private final FarmaciaRepository farmaciaRepository;
+    private final RefreshTokenService refreshTokenService;
 
     public UsuarioServiceImpl(
             UsuarioRepository usuarioRepository,
             SucursalRepository sucursalRepository,
             FarmaciaRepository farmaciaRepository,
-            @Lazy PasswordEncoder passwordEncoder) {
+            @Lazy PasswordEncoder passwordEncoder,
+            RefreshTokenService refreshTokenService) {
         this.usuarioRepository = usuarioRepository;
         this.sucursalRepository = sucursalRepository;
         this.farmaciaRepository = farmaciaRepository;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Override
@@ -113,7 +117,14 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         usuario.setUsuarioRol(dto.getRol());
         usuario.setUsuarioEstado(dto.getEstado());
 
-        return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
+        UsuarioResponseDTO respuesta = UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
+
+        // Al desactivar, revocar todos sus refresh tokens para cerrar sesiones activas
+        if (Boolean.FALSE.equals(dto.getEstado())) {
+            refreshTokenService.revocarPorUsuario(usuario.getUsuarioId());
+        }
+
+        return respuesta;
     }
 
     @Override
@@ -122,6 +133,11 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + id));
         usuario.setUsuarioEstado(nuevoEstado);
         usuarioRepository.save(usuario);
+
+        // Al desactivar, revocar todos sus refresh tokens para cerrar sesiones activas
+        if (Boolean.FALSE.equals(nuevoEstado)) {
+            refreshTokenService.revocarPorUsuario(usuario.getUsuarioId());
+        }
     }
 
     @Override

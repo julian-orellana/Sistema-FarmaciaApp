@@ -76,7 +76,6 @@ public class VentaFelServiceImplTest {
     @Test
     @DisplayName("Deberia crear una busqueda correctamente")
     void crearBusqueda(){
-
         Long farmaciaId = 1L;
         String texto = "737849";
         Pageable pageable = PageRequest.of(0,10);
@@ -85,12 +84,12 @@ public class VentaFelServiceImplTest {
         ventaFel.setFelId(1L);
 
         Page<VentaFel> ventaFe = new PageImpl<>(List.of(ventaFel));
-        when(ventaFelRepository.buscarPorTexto(texto, pageable)).thenReturn(ventaFe);
+        when(ventaFelRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(ventaFe);
+
         Page<VentaFelSimpleDTO> resultado = ventaFelService.buscarPorTexto(farmaciaId, texto, pageable);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
-
     }
 
     @Test

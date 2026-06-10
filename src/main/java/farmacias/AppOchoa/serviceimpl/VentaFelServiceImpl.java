@@ -61,7 +61,7 @@ public class VentaFelServiceImpl implements VentaFelService {
     @Override
     @Transactional(readOnly = true)
     public Page<VentaFelSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return ventaFelRepository.buscarPorTexto(texto, pageable)
+        return ventaFelRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(VentaFelSimpleDTO::fromEntity);
     }
 

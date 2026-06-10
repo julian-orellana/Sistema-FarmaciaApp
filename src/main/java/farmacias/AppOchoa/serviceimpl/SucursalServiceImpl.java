@@ -73,7 +73,7 @@ public class SucursalServiceImpl implements SucursalService {
     @Override
     @Transactional(readOnly = true)
     public Page<SucursalSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return sucursalRepository.buscarPorTexto(texto, pageable)
+        return sucursalRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(SucursalSimpleDTO::fromEntity);
     }
 

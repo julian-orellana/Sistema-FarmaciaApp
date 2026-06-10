@@ -50,12 +50,14 @@ public class UsuarioController extends BaseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.crearUsuario(getFarmaciaId(), dto));
     }
 
+    @PreAuthorize("hasAuthority('administrador')")
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
             @PathVariable Long id, @Valid @RequestBody UsuarioUpdateDTO dto){
         return ResponseEntity.ok(usuarioService.actualizarUsuario(getFarmaciaId(), id, dto));
     }
 
+    @PreAuthorize("hasAuthority('administrador')")
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam Boolean estado){
         usuarioService.cambiarEstado(getFarmaciaId(), id, estado);
