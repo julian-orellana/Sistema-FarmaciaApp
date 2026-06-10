@@ -5,6 +5,7 @@ import farmacias.AppOchoa.model.RefreshToken;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.RefreshTokenRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
+import farmacias.AppOchoa.services.RefreshTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class RefreshTokenServiceImpl {
+public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private static final Logger log = LoggerFactory.getLogger(RefreshTokenServiceImpl.class);
 
@@ -34,6 +35,7 @@ public class RefreshTokenServiceImpl {
     }
 
     //Crear nuevo refresh token para un usuario
+    @Override
     @Transactional
     public RefreshToken crear(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -50,6 +52,7 @@ public class RefreshTokenServiceImpl {
 
     //Verificar y rotar: valida el token, lo elimina y emite uno nuevo
 
+    @Override
     @Transactional
     public RefreshToken verificarYRotar(String tokenStr) {
         RefreshToken token = refreshTokenRepository.findByToken(tokenStr)
@@ -63,16 +66,24 @@ public class RefreshTokenServiceImpl {
                     "El refresh token ha expirado. Inicia sesión nuevamente.");
         }
 
+        // Si el usuario fue desactivado, revocar toda su sesión en lugar de rotar
+        Usuario usuario = token.getUsuario();
+        if (!usuario.isEnabled()) {
+            revocarPorUsuario(usuario.getUsuarioId());
+            throw new TokenRefreshException(
+                    "La cuenta está desactivada. Contacta al administrador.");
+        }
+
         // Rotación: eliminar el actual y emitir uno nuevo
         // Esto invalida cualquier intento de reuso del token anterior
-        Long usuarioId = token.getUsuario().getUsuarioId();
         refreshTokenRepository.delete(token);
 
-        return crear(usuarioId);
+        return crear(usuario.getUsuarioId());
     }
 
     //Verificar token para logout (sin rotación)
 
+    @Override
     @Transactional
     public void verificarParaLogout(String tokenStr) {
         RefreshToken token = refreshTokenRepository.findByToken(tokenStr)
@@ -82,7 +93,8 @@ public class RefreshTokenServiceImpl {
         revocarPorUsuario(token.getUsuario().getUsuarioId());
     }
 
-    //Revocar todos los tokens del usuario (logout / cambio de contraseña)
+    //Revocar todos los tokens del usuario (logout / cambio de contraseña / desactivación)
+    @Override
     @Transactional
     public void revocarPorUsuario(Long usuarioId) {
         refreshTokenRepository.deleteByUsuarioId(usuarioId);

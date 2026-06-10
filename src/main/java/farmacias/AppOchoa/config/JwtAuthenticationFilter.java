@@ -81,6 +81,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             Usuario usuario = (Usuario) userDetailsService.loadUserByUsername(username);
 
+            // Usuario desactivado: rechazar aunque el token siga siendo válido
+            if (!usuario.isEnabled()) {
+                log.warn("[JWT] Usuario desactivado intentó acceder a {}: {}", request.getRequestURI(), username);
+                escribirErrorJson(response, HttpStatus.UNAUTHORIZED, "La cuenta está desactivada. Contacta al administrador.");
+                return;
+            }
+
             if (jwtUtil.validateToken(jwt, usuario.getUsername())) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         usuario,
