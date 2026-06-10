@@ -12,6 +12,7 @@ import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.VentaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +64,9 @@ public class VentaServiceImpl implements VentaService {
             Producto producto = buscarProducto(farmaciaId, detalleDto.getProductoId());
             InventarioLotes lote = buscarLote(farmaciaId, detalleDto.getLoteId());
 
+            // El precio lo dicta el servidor, nunca el cliente
+            BigDecimal precioUnitario = producto.getProductoPrecioVenta();
+
             // Validación de stock
             if (lote.getLoteCantidadActual() < detalleDto.getCantidad()) {
                 throw new BadRequestException("Stock insuficiente en el lote: " + lote.getLoteNumero());
@@ -73,7 +77,7 @@ public class VentaServiceImpl implements VentaService {
             loteRepository.save(lote);
 
             // Cálculos monetarios
-            BigDecimal subtotalLinea = detalleDto.getPrecioUnitario().multiply(BigDecimal.valueOf(detalleDto.getCantidad()));
+            BigDecimal subtotalLinea = precioUnitario.multiply(BigDecimal.valueOf(detalleDto.getCantidad()));
             acumuladorSubtotal = acumuladorSubtotal.add(subtotalLinea);
 
             // Crear el objeto detalle
@@ -82,7 +86,7 @@ public class VentaServiceImpl implements VentaService {
                     .lote(lote)
                     .venta(venta)
                     .detalleCantidad(detalleDto.getCantidad())
-                    .detallePrecioUnitario(detalleDto.getPrecioUnitario())
+                    .detallePrecioUnitario(precioUnitario)
                     .detalleSubtotal(subtotalLinea)
                     .build();
 
@@ -92,6 +96,15 @@ public class VentaServiceImpl implements VentaService {
         // Totales Finales
         venta.setVentaSubtotal(acumuladorSubtotal);
         BigDecimal descuento = dto.getDescuento() != null ? dto.getDescuento() : BigDecimal.ZERO;
+
+        // Solo un administrador puede aplicar descuentos
+        if (descuento.compareTo(BigDecimal.ZERO) > 0) {
+            Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (solicitante.getUsuarioRol() != UsuarioRol.administrador) {
+                throw new BadRequestException("Solo un administrador puede aplicar descuentos");
+            }
+        }
+
         venta.setVentaDescuento(descuento);
         venta.setVentaTotal(acumuladorSubtotal.subtract(descuento));
 

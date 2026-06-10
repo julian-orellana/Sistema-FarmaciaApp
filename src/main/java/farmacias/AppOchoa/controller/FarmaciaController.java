@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +22,7 @@ public class FarmaciaController extends  BaseController{
     private final FarmaciaService farmaciaService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('superadmin')")
     public ResponseEntity<Page<FarmaciaSimpleDTO>> listarFarmacias(
             @PageableDefault(size = 10 , sort = "farmaciaNombre")Pageable pageable){
         Page<FarmaciaSimpleDTO> farmacias = farmaciaService.listarFarmacias(pageable);
@@ -28,23 +30,27 @@ public class FarmaciaController extends  BaseController{
     }
 
     @GetMapping("/buscar/{id}")
+    @PreAuthorize("hasAuthority('administrador') and principal.farmacia.farmaciaId == #id")
     public ResponseEntity<FarmaciaResponseDTO> buscarId(@PathVariable Long id){
         FarmaciaResponseDTO farmaciaResponseDTO = farmaciaService.buscarId(id);
         return ResponseEntity.ok(farmaciaResponseDTO);
     }
 
     @GetMapping("/buscar")
+    @PreAuthorize("hasAuthority('administrador')")
     public ResponseEntity<Page<FarmaciaSimpleDTO>> buscarPorTexto(@RequestParam String texto, Pageable pageable){
         return ResponseEntity.ok(farmaciaService.buscarPorTexto(texto, pageable));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('superadmin')")
     public ResponseEntity<FarmaciaResponseDTO> crear(@Valid @RequestBody FarmaciaCreateDTO dto){
         FarmaciaResponseDTO farmaciaResponseDTO = farmaciaService.crear(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(farmaciaResponseDTO);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('superadmin')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         farmaciaService.eliminar(id);
         return ResponseEntity.noContent().build();

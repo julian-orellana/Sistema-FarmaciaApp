@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -79,7 +80,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Solo autentica si el SecurityContext está vacío (evita doble procesamiento)
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            Usuario usuario = (Usuario) userDetailsService.loadUserByUsername(username);
+            Usuario usuario;
+            try {
+                usuario = (Usuario) userDetailsService.loadUserByUsername(username);
+            } catch (UsernameNotFoundException e) {
+                // Mensaje genérico a propósito: no revelar si el username existe
+                log.warn("[JWT] Token con usuario inexistente en {}: {}", request.getRequestURI(), username);
+                escribirErrorJson(response, HttpStatus.UNAUTHORIZED, "Token inválido.");
+                return;
+            }
 
             // Usuario desactivado: rechazar aunque el token siga siendo válido
             if (!usuario.isEnabled()) {
