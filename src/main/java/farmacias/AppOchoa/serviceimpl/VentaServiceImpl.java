@@ -174,6 +174,12 @@ public class VentaServiceImpl implements VentaService {
         Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
 
+        // Una venta anulada es definitiva: no puede reactivarse a completada
+        // (reactivar sin re-descontar stock corrompería el inventario)
+        if (venta.getVentaEstado() == VentaEstado.anulada && nuevoEstado == VentaEstado.completada) {
+            throw new BadRequestException("Una venta anulada no puede volver a completarse");
+        }
+
         // ANULAR una venta que estaba COMPLETADA
         if (nuevoEstado == VentaEstado.anulada && venta.getVentaEstado() == VentaEstado.completada) {
             for (VentaDetalle detalle : venta.getDetalles()) {

@@ -55,19 +55,20 @@ public class InventarioLotesController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('administrador')")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<InventarioLotesResponseDTO> crear(@Valid @RequestBody InventarioLotesCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(inventarioLotesService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<InventarioLotesResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody InventarioLotesUpdateDTO dto){
         return ResponseEntity.ok(inventarioLotesService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('administrador')")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         inventarioLotesService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

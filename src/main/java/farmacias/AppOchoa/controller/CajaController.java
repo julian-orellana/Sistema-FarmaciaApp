@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,17 +47,20 @@ public class CajaController extends  BaseController{
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<CajaResponseDTO> crearCaja(@Valid @RequestBody CajaCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(cajaService.crearCaja(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<CajaResponseDTO> actualizarCaja(
             @PathVariable Long id, @Valid @RequestBody CajaUpdateDTO dto){
         return ResponseEntity.ok(cajaService.actualizarCaja(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<Void> cambiarEstado(
             @PathVariable Long id, @RequestBody CajaEstado cajaEstado){
         cajaService.cambiarEstado(getFarmaciaId(), id, cajaEstado);
