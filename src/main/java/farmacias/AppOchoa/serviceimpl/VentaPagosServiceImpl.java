@@ -5,9 +5,11 @@ import farmacias.AppOchoa.dto.ventapago.VentaPagoResponseDTO;
 import farmacias.AppOchoa.dto.ventapago.VentaPagoSimpleDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.CajaSesiones;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaPago;
 import farmacias.AppOchoa.repository.CajaSesionesRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.VentaPagoRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
 import farmacias.AppOchoa.services.VentaPagoService;
@@ -22,19 +24,23 @@ public class VentaPagosServiceImpl implements VentaPagoService {
     private final VentaPagoRepository ventaPagoRepository;
     private final VentaRepository ventaRepository;
     private final CajaSesionesRepository cajaSesionesRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public VentaPagosServiceImpl(
             VentaPagoRepository ventaPagoRepository,
             VentaRepository ventaRepository,
-            CajaSesionesRepository cajaSesionesRepository){
+            CajaSesionesRepository cajaSesionesRepository,
+            FarmaciaRepository farmaciaRepository){
         this.ventaPagoRepository = ventaPagoRepository;
         this.ventaRepository = ventaRepository;
         this.cajaSesionesRepository = cajaSesionesRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
     @Override
     public VentaPagoResponseDTO crear(Long farmaciaId, VentaPagoCreateDTO dto){
         Venta venta = buscarVentas(farmaciaId, dto.getVentaId());
         CajaSesiones cajaSesiones = buscarSesiones(farmaciaId, dto.getCajaSesionId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         VentaPago ventaPago = VentaPago.builder()
                 .venta(venta)
@@ -43,6 +49,7 @@ public class VentaPagosServiceImpl implements VentaPagoService {
                 .referenciaTransaccion(dto.getReferenciaTransaccion())
                 .montoRecibido(dto.getMontoRecibido())
                 .montoVuelto(dto.getMontoVuelto())
+                .farmacia(farmacia)
                 .build();
 
         return VentaPagoResponseDTO.fromEntity(ventaPagoRepository.save(ventaPago));

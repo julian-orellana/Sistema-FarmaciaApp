@@ -5,6 +5,7 @@ import farmacias.AppOchoa.dto.inventario.InventarioResponseDTO;
 import farmacias.AppOchoa.dto.inventario.InventarioSimpleDTO;
 import farmacias.AppOchoa.dto.inventario.InventarioUpdateDTO;
 import farmacias.AppOchoa.model.*;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.InventarioRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
@@ -24,14 +25,17 @@ public class InventarioServiceImpl implements InventarioService {
     private final InventarioRepository inventarioRepository;
     private final ProductoRepository productoRepository;
     private final SucursalRepository sucursalRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public InventarioServiceImpl(
             InventarioRepository inventarioRepository,
             ProductoRepository productoRepository,
-            SucursalRepository sucursalRepository) {
+            SucursalRepository sucursalRepository,
+            FarmaciaRepository farmaciaRepository) {
         this.inventarioRepository = inventarioRepository;
         this.productoRepository = productoRepository;
         this.sucursalRepository = sucursalRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
@@ -43,12 +47,14 @@ public class InventarioServiceImpl implements InventarioService {
 
         Producto producto = buscarProducto(farmaciaId, dto.getProductoId());
         Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Inventario inventario = Inventario.builder()
                 .inventarioCantidadActual(dto.getCantidadActual())
                 .inventarioCantidadMinima(dto.getCantidadMinima())
                 .producto(producto)
                 .sucursal(sucursal)
+                .farmacia(farmacia)
                 .build();
 
         return InventarioResponseDTO.fromEntity(inventarioRepository.save(inventario));

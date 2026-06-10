@@ -4,8 +4,10 @@ import farmacias.AppOchoa.dto.ventafel.VentaFelCreateDTO;
 import farmacias.AppOchoa.dto.ventafel.VentaFelResponseDTO;
 import farmacias.AppOchoa.dto.ventafel.VentaFelSimpleDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaFel;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.VentaFelRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
 import farmacias.AppOchoa.services.VentaFelService;
@@ -19,20 +21,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class VentaFelServiceImpl implements VentaFelService {
     private final VentaFelRepository ventaFelRepository;
     private final VentaRepository ventaRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public VentaFelServiceImpl(
             VentaFelRepository ventaFelRepository,
-            VentaRepository ventaRepository){
+            VentaRepository ventaRepository,
+            FarmaciaRepository farmaciaRepository){
         this.ventaFelRepository = ventaFelRepository;
         this.ventaRepository = ventaRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
     public VentaFelResponseDTO crear(Long farmaciaId, VentaFelCreateDTO dto){
         Venta venta = buscarVenta(farmaciaId, dto.getVentaId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         VentaFel ventaFel = VentaFel.builder()
                 .venta(venta)
+                .farmacia(farmacia)
                 .build();
         return VentaFelResponseDTO.fromEntity(ventaFelRepository.save(ventaFel));
     }

@@ -26,24 +26,28 @@ public class CompraServiceImpl implements CompraService {
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
     private final InventarioLotesRepository loteRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public CompraServiceImpl(
             CompraRepository compraRepository,
             SucursalRepository sucursalRepository,
             UsuarioRepository usuarioRepository,
             ProductoRepository productoRepository,
-            InventarioLotesRepository loteRepository) {
+            InventarioLotesRepository loteRepository,
+            FarmaciaRepository farmaciaRepository) {
         this.compraRepository = compraRepository;
         this.sucursalRepository = sucursalRepository;
         this.usuarioRepository = usuarioRepository;
         this.productoRepository = productoRepository;
         this.loteRepository = loteRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
     public CompraResponseDTO crear(Long farmaciaId, CompraCreateDTO dto) {
         Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
         Usuario usuario = buscarUsuario(farmaciaId, dto.getUsuarioId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         // 1. Crear Cabecera
         Compra compra = Compra.builder()
