@@ -69,8 +69,8 @@ public class VentaServiceImplTest {
                 .usuario(usuario)
                 .build();
 
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        when(sucursalRepository.findById(1L)).thenReturn(Optional.of(sucursal));
+        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(usuario));
+        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
         when(ventaRepository.save(any(Venta.class))).thenReturn(venta);
         //ACT
         VentaResponseDTO resultado = ventaService.crear(farmaciaId, dto);

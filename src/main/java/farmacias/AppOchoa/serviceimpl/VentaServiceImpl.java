@@ -43,8 +43,8 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     public VentaResponseDTO crear(Long farmaciaId, VentaCreateDTO dto) {
-        Sucursal sucursal = buscarSucursal(dto.getSucursalId());
-        Usuario usuario = buscarUsuario(dto.getUsuarioId());
+        Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        Usuario usuario = buscarUsuario(farmaciaId, dto.getUsuarioId());
 
         // Crear cabecera de venta
         Venta venta = Venta.builder()
@@ -60,8 +60,8 @@ public class VentaServiceImpl implements VentaService {
 
         // Procesar Detalles y Actualizar Inventario
         for (VentaDetalleCreateDTO detalleDto : dto.getDetalles()) {
-            Producto producto = buscarProducto(detalleDto.getProductoId());
-            InventarioLotes lote = buscarLote(detalleDto.getLoteId());
+            Producto producto = buscarProducto(farmaciaId, detalleDto.getProductoId());
+            InventarioLotes lote = buscarLote(farmaciaId, detalleDto.getLoteId());
 
             // Validación de stock
             if (lote.getLoteCantidadActual() < detalleDto.getCantidad()) {
@@ -125,7 +125,7 @@ public class VentaServiceImpl implements VentaService {
     @Override
     @Transactional(readOnly = true)
     public Page<VentaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return ventaRepository.buscarPorTexto(texto, pageable)
+        return ventaRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(VentaSimpleDTO::fromEntity);
     }
 
@@ -175,24 +175,24 @@ public class VentaServiceImpl implements VentaService {
     }
 
     // Métodos auxiliares privados
-    private Sucursal buscarSucursal(Long id) {
-        return sucursalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada ID: " + id));
+    private Sucursal buscarSucursal(Long farmaciaId, Long id) {
+        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
     }
 
-    private Usuario buscarUsuario(Long id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + id));
+    private Usuario buscarUsuario(Long farmaciaId, Long id) {
+        return usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado en tu farmacia ID: " + id));
     }
 
-    private Producto buscarProducto(Long id) {
+    private Producto buscarProducto(Long farmaciaId, Long id) {
         return productoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado ID: " + id));
+                .filter(p -> p.getFarmacia().getFarmaciaId().equals(farmaciaId))
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
-    private InventarioLotes buscarLote(Long id) {
-        // El lote pertenece a la sucursal que ya fue validada en el contexto de venta
-        return loteRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
+    private InventarioLotes buscarLote(Long farmaciaId, Long id) {
+        return loteRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado en tu farmacia ID: " + id));
     }
 }

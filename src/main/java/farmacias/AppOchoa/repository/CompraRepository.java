@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface CompraRepository extends JpaRepository<Compra, Long> {
 
@@ -37,6 +38,9 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
     List<Compra> findTop10ByCompraEstadoOrderByCompraFechaDesc(CompraEstado estado);
 
     boolean existsBySucursalSucursalIdAndCompraFecha(Long sucursalId, LocalDate fecha);
+    Optional<Compra> findByCompraIdAndFarmacia_FarmaciaId(Long compraId, Long farmaciaId);
+    Page<Compra> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
+    Page<Compra> findByCompraEstadoAndFarmacia_FarmaciaId(CompraEstado estado, Long farmaciaId, Pageable pageable);
 
     //JPQL queries mantienen List (son consultas agregadas)
     @Query("SELECT MONTH(c.compraFecha) as mes, SUM(c.compraTotal) as total " +
@@ -46,14 +50,9 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
     List<Object[]> findTotalComprasPorMes(@Param("anio") int anio,
                                           @Param("sucursalId") Long sucursalId);
 
-    @Query("SELECT c FROM Compra c WHERE c.compraTotal > :montoMinimo " +
-            "AND c.compraEstado = 'activa'")
-    Page<Compra> findComprasConMontoMayorA(@Param("montoMinimo") BigDecimal montoMinimo, Pageable pageable);
-    Page<Compra> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
-    java.util.Optional<Compra> findByCompraIdAndFarmacia_FarmaciaId(Long compraId, Long farmaciaId);
-    @Query("SELECT c FROM Compra c WHERE " +
+    @Query("SELECT c FROM Compra c WHERE c.farmacia.farmaciaId = :farmaciaId AND (" +
             "LOWER(c.compraObservaciones) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(c.usuario.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
-            "LOWER(c.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    Page<Compra> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
+            "LOWER(c.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Compra> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
 }

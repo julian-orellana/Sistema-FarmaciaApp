@@ -103,7 +103,7 @@ public class VentaPagosServiceImplTest {
         cajaSesiones.setSesionId(1L);
 
         Page<VentaPago> page = new PageImpl<>(List.of(ventaPago));
-        when(ventaPagoRepository.buscarPorTexto(texto, pageable)).thenReturn(page);
+        when(ventaPagoRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
         Page<VentaPagoSimpleDTO> resultado = ventaPagosService.buscarPorTexto(farmaciaId, texto, pageable);
 
         assertNotNull(resultado);
