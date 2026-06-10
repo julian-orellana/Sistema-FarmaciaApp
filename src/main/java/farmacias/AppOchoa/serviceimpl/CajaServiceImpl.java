@@ -8,8 +8,10 @@ import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Caja;
 import farmacias.AppOchoa.model.CajaEstado;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CajaRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.services.CajaService;
 import org.springframework.data.domain.Page;
@@ -22,12 +24,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class CajaServiceImpl implements CajaService {
     private final CajaRepository cajaRepository;
     private final SucursalRepository sucursalRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public CajaServiceImpl(
             CajaRepository cajaRepository,
-            SucursalRepository sucursalRepository){
+            SucursalRepository sucursalRepository,
+            FarmaciaRepository farmaciaRepository){
         this.cajaRepository = cajaRepository;
         this.sucursalRepository = sucursalRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
@@ -36,11 +41,13 @@ public class CajaServiceImpl implements CajaService {
             throw new DuplicateResourceException("Ya existe una caja con ese nombre");
         }
         Sucursal sucursal =  buscarSucursal(farmaciaId, dto.getSucursalId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Caja caja = Caja.builder()
                 .cajaNombre(dto.getCajaNombre())
                 .sucursal(sucursal)
                 .cajaEstado(CajaEstado.activa)
+                .farmacia(farmacia)
                 .build();
 
         return CajaResponseDTO.fromEntity(cajaRepository.save(caja));

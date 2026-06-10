@@ -9,6 +9,7 @@ import farmacias.AppOchoa.model.MetodoPagoEstado;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaPago;
 import farmacias.AppOchoa.repository.CajaSesionesRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.VentaPagoRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
 import farmacias.AppOchoa.serviceimpl.VentaPagosServiceImpl;
@@ -42,6 +43,8 @@ public class VentaPagosServiceImplTest {
     private VentaRepository ventaRepository;
     @Mock
     private CajaSesionesRepository cajaSesionesRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private VentaPagosServiceImpl ventaPagosService;
 

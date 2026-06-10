@@ -8,10 +8,7 @@ import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.InventarioLotes;
 import farmacias.AppOchoa.model.Producto;
 import farmacias.AppOchoa.model.Sucursal;
-import farmacias.AppOchoa.repository.AlertaRepository;
-import farmacias.AppOchoa.repository.InventarioLotesRepository;
-import farmacias.AppOchoa.repository.ProductoRepository;
-import farmacias.AppOchoa.repository.SucursalRepository;
+import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.AlertaServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +35,8 @@ class AlertaServiceImplTest {
     private InventarioLotesRepository inventarioLotesRepository;
     @Mock
     private ProductoRepository productoRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
 
     @InjectMocks
     private AlertaServiceImpl alertaService;

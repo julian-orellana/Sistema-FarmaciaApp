@@ -38,6 +38,8 @@ public class CompraServiceImplTest {
     private UsuarioRepository usuarioRepository;
     @InjectMocks
     private CompraServiceImpl compraService;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @Test
     @DisplayName("Deberia de crear una compra correctamente con los datos registrados")
     void crearCompraExitosa(){

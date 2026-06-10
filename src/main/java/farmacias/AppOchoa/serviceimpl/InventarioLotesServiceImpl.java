@@ -4,10 +4,8 @@ import farmacias.AppOchoa.dto.inventariolotes.InventarioLotesCreateDTO;
 import farmacias.AppOchoa.dto.inventariolotes.InventarioLotesResponseDTO;
 import farmacias.AppOchoa.dto.inventariolotes.InventarioLotesSimpleDTO;
 import farmacias.AppOchoa.dto.inventariolotes.InventarioLotesUpdateDTO;
-import farmacias.AppOchoa.model.InventarioLotes;
-import farmacias.AppOchoa.model.LoteEstado;
-import farmacias.AppOchoa.model.Producto;
-import farmacias.AppOchoa.model.Sucursal;
+import farmacias.AppOchoa.model.*;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.InventarioLotesRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
@@ -23,13 +21,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class InventarioLotesServiceImpl implements InventarioLotesService {
 
     private final InventarioLotesRepository inventarioLotesRepository;
     private final ProductoRepository productoRepository;
     private final SucursalRepository sucursalRepository;
+    private final FarmaciaRepository farmaciaRepository;
+
+    public InventarioLotesServiceImpl(
+            InventarioLotesRepository inventarioLotesRepository,
+            ProductoRepository productoRepository,
+            SucursalRepository sucursalRepository,
+            FarmaciaRepository farmaciaRepository) {
+        this.inventarioLotesRepository = inventarioLotesRepository;
+        this.productoRepository = productoRepository;
+        this.sucursalRepository = sucursalRepository;
+        this.farmaciaRepository = farmaciaRepository;
+    }
 
     @Override
     public InventarioLotesResponseDTO crear(Long farmaciaId, InventarioLotesCreateDTO dto) {
@@ -39,6 +48,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
 
         Producto producto = buscarProducto(farmaciaId, dto.getProductoId());
         Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         InventarioLotes lote = InventarioLotes.builder()
                 .loteNumero(dto.getNumeroLote())
@@ -49,6 +59,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
                 .loteEstado(LoteEstado.disponible)
                 .producto(producto)
                 .sucursal(sucursal)
+                .farmacia(farmacia)
                 .build();
 
         return InventarioLotesResponseDTO.fromEntity(inventarioLotesRepository.save(lote));

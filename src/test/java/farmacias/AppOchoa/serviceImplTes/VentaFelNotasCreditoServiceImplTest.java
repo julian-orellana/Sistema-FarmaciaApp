@@ -5,6 +5,7 @@ import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoResponseD
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoSimpleDTO;
 import farmacias.AppOchoa.model.VentaFel;
 import farmacias.AppOchoa.model.VentaFelNotasCredito;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.VentaFelNotasCreditoRepository;
 import farmacias.AppOchoa.repository.VentaFelRepository;
 import farmacias.AppOchoa.serviceimpl.VentaFelNotasCreditoServiceImpl;
@@ -35,6 +36,8 @@ public class VentaFelNotasCreditoServiceImplTest {
     private VentaFelNotasCreditoRepository ventaFelNotasCreditoRepository;
     @Mock
     private VentaFelRepository ventaFelRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private VentaFelNotasCreditoServiceImpl ventaFelNotasCreditoService;
 

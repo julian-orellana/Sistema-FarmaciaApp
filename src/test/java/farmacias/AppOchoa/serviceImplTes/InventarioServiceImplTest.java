@@ -7,6 +7,7 @@ import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Inventario;
 import farmacias.AppOchoa.model.Producto;
 import farmacias.AppOchoa.model.Sucursal;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.InventarioRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
@@ -32,6 +33,9 @@ public class InventarioServiceImplTest {
     private ProductoRepository productoRepository;
     @Mock
     private SucursalRepository sucursalRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
+
     @InjectMocks
     private InventarioServiceImpl inventarioService;
     @Test

@@ -8,6 +8,7 @@ import farmacias.AppOchoa.model.Caja;
 import farmacias.AppOchoa.model.CajaEstado;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CajaRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.serviceimpl.CajaServiceImpl;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +37,8 @@ public class CajaServiceImplTest {
     private CajaRepository cajaRepository;
     @Mock
     private SucursalRepository sucursalRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private CajaServiceImpl cajaService;
 

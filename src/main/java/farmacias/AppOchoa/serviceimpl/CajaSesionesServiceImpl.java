@@ -6,9 +6,11 @@ import farmacias.AppOchoa.dto.cajasesiones.CajaSesionesSimpleDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Caja;
 import farmacias.AppOchoa.model.CajaSesiones;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.CajaRepository;
 import farmacias.AppOchoa.repository.CajaSesionesRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.services.CajaSesionesService;
 import org.springframework.data.domain.Page;
@@ -22,24 +24,29 @@ public class CajaSesionesServiceImpl implements CajaSesionesService {
     private final CajaSesionesRepository cajaSesionesRepository;
     private final UsuarioRepository usuarioRepository;
     private final CajaRepository cajaRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public CajaSesionesServiceImpl(
             CajaSesionesRepository cajaSesionesRepository,
             UsuarioRepository usuarioRepository,
-            CajaRepository cajaRepository){
+            CajaRepository cajaRepository,
+            FarmaciaRepository farmaciaRepository){
         this.cajaSesionesRepository = cajaSesionesRepository;
         this.usuarioRepository = usuarioRepository;
         this.cajaRepository = cajaRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
     @Override
     public CajaSesionesResponseDTO crear(Long farmaciaId, CajaSesionesCreateDTO dto){
         Usuario usuario = buscarUsuario(farmaciaId, dto.getUsuarioId());
         Caja caja = buscarCaja(farmaciaId, dto.getCajaId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         CajaSesiones cajaSesiones = CajaSesiones.builder()
                 .caja(caja)
                 .usuario(usuario)
                 .sesionFondoInicial(dto.getSesionFondoInicial())
+                .farmacia(farmacia)
                 .build();
 
         return CajaSesionesResponseDTO.fromEntity(cajaSesionesRepository.save(cajaSesiones));

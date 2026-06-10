@@ -6,6 +6,7 @@ import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaEstado;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
@@ -37,6 +38,8 @@ public class VentaServiceImplTest {
     private SucursalRepository sucursalRepository;
     @InjectMocks
     private VentaServiceImpl ventaService;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @Test
     @DisplayName("Debebria crear una correcta venta, con los datos ingresados")
     void ventaExitosa(){

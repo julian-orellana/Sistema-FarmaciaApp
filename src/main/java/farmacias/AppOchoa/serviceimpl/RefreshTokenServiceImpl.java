@@ -24,6 +24,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UsuarioRepository usuarioRepository;
 
+
     // 7 días en ms por default — configurable con REFRESH_TOKEN_EXPIRATION en .env
     @Value("${jwt.refresh-expiration:604800000}")
     private Long refreshExpirationMs;

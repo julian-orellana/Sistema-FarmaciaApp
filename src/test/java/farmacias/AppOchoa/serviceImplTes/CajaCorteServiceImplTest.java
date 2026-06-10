@@ -6,10 +6,7 @@ import farmacias.AppOchoa.dto.cajacorte.CajaCorteSimpleDTO;
 import farmacias.AppOchoa.model.CajaCorte;
 import farmacias.AppOchoa.model.CajaSesiones;
 import farmacias.AppOchoa.model.Usuario;
-import farmacias.AppOchoa.repository.CajaCortesRepository;
-import farmacias.AppOchoa.repository.CajaSesionesRepository;
-import farmacias.AppOchoa.repository.UsuarioRepository;
-import farmacias.AppOchoa.repository.VentaPagoRepository;
+import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.CajaCorteServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,8 +41,11 @@ public class CajaCorteServiceImplTest {
     private UsuarioRepository usuarioRepository;
     @Mock
     private VentaPagoRepository ventaPagoRepository;
+    @Mock
+    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private CajaCorteServiceImpl cajaCorteService;
+
 
     @Test
     @DisplayName("Deberia crear un corte de caja correctamente")

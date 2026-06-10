@@ -4,10 +4,7 @@ import farmacias.AppOchoa.dto.cajacorte.CajaCorteCreateDTO;
 import farmacias.AppOchoa.dto.cajacorte.CajaCorteResponseDTO;
 import farmacias.AppOchoa.dto.cajacorte.CajaCorteSimpleDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
-import farmacias.AppOchoa.model.CajaCorte;
-import farmacias.AppOchoa.model.CajaSesiones;
-import farmacias.AppOchoa.model.Usuario;
-import farmacias.AppOchoa.model.MetodoPagoEstado;
+import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.services.CajaCorteService;
 import org.springframework.data.domain.Page;
@@ -25,16 +22,19 @@ public class CajaCorteServiceImpl implements CajaCorteService {
     private final CajaSesionesRepository cajaSesionesRepository;
     private final UsuarioRepository usuarioRepository;
     private final VentaPagoRepository ventaPagoRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public CajaCorteServiceImpl(
             CajaCortesRepository cajaCortesRepository,
             CajaSesionesRepository cajaSesionesRepository,
             UsuarioRepository usuarioRepository,
-            VentaPagoRepository ventaPagoRepository) {
+            VentaPagoRepository ventaPagoRepository,
+            FarmaciaRepository farmaciaRepository) {
         this.cajaCortesRepository = cajaCortesRepository;
         this.cajaSesionesRepository = cajaSesionesRepository;
         this.usuarioRepository = usuarioRepository;
         this.ventaPagoRepository = ventaPagoRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
@@ -46,6 +46,8 @@ public class CajaCorteServiceImpl implements CajaCorteService {
         BigDecimal totalDebito = ventaPagoRepository.sumarPorSesionYMetodo(cajaSesiones.getSesionId(), MetodoPagoEstado.tarjetaDeDebito);
         BigDecimal totalVentas = ventaPagoRepository.sumarTotalPorSesion(cajaSesiones.getSesionId());
 
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
+
         CajaCorte cajaCorte = CajaCorte.builder()
                 .cajaSesiones(cajaSesiones)
                 .usuario(usuario)
@@ -53,6 +55,7 @@ public class CajaCorteServiceImpl implements CajaCorteService {
                 .corteTotalTarjetaCredito(totalCredito)
                 .corteTotalTarjetaDebito(totalDebito)
                 .corteTotalVentas(totalVentas)
+                .farmacia(farmacia)
                 .build();
 
         return CajaCorteResponseDTO.fromEntity(cajaCortesRepository.save(cajaCorte));

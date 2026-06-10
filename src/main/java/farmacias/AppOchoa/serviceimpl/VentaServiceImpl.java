@@ -30,24 +30,29 @@ public class VentaServiceImpl implements VentaService {
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
     private final InventarioLotesRepository loteRepository;
+    private final FarmaciaRepository farmaciaRepository;
+
 
     public VentaServiceImpl(
             VentaRepository ventaRepository,
             SucursalRepository sucursalRepository,
             UsuarioRepository usuarioRepository,
             ProductoRepository productoRepository,
-            InventarioLotesRepository loteRepository) {
+            InventarioLotesRepository loteRepository,
+            FarmaciaRepository farmaciaRepository) {
         this.ventaRepository = ventaRepository;
         this.sucursalRepository = sucursalRepository;
         this.usuarioRepository = usuarioRepository;
         this.productoRepository = productoRepository;
         this.loteRepository = loteRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
     public VentaResponseDTO crear(Long farmaciaId, VentaCreateDTO dto) {
         Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
         Usuario usuario = buscarUsuario(farmaciaId, dto.getUsuarioId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         // Crear cabecera de venta
         Venta venta = Venta.builder()
@@ -57,6 +62,7 @@ public class VentaServiceImpl implements VentaService {
                 .ventaNombreCliente(dto.getNombreCliente() != null ? dto.getNombreCliente() : "Consumidor Final")
                 .ventaEstado(VentaEstado.completada)
                 .detalles(new ArrayList<>())
+                .farmacia(farmacia)
                 .build();
 
         BigDecimal acumuladorSubtotal = BigDecimal.ZERO;

@@ -5,8 +5,10 @@ import farmacias.AppOchoa.dto.autorizacion.AutorizacionResponseDTO;
 import farmacias.AppOchoa.dto.autorizacion.AutorizacionSimpleDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Autorizacion;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.AutorizacionRepository;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.services.AutorizacionService;
 import org.springframework.data.domain.Page;
@@ -19,23 +21,28 @@ import org.springframework.transaction.annotation.Transactional;
 public class AutorizacionServiceImpl implements AutorizacionService {
     private final AutorizacionRepository autorizacionRepository;
     private final UsuarioRepository usuarioRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public AutorizacionServiceImpl(
             AutorizacionRepository autorizacionRepository,
-            UsuarioRepository usuarioRepository){
+            UsuarioRepository usuarioRepository,
+            FarmaciaRepository farmaciaRepository){
         this.autorizacionRepository = autorizacionRepository;
         this.usuarioRepository = usuarioRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
     @Override
     public AutorizacionResponseDTO crear(Long farmaciaId, AutorizacionCreateDTO dto){
         Usuario usuario = buscarCajero(farmaciaId, dto.getCajeroId());
         Usuario usuario1 = buscarSupervisor(dto.getSupervisorId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Autorizacion autorizacion = Autorizacion.builder()
                 .autorizacionReferenciaId(dto.getAutorizacionReferenciaId())
                 .cajero(usuario)
                 .supervisor(usuario1)
                 .autorizacionTipo(dto.getAutorizacionTipo())
+                .farmacia(farmacia)
                 .build();
         return AutorizacionResponseDTO.fromEntity(autorizacionRepository.save(autorizacion));
     }

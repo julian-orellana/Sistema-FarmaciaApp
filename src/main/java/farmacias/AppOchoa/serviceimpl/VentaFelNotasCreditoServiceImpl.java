@@ -4,9 +4,11 @@ import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoCreateDTO
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoResponseDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoSimpleDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.NotaEstado;
 import farmacias.AppOchoa.model.VentaFel;
 import farmacias.AppOchoa.model.VentaFelNotasCredito;
+import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.VentaFelNotasCreditoRepository;
 import farmacias.AppOchoa.repository.VentaFelRepository;
 import farmacias.AppOchoa.services.VentaFelNotasCreditoService;
@@ -22,20 +24,25 @@ import java.time.LocalDateTime;
 public class VentaFelNotasCreditoServiceImpl implements VentaFelNotasCreditoService {
     private final VentaFelNotasCreditoRepository ventaFelNotasCreditoRepository;
     private final VentaFelRepository ventaFelRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public VentaFelNotasCreditoServiceImpl(
             VentaFelNotasCreditoRepository ventaFelNotasCreditoRepository,
-            VentaFelRepository ventaFelRepository){
+            VentaFelRepository ventaFelRepository,
+            FarmaciaRepository farmaciaRepository){
         this.ventaFelNotasCreditoRepository = ventaFelNotasCreditoRepository;
         this.ventaFelRepository = ventaFelRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
     @Override
     public VentaFelNotasCreditoResponseDTO crear(Long farmaciaId, VentaFelNotasCreditoCreateDTO dto){
         VentaFel ventaFel = buscarVentas(farmaciaId, dto.getFelId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         VentaFelNotasCredito ventaFelNotasCredito = VentaFelNotasCredito.builder()
                 .ventaFel(ventaFel)
                 .notaMotivo(dto.getNotaMotivo())
+                .farmacia(farmacia)
                 .build();
 
         return VentaFelNotasCreditoResponseDTO.fromEntity(ventaFelNotasCreditoRepository.save(ventaFelNotasCredito));
