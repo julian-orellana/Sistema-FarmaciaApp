@@ -25,7 +25,7 @@ public class Usuario implements UserDetails {
     @Column(name = "usuario_id")
     private Long usuarioId;
 
-    @Column(name = "usuario_nombre_usuario", nullable = false, length = 50)
+    @Column(name = "usuario_nombre_usuario", nullable = false, unique = true, length = 50)
     private String nombreUsuarioUsuario;
 
     @Column(name = "usuario_contrasena_hash", nullable = false, length = 255)

@@ -1,6 +1,7 @@
 package farmacias.AppOchoa.controller;
 
 import farmacias.AppOchoa.dto.usuario.*;
+import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.services.UsuarioService;
 import farmacias.AppOchoa.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,6 +69,15 @@ public class UsuarioController extends BaseController {
     @PreAuthorize("hasAuthority('administrador')")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id){
         usuarioService.eliminarUsuario(getFarmaciaId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Cada usuario solo puede cambiar SU contraseña: el id sale del token, no del path.
+    // Revoca todos los refresh tokens, el cliente debe iniciar sesión nuevamente.
+    @PatchMapping("/me/contrasena")
+    public ResponseEntity<Void> cambiarContrasena(@Valid @RequestBody CambiarContrasenaDTO dto){
+        Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        usuarioService.cambiarContrasena(solicitante.getUsuarioId(), dto);
         return ResponseEntity.noContent().build();
     }
 

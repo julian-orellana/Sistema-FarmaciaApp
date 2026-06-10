@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @Transactional
@@ -60,7 +62,13 @@ public class VentaServiceImpl implements VentaService {
         BigDecimal acumuladorSubtotal = BigDecimal.ZERO;
 
         // Procesar Detalles y Actualizar Inventario
-        for (VentaDetalleCreateDTO detalleDto : dto.getDetalles()) {
+        // Orden determinista por loteId: evita deadlocks entre ventas concurrentes
+        // que bloquean los mismos lotes en distinto orden
+        List<VentaDetalleCreateDTO> detallesOrdenados = dto.getDetalles().stream()
+                .sorted(Comparator.comparing(VentaDetalleCreateDTO::getLoteId))
+                .toList();
+
+        for (VentaDetalleCreateDTO detalleDto : detallesOrdenados) {
             Producto producto = buscarProducto(farmaciaId, detalleDto.getProductoId());
             InventarioLotes lote = buscarLote(farmaciaId, detalleDto.getLoteId());
 
@@ -204,8 +212,9 @@ public class VentaServiceImpl implements VentaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
+    // Carga con lock pesimista: la fila queda bloqueada hasta el commit de la venta
     private InventarioLotes buscarLote(Long farmaciaId, Long id) {
-        return loteRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        return loteRepository.findByLoteIdAndFarmaciaIdForUpdate(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado en tu farmacia ID: " + id));
     }
 }
