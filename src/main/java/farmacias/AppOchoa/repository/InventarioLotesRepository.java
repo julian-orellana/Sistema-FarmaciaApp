@@ -2,9 +2,11 @@ package farmacias.AppOchoa.repository;
 
 import farmacias.AppOchoa.model.InventarioLotes;
 import farmacias.AppOchoa.model.LoteEstado;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -37,6 +39,12 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     Optional<InventarioLotes> findByLoteNumero(String loteNumero);
     Page<InventarioLotes> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     Optional<InventarioLotes> findByLoteIdAndFarmacia_FarmaciaId(Long loteId, Long farmaciaId);
+
+    // SELECT ... FOR UPDATE: bloquea la fila del lote para que dos ventas
+    // simultáneas no descuenten el mismo stock (la segunda espera y ve la cantidad ya descontada)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT l FROM InventarioLotes l WHERE l.loteId = :loteId AND l.farmacia.farmaciaId = :farmaciaId")
+    Optional<InventarioLotes> findByLoteIdAndFarmaciaIdForUpdate(@Param("loteId") Long loteId, @Param("farmaciaId") Long farmaciaId);
     @Query("SELECT l FROM InventarioLotes l WHERE " +
             "LOWER(l.loteNumero) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<InventarioLotes> buscarPorTexto(@Param("texto") String texto, Pageable pageable);

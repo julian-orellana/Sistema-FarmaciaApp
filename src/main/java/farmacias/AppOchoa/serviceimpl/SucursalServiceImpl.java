@@ -8,6 +8,7 @@ import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
+import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.SucursalService;
@@ -36,6 +37,14 @@ public class SucursalServiceImpl implements SucursalService {
 
         Farmacia farmacia = farmaciaRepository.findById(farmaciaId)
                 .orElseThrow(()-> new ResourceNotFoundException("Farmacia no encontrada: " + farmaciaId));
+
+        // null en maxSucursales se interpreta como sin límite (farmacias previas al campo)
+        if (farmacia.getMaxSucursales() != null) {
+            long activas = sucursalRepository.countByFarmacia_FarmaciaIdAndSucursalEstadoTrue(farmaciaId);
+            if (activas >= farmacia.getMaxSucursales()) {
+                throw new BadRequestException("Tu plan permite máximo " + farmacia.getMaxSucursales() + " sucursales activas");
+            }
+        }
 
         Sucursal sucursal = Sucursal.builder()
                 .sucursalNombre(dto.getNombre())
