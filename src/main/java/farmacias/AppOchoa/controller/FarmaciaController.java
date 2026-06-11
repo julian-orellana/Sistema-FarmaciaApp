@@ -3,6 +3,7 @@ package farmacias.AppOchoa.controller;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaCreateDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaResponseDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaSimpleDTO;
+import farmacias.AppOchoa.dto.farmacia.SuscripcionRenovarDTO;
 import farmacias.AppOchoa.services.FarmaciaService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -49,6 +50,14 @@ public class FarmaciaController extends  BaseController{
     public ResponseEntity<FarmaciaResponseDTO> crear(@Valid @RequestBody FarmaciaCreateDTO dto){
         FarmaciaResponseDTO farmaciaResponseDTO = farmaciaService.crear(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(farmaciaResponseDTO);
+    }
+
+    @PatchMapping("/{id}/suscripcion")
+    @PreAuthorize("hasAuthority('superadmin')")
+    public ResponseEntity<FarmaciaResponseDTO> renovarSuscripcion(
+            @PathVariable Long id,
+            @Valid @RequestBody SuscripcionRenovarDTO dto){
+        return ResponseEntity.ok(farmaciaService.renovarSuscripcion(id, dto));
     }
 
     @DeleteMapping("/{id}")

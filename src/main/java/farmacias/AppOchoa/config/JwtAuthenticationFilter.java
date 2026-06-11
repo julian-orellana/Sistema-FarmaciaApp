@@ -1,8 +1,10 @@
 package farmacias.AppOchoa.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import farmacias.AppOchoa.exception.SuscripcionVencidaException;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.util.JwtUtil;
+import farmacias.AppOchoa.util.SuscripcionValidator;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -94,6 +96,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (!usuario.isEnabled()) {
                 log.warn("[JWT] Usuario desactivado intentó acceder a {}: {}", request.getRequestURI(), username);
                 escribirErrorJson(response, HttpStatus.UNAUTHORIZED, "La cuenta está desactivada. Contacta al administrador.");
+                return;
+            }
+
+            // Farmacia desactivada o vencida: rechazar aunque el token siga siendo válido (A8)
+            try {
+                SuscripcionValidator.validarVigencia(usuario.getFarmacia());
+            } catch (SuscripcionVencidaException e) {
+                log.warn("[JWT] Farmacia sin suscripción vigente intentó acceder a {}: {}", request.getRequestURI(), username);
+                escribirErrorJson(response, HttpStatus.UNAUTHORIZED, e.getMessage());
                 return;
             }
 

@@ -33,6 +33,11 @@ public class GlobalExceptionHandler {
         return construirRespuesta(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos", request);
     }
 
+    @ExceptionHandler(SuscripcionVencidaException.class)
+    public ResponseEntity<Object> manejarSuscripcionVencida(SuscripcionVencidaException ex, WebRequest request) {
+        return construirRespuesta(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<Object> manejarUsuarioDesactivado(DisabledException ex, WebRequest request) {
         return construirRespuesta(HttpStatus.UNAUTHORIZED, "La cuenta de usuario está desactivada", request);

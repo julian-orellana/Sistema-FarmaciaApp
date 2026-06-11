@@ -5,6 +5,7 @@ import farmacias.AppOchoa.model.RefreshToken;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.services.AuthService;
 import farmacias.AppOchoa.util.JwtUtil;
+import farmacias.AppOchoa.util.SuscripcionValidator;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,6 +42,9 @@ public class AuthServiceImpl implements AuthService {
         );
 
         Usuario usuario = (Usuario) auth.getPrincipal();
+
+        // A8: no emitir token si la farmacia está desactivada o vencida
+        SuscripcionValidator.validarVigencia(usuario.getFarmacia());
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", usuario.getUsuarioId());

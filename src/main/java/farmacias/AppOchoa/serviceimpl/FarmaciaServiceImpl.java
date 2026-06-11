@@ -3,6 +3,7 @@ package farmacias.AppOchoa.serviceimpl;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaCreateDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaResponseDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaSimpleDTO;
+import farmacias.AppOchoa.dto.farmacia.SuscripcionRenovarDTO;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Farmacia;
@@ -82,6 +83,18 @@ public class FarmaciaServiceImpl implements FarmaciaService {
     public Page<FarmaciaSimpleDTO> buscarPorTexto(String texto, Pageable pageable){
         return farmaciaRepository.buscarPorTexto(texto, pageable)
                 .map(FarmaciaSimpleDTO::fromEntity);
+    }
+
+    @Override
+    public FarmaciaResponseDTO renovarSuscripcion(Long id, SuscripcionRenovarDTO dto){
+        Farmacia farmacia = farmaciaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Farmacia no encontrada ID: " + id));
+
+        farmacia.setSuscripcionVigencia(dto.getNuevaVigencia());
+        farmacia.setEnPeriodoPrueba(false);
+        farmacia.setFarmaciaActiva(true);
+
+        return FarmaciaResponseDTO.fromEntity(farmaciaRepository.save(farmacia));
     }
 
     @Override
