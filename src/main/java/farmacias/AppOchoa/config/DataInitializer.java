@@ -86,9 +86,6 @@ public class DataInitializer {
 
                 usuarioRepository.save(admin);
                 log.warn("[DataInitializer] ¡¡¡ USUARIO ADMIN CREADO - CAMBIA LA CONTRASEÑA INMEDIATAMENTE !!!");
-                // La contraseña va por stdout, NO por el logger: en prod el root logger
-                // WARN tiene appender Loki (Grafana Cloud) y persistiria la credencial
-                // en un servicio externo. stdout queda solo en `docker logs`.
                 System.out.println("[DataInitializer] Contraseña temporal del admin (solo visible aquí): " + passwordInicial);
             }
 
