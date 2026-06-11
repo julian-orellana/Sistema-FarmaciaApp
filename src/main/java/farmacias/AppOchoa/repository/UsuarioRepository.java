@@ -20,6 +20,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByUsuarioIdAndFarmacia_FarmaciaId(Long usuarioId, Long farmaciaId);
     long countByFarmacia_FarmaciaIdAndUsuarioEstadoTrue(Long farmaciaId);
 
+
     @Query("SELECT u FROM Usuario u WHERE " +
             "LOWER(u.usuarioNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(u.usuarioApellido) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
