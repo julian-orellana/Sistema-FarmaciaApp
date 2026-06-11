@@ -2,6 +2,14 @@ spring:
   application:
     name: "AppOchoa"
 
+  # Tope de tamaño de página: un cliente no puede forzar páginas enormes
+  # (?size=1000000) que presionen memoria/latencia. Spring recorta al máximo. (B1)
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+        default-page-size: 20
+
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
