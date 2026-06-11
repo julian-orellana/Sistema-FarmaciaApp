@@ -3,10 +3,12 @@ package farmacias.AppOchoa.serviceimpl;
 import farmacias.AppOchoa.dto.autorizacion.AutorizacionCreateDTO;
 import farmacias.AppOchoa.dto.autorizacion.AutorizacionResponseDTO;
 import farmacias.AppOchoa.dto.autorizacion.AutorizacionSimpleDTO;
+import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Autorizacion;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Usuario;
+import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.repository.AutorizacionRepository;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
@@ -34,13 +36,13 @@ public class AutorizacionServiceImpl implements AutorizacionService {
     @Override
     public AutorizacionResponseDTO crear(Long farmaciaId, AutorizacionCreateDTO dto){
         Usuario usuario = buscarCajero(farmaciaId, dto.getCajeroId());
-        Usuario usuario1 = buscarSupervisor(dto.getSupervisorId());
+        Usuario supervisor = buscarSupervisor(farmaciaId, dto.getSupervisorId());
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Autorizacion autorizacion = Autorizacion.builder()
                 .autorizacionReferenciaId(dto.getAutorizacionReferenciaId())
                 .cajero(usuario)
-                .supervisor(usuario1)
+                .supervisor(supervisor)
                 .autorizacionTipo(dto.getAutorizacionTipo())
                 .farmacia(farmacia)
                 .build();
@@ -54,10 +56,19 @@ public class AutorizacionServiceImpl implements AutorizacionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cajero no encontrado en tu farmacia"));
     }
 
-    private Usuario buscarSupervisor(Long id){
+    // Scopeado por farmacia y restringido por rol: un supervisor de otra farmacia
+    // o un vendedor no puede autorizar operaciones (M10). superadmin tampoco:
+    // es operador de plataforma, no personal de la farmacia.
+    private Usuario buscarSupervisor(Long farmaciaId, Long id){
         if(id == null) return null;
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Supervisor no encontrado por ID"));
+        Usuario supervisor = usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Supervisor no encontrado en tu farmacia"));
+
+        if (supervisor.getUsuarioRol() != UsuarioRol.administrador
+                && supervisor.getUsuarioRol() != UsuarioRol.encargado) {
+            throw new BadRequestException("El supervisor debe tener rol administrador o encargado");
+        }
+        return supervisor;
     }
 
     @Override
