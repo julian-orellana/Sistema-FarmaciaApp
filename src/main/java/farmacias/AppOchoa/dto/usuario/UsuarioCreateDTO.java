@@ -16,7 +16,11 @@ public class UsuarioCreateDTO {
     private String nombreUsuario;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    // Máximo 72: BCrypt ignora silenciosamente los bytes que pasan de ese límite
+    @Size(min = 10, max = 72, message = "La contraseña debe tener entre 10 y 72 caracteres")
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
+            message = "La contraseña debe incluir al menos una mayúscula, una minúscula y un número")
     private String contrasena;
 
     @NotBlank(message = "El nombre es obligatorio")

@@ -1,3 +1,9 @@
+# En prod solo se permite el dominio del frontend; nunca localhost. (B2)
+# Sobreescribible por env var por si cambia el dominio sin recompilar.
+app:
+  cors:
+    allowed-origins: "${CORS_ALLOWED_ORIGINS:https://farmacloud.software}"
+
 spring:
   jpa:
     hibernate:

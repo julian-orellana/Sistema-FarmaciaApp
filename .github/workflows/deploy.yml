@@ -55,7 +55,11 @@ jobs:
         with:
           context: .
           push: true
-          tags: julixxx23/app-ochoa:latest
+          # Imagen versionada (M12): se taggea con el SHA del commit (trazable y
+          # con rollback) y ademas 'latest' como puntero al ultimo despliegue.
+          tags: |
+            julixxx23/app-ochoa:${{ github.sha }}
+            julixxx23/app-ochoa:latest
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.0
@@ -64,6 +68,13 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # APP_IMAGE_TAG fija la version exacta (SHA) que el server debe correr.
+            # GitHub interpola el SHA aqui antes de enviar el script por SSH.
+            export APP_IMAGE_TAG="${{ github.sha }}"
             docker compose pull
-            docker compose down
-            docker compose up -d
+            # up -d --wait (M12): recrea el contenedor manteniendo el viejo hasta
+            # que el nuevo pasa el healthcheck, en vez de 'down' + 'up' (que dejaba
+            # la app caida ~45s). Minimiza la ventana de downtime a la recreacion.
+            docker compose up -d --wait
+            # Limpiar imagenes viejas sin tag para no llenar el disco del server.
+            docker image prune -f

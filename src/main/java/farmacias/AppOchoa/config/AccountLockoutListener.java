@@ -13,18 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-/**
- * M2: lockout por intentos fallidos.
- *
- * Lleva la cuenta de fallos consecutivos por usuario y bloquea la cuenta
- * por {@link #DURACION_BLOQUEO_MINUTOS} minutos tras {@link #MAX_INTENTOS} fallos.
- * El bloqueo en sí lo aplica Spring Security vía {@code Usuario.isAccountNonLocked()},
- * que lee la columna {@code usuario_bloqueado_hasta}; este listener solo mantiene
- * el contador y la fecha de bloqueo.
- *
- * Complementa al {@link LoginRateLimitFilter} (rate limit por IP, transitorio):
- * este lockout es por cuenta y persistente.
- */
+
+//M2: lockout por intentos fallidos.
+
 @Component
 public class AccountLockoutListener {
 

@@ -2,6 +2,7 @@ package farmacias.AppOchoa.config;
 
 import farmacias.AppOchoa.serviceimpl.UsuarioServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +35,12 @@ public class SecurityConfig {
 
     @Autowired
     private UsuarioServiceImpl usuarioServiceImpl;
+
+    // Orígenes CORS permitidos, configurados por perfil (B2). En dev incluye
+    // localhost; en prod solo el dominio del frontend. Nunca van hardcodeados
+    // para no exponer localhost como origen confiable en producción.
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -73,11 +80,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",
-                "http://localhost:3000",
-                "https://farmacloud.software"
-        ));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
