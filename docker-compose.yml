@@ -1,6 +1,9 @@
 services:
   app:
-    image: julixxx23/app-ochoa:latest
+    # Imagen versionada (M12): APP_IMAGE_TAG fija qué versión corre en el server.
+    # CI la setea al SHA del commit; default 'latest' para arranques manuales.
+    # Permite rollback apuntando a un SHA anterior sin reconstruir.
+    image: julixxx23/app-ochoa:${APP_IMAGE_TAG:-latest}
     container_name: appochoa
     restart: always
     ports:
