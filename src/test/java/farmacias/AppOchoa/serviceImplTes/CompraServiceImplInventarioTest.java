@@ -143,6 +143,30 @@ public class CompraServiceImplInventarioTest {
     }
 
     @Test
+    @DisplayName("Comprar setea la farmacia en la cabecera y en el lote nuevo")
+    void compraSeteaFarmaciaEnCabeceraYLoteNuevo() {
+        stubCrearComun();
+        // Lote inexistente: crear() debe construir uno nuevo con farmacia seteada
+        when(loteRepository.findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId("L-1", SUCURSAL_ID, PRODUCTO_ID))
+                .thenReturn(Optional.empty());
+        when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
+                .thenReturn(Optional.empty());
+
+        ArgumentCaptor<Compra> compraCaptor = ArgumentCaptor.forClass(Compra.class);
+        ArgumentCaptor<InventarioLotes> loteCaptor = ArgumentCaptor.forClass(InventarioLotes.class);
+
+        compraService.crear(FARMACIA_ID, compraDto(8));
+
+        verify(compraRepository).save(compraCaptor.capture());
+        assertNotNull(compraCaptor.getValue().getFarmacia(), "la cabecera Compra debe llevar farmacia");
+        assertEquals(FARMACIA_ID, compraCaptor.getValue().getFarmacia().getFarmaciaId());
+
+        verify(loteRepository).save(loteCaptor.capture());
+        assertNotNull(loteCaptor.getValue().getFarmacia(), "el lote nuevo debe llevar farmacia");
+        assertEquals(FARMACIA_ID, loteCaptor.getValue().getFarmacia().getFarmaciaId());
+    }
+
+    @Test
     @DisplayName("Anular una compra activa decrementa el inventario agregado")
     void anularCompraDecrementaInventario() {
         CompraDetalle detalle = CompraDetalle.builder()

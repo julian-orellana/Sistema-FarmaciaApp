@@ -65,6 +65,7 @@ public class CompraServiceImpl implements CompraService {
                 .compraObservaciones(dto.getObservaciones())
                 .compraEstado(CompraEstado.activa)
                 .detalles(new ArrayList<>())
+                .farmacia(farmacia)
                 .build();
 
         BigDecimal totalAcumulado = BigDecimal.ZERO;
@@ -86,6 +87,7 @@ public class CompraServiceImpl implements CompraService {
                             .loteEstado(LoteEstado.disponible)
                             .producto(producto)
                             .sucursal(sucursal)
+                            .farmacia(farmacia)
                             .build());
 
             // Aumentar stock del lote
