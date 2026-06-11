@@ -1,3 +1,8 @@
+# En dev se permite el frontend local (Angular 4200, otro 3000). (B2)
+app:
+  cors:
+    allowed-origins: "http://localhost:4200,http://localhost:3000"
+
 spring:
   jpa:
     hibernate:

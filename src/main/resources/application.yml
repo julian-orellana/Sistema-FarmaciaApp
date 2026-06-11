@@ -55,6 +55,12 @@ springdoc:
   packages-to-scan: farmacias.AppOchoa
   paths-to-match: /**
 
+# Orígenes CORS permitidos (B2). Default seguro: solo el dominio de producción.
+# Los perfiles dev/test añaden localhost; prod puede sobreescribir por env var.
+app:
+  cors:
+    allowed-origins: "https://farmacloud.software"
+
 loki:
   url: ${LOKI_URL:}
   username: ${LOKI_USERNAME:}
