@@ -3,10 +3,13 @@ package farmacias.AppOchoa.serviceimpl;
 import farmacias.AppOchoa.dto.ventapago.VentaPagoCreateDTO;
 import farmacias.AppOchoa.dto.ventapago.VentaPagoResponseDTO;
 import farmacias.AppOchoa.dto.ventapago.VentaPagoSimpleDTO;
+import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.CajaSesiones;
 import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.SesionEstado;
 import farmacias.AppOchoa.model.Venta;
+import farmacias.AppOchoa.model.VentaEstado;
 import farmacias.AppOchoa.model.VentaPago;
 import farmacias.AppOchoa.repository.CajaSesionesRepository;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
@@ -17,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 @Transactional
@@ -40,6 +45,40 @@ public class VentaPagosServiceImpl implements VentaPagoService {
     public VentaPagoResponseDTO crear(Long farmaciaId, VentaPagoCreateDTO dto){
         Venta venta = buscarVentas(farmaciaId, dto.getVentaId());
         CajaSesiones cajaSesiones = buscarSesiones(farmaciaId, dto.getCajaSesionId());
+
+        // No registrar pagos sobre una venta anulada
+        if (venta.getVentaEstado() == VentaEstado.anulada) {
+            throw new BadRequestException("No se puede registrar un pago sobre una venta anulada");
+        }
+
+        // La sesion de caja debe estar abierta para recibir pagos
+        if (cajaSesiones.getSesionEstado() != SesionEstado.abierta) {
+            throw new BadRequestException("La sesion de caja no esta abierta");
+        }
+
+        // El monto recibido debe ser positivo
+        BigDecimal montoRecibido = dto.getMontoRecibido();
+        if (montoRecibido == null || montoRecibido.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("El monto recibido debe ser mayor a 0");
+        }
+
+        // Multipago permitido: la suma de lo ya abonado mas este pago no puede
+        // exceder el total de la venta. El vuelto lo calcula el servidor sobre el
+        // saldo pendiente, no se acepta del cliente (A9).
+        BigDecimal total = venta.getVentaTotal();
+        BigDecimal yaAbonado = ventaPagoRepository.sumarAbonadoPorVenta(venta.getVentaId());
+        BigDecimal saldoPendiente = total.subtract(yaAbonado);
+
+        if (saldoPendiente.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("La venta ya esta totalmente pagada");
+        }
+
+        // Vuelto = exceso del monto recibido sobre el saldo pendiente (0 si no excede).
+        // El neto aplicado a la venta (recibido - vuelto) nunca supera el saldo.
+        BigDecimal montoVuelto = montoRecibido.compareTo(saldoPendiente) > 0
+                ? montoRecibido.subtract(saldoPendiente)
+                : BigDecimal.ZERO;
+
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         VentaPago ventaPago = VentaPago.builder()
@@ -47,8 +86,8 @@ public class VentaPagosServiceImpl implements VentaPagoService {
                 .cajaSesiones(cajaSesiones)
                 .metodoPago(dto.getMetodoPago())
                 .referenciaTransaccion(dto.getReferenciaTransaccion())
-                .montoRecibido(dto.getMontoRecibido())
-                .montoVuelto(dto.getMontoVuelto())
+                .montoRecibido(montoRecibido)
+                .montoVuelto(montoVuelto)
                 .farmacia(farmacia)
                 .build();
 

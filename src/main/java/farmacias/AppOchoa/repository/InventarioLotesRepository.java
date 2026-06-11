@@ -37,6 +37,15 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
 
     // ESCÁNER / CÓDIGO
     Optional<InventarioLotes> findByLoteNumero(String loteNumero);
+
+    // Un lote pertenece a un producto en una sucursal: el numero de lote por si
+    // solo no es unico entre farmacias/productos. Scopear evita sumar stock al
+    // lote de otra farmacia que comparta el mismo numero (A2).
+    Optional<InventarioLotes> findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
+            String loteNumero, Long sucursalId, Long productoId);
+
+    boolean existsByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
+            String loteNumero, Long sucursalId, Long productoId);
     Page<InventarioLotes> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     Optional<InventarioLotes> findByLoteIdAndFarmacia_FarmaciaId(Long loteId, Long farmaciaId);
 

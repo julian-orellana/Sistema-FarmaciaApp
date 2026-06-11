@@ -65,8 +65,12 @@ public class CompraServiceImpl implements CompraService {
         for (CompraDetalleCreateDTO detDto : dto.getDetalles()) {
             Producto producto = buscarProducto(farmaciaId, detDto.getProductoId());
 
-            // Buscar lote existente o crear uno nuevo
-            InventarioLotes lote = loteRepository.findByLoteNumero(detDto.getNumeroLote())
+            // Buscar lote existente (scopeado a sucursal+producto) o crear uno nuevo.
+            // Sin el scope, findByLoteNumero global podia sumar stock al lote de otra
+            // farmacia que compartiera el mismo numero de lote (A2).
+            InventarioLotes lote = loteRepository
+                    .findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
+                            detDto.getNumeroLote(), sucursal.getSucursalId(), producto.getProductoId())
                     .orElseGet(() -> InventarioLotes.builder()
                             .loteNumero(detDto.getNumeroLote())
                             .loteFechaVencimiento(detDto.getFechaVencimiento())

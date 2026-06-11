@@ -45,25 +45,27 @@ public class CategoriaController extends BaseController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('administrador')")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<CategoriaResponseDTO> crear(@Valid @RequestBody CategoriaCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<CategoriaResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody CategoriaUpdateDTO dto){
         return ResponseEntity.ok(categoriaService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam Boolean estado){
         categoriaService.cambiarEstado(getFarmaciaId(), id, estado);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('administrador')")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         categoriaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

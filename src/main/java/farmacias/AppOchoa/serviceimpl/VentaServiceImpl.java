@@ -78,6 +78,15 @@ public class VentaServiceImpl implements VentaService {
             Producto producto = buscarProducto(farmaciaId, detalleDto.getProductoId());
             InventarioLotes lote = buscarLote(farmaciaId, detalleDto.getLoteId());
 
+            // El lote debe pertenecer al producto indicado: si no, se estaria
+            // descontando stock del lote de un producto y cobrando el precio de
+            // otro (fraude de precios / corrupcion de inventario) (A1).
+            if (lote.getProducto() == null ||
+                    !lote.getProducto().getProductoId().equals(producto.getProductoId())) {
+                throw new BadRequestException(
+                        "El lote " + lote.getLoteNumero() + " no pertenece al producto indicado");
+            }
+
             // El precio lo dicta el servidor, nunca el cliente
             BigDecimal precioUnitario = producto.getProductoPrecioVenta();
 
@@ -173,6 +182,12 @@ public class VentaServiceImpl implements VentaService {
     public void cambiarEstado(Long farmaciaId, Long id, VentaEstado nuevoEstado) {
         Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
+
+        // Una venta anulada es definitiva: no puede reactivarse a completada
+        // (reactivar sin re-descontar stock corrompería el inventario)
+        if (venta.getVentaEstado() == VentaEstado.anulada && nuevoEstado == VentaEstado.completada) {
+            throw new BadRequestException("Una venta anulada no puede volver a completarse");
+        }
 
         // ANULAR una venta que estaba COMPLETADA
         if (nuevoEstado == VentaEstado.anulada && venta.getVentaEstado() == VentaEstado.completada) {

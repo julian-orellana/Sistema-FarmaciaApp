@@ -36,8 +36,10 @@ public class FarmaciaController extends  BaseController{
         return ResponseEntity.ok(farmaciaResponseDTO);
     }
 
+    // Búsqueda libre sobre todas las farmacias: es una herramienta de operador
+    // de plataforma, no de tenant. Solo superadmin (un admin solo ve la suya vía /buscar/{id}).
     @GetMapping("/buscar")
-    @PreAuthorize("hasAuthority('administrador')")
+    @PreAuthorize("hasAuthority('superadmin')")
     public ResponseEntity<Page<FarmaciaSimpleDTO>> buscarPorTexto(@RequestParam String texto, Pageable pageable){
         return ResponseEntity.ok(farmaciaService.buscarPorTexto(texto, pageable));
     }

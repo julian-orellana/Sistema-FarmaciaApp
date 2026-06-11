@@ -3,6 +3,7 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioUpdateDTO;
+import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Usuario;
@@ -175,7 +176,28 @@ class UsuarioServiceImplTest {
         verify(usuarioRepository, times(1)).findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId);
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
 
+    }
 
+    @Test
+    @DisplayName("Deberia lanzar excepcion cuando se intenta asignar rol superadmin")
+    void crearUsuario_FallaCuandoRolEsSuperadmin() {
 
+        Long farmaciaId = 1L;
+        UsuarioCreateDTO dto = new UsuarioCreateDTO();
+        dto.setNombreUsuario("hackerman");
+        dto.setContrasena("password123");
+        dto.setNombre("Hacker");
+        dto.setApellido("Man");
+        dto.setRol(UsuarioRol.superadmin);
+
+        when(usuarioRepository.existsByNombreUsuarioUsuario("hackerman"))
+                .thenReturn(false);
+
+        BadRequestException exception = assertThrows(BadRequestException.class, () ->
+                usuarioService.crearUsuario(farmaciaId, dto));
+
+        assertEquals("No se puede asignar el rol superadmin", exception.getMessage());
+
+        verify(usuarioRepository, never()).save(any(Usuario.class));
     }
 }

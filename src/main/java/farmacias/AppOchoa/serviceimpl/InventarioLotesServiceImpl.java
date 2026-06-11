@@ -42,12 +42,16 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
 
     @Override
     public InventarioLotesResponseDTO crear(Long farmaciaId, InventarioLotesCreateDTO dto) {
-        if (inventarioLotesRepository.existsByLoteNumeroAndSucursal_SucursalId(dto.getNumeroLote(), dto.getSucursalId())) {
-            throw new DuplicateResourceException("El número de lote " + dto.getNumeroLote() + " ya existe en esta sucursal");
-        }
-
         Producto producto = buscarProducto(farmaciaId, dto.getProductoId());
         Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+
+        // Unicidad por (sucursal, producto, numeroLote): mismo criterio que el
+        // alta de lotes durante una compra (A2). Un mismo numero de lote puede
+        // existir para productos distintos.
+        if (inventarioLotesRepository.existsByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
+                dto.getNumeroLote(), dto.getSucursalId(), dto.getProductoId())) {
+            throw new DuplicateResourceException("El número de lote " + dto.getNumeroLote() + " ya existe para este producto en esta sucursal");
+        }
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         InventarioLotes lote = InventarioLotes.builder()

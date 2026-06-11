@@ -24,6 +24,12 @@ public interface VentaPagoRepository extends JpaRepository<VentaPago, Long> {
     @Query("SELECT COALESCE(SUM(vp.montoRecibido - vp.montoVuelto), 0) FROM VentaPago vp " +
             "WHERE vp.cajaSesiones.sesionId = :sesionId")
     BigDecimal sumarTotalPorSesion(@Param("sesionId") Long sesionId);
+
+    // Total ya abonado a una venta (neto de vuelto): para validar que un nuevo
+    // pago no haga que la suma exceda el total de la venta (A9).
+    @Query("SELECT COALESCE(SUM(vp.montoRecibido - vp.montoVuelto), 0) FROM VentaPago vp " +
+            "WHERE vp.venta.ventaId = :ventaId")
+    BigDecimal sumarAbonadoPorVenta(@Param("ventaId") Long ventaId);
     @Query("SELECT p FROM VentaPago p WHERE p.farmacia.farmaciaId = :farmaciaId AND (" +
             "LOWER(p.referenciaTransaccion) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(CAST(p.metodoPago AS string)) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +

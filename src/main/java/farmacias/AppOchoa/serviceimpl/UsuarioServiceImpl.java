@@ -4,6 +4,7 @@ import farmacias.AppOchoa.dto.usuario.*;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
+import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
@@ -47,10 +48,12 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     public UsuarioResponseDTO crearUsuario(Long farmaciaId, UsuarioCreateDTO dto) {
-        // Unicidad global: loadUserByUsername busca sin filtrar por farmacia,
-        // un duplicado entre farmacias rompería el login de ambos usuarios
         if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
             throw new DuplicateResourceException("El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso");
+        }
+
+        if (dto.getRol() == UsuarioRol.superadmin) {
+            throw new BadRequestException("No se puede asignar el rol superadmin");
         }
 
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
@@ -87,7 +90,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public Page<UsuarioSimpleDTO> listarUsuariosActivosPaginado(Long farmaciaId, Pageable pageable) {
-        return usuarioRepository.findByUsuarioEstadoTrue(pageable)
+        return usuarioRepository.findByFarmacia_FarmaciaIdAndUsuarioEstadoTrue(farmaciaId, pageable)
                 .map(UsuarioSimpleDTO::fromEntity);
     }
 
@@ -110,6 +113,10 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
             usuario.setNombreUsuarioUsuario(dto.getNombreUsuario());
         }
 
+        if (dto.getRol() == UsuarioRol.superadmin) {
+            throw new BadRequestException("No se puede asignar el rol superadmin");
+        }
+
         if (dto.getSucursalId() != null) {
             Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
             usuario.setSucursal(sucursal);
@@ -117,7 +124,6 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
             usuario.setSucursal(null);
         }
 
-        // Reactivar un usuario también consume cupo del plan
         if (Boolean.TRUE.equals(dto.getEstado()) && !Boolean.TRUE.equals(usuario.getUsuarioEstado())) {
             validarCupoUsuarios(farmaciaId, usuario.getFarmacia().getMaxUsuarios());
         }
@@ -129,7 +135,6 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
         UsuarioResponseDTO respuesta = UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
 
-        // Al desactivar, revocar todos sus refresh tokens para cerrar sesiones activas
         if (Boolean.FALSE.equals(dto.getEstado())) {
             refreshTokenService.revocarPorUsuario(usuario.getUsuarioId());
         }
@@ -142,7 +147,6 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         Usuario usuario = usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado ID: " + id));
 
-        // Reactivar un usuario también consume cupo del plan
         if (Boolean.TRUE.equals(nuevoEstado) && !Boolean.TRUE.equals(usuario.getUsuarioEstado())) {
             validarCupoUsuarios(farmaciaId, usuario.getFarmacia().getMaxUsuarios());
         }
@@ -150,7 +154,6 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         usuario.setUsuarioEstado(nuevoEstado);
         usuarioRepository.save(usuario);
 
-        // Al desactivar, revocar todos sus refresh tokens para cerrar sesiones activas
         if (Boolean.FALSE.equals(nuevoEstado)) {
             refreshTokenService.revocarPorUsuario(usuario.getUsuarioId());
         }
@@ -173,11 +176,9 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         usuario.setUsuarioContrasenaHash(passwordEncoder.encode(dto.getContrasenaNueva()));
         usuarioRepository.save(usuario);
 
-        // Cerrar todas las sesiones: el refresh token viejo no debe sobrevivir al cambio
         refreshTokenService.revocarPorUsuario(usuarioId);
     }
 
-    // null en maxUsuarios se interpreta como sin límite (farmacias previas al campo)
     private void validarCupoUsuarios(Long farmaciaId, Integer maxUsuarios) {
         if (maxUsuarios == null) {
             return;
@@ -193,13 +194,6 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
     }
 
-    //UserDetailsService
-
-    // Spring Security llama este método internamente en dos momentos:
-    // 1. Durante el login — DaoAuthenticationProvider busca el usuario para comparar credenciales
-    // 2. En cada request — JwtAuthenticationFilter lo llama para cargar el usuario desde la DB
-    // Retorna el Usuario entity directamente porque implementa UserDetails
-    // Si no existe lanza UsernameNotFoundException y Spring responde con 401 automáticamente
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return usuarioRepository.findByNombreUsuarioUsuario(username)
