@@ -68,6 +68,7 @@ public class CajaController extends  BaseController{
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         cajaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
