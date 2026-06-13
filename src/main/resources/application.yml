@@ -29,12 +29,18 @@ spring:
           time_zone: UTC
     open-in-view: false
 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
+
 server:
   port: 8080
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:900000} # 15 min: el refresh token rota, el access token debe ser corto
+  expiration: ${JWT_EXPIRATION:900000}
   refresh-expiration: ${REFRESH_TOKEN_EXPIRATION:604800000}
 
 management:
@@ -55,8 +61,6 @@ springdoc:
   packages-to-scan: farmacias.AppOchoa
   paths-to-match: /**
 
-# Orígenes CORS permitidos (B2). Default seguro: solo el dominio de producción.
-# Los perfiles dev/test añaden localhost; prod puede sobreescribir por env var.
 app:
   cors:
     allowed-origins: "https://farmacloud.software"
