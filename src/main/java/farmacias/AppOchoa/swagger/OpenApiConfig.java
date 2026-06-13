@@ -20,7 +20,10 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
-                .servers(List.of(new Server().url("https://farmacloud.software")))
+                .servers(List.of(
+                        new Server().url("https://farmacloud.software").description("Producción"),
+                        new Server().url("http://localhost:8080").description("Desarrollo")
+                ))
                 .info(new Info()
                         .title("Farmacia Ochoa API")
                         .version("1.0")
