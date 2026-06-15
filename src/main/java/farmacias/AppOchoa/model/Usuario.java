@@ -63,7 +63,7 @@ public class Usuario implements UserDetails {
     private Sucursal sucursal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "farmacia_id", nullable = false)
+    @JoinColumn(name = "farmacia_id", nullable = true)
     private Farmacia farmacia;
 
     // UserDetails

@@ -10,6 +10,7 @@ import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.CompraService;
+import farmacias.AppOchoa.services.KardexService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -30,6 +33,7 @@ public class CompraServiceImpl implements CompraService {
     private final InventarioLotesRepository loteRepository;
     private final InventarioRepository inventarioRepository;
     private final FarmaciaRepository farmaciaRepository;
+    private final KardexService kardexService;
 
     public CompraServiceImpl(
             CompraRepository compraRepository,
@@ -38,7 +42,8 @@ public class CompraServiceImpl implements CompraService {
             ProductoRepository productoRepository,
             InventarioLotesRepository loteRepository,
             InventarioRepository inventarioRepository,
-            FarmaciaRepository farmaciaRepository) {
+            FarmaciaRepository farmaciaRepository,
+            KardexService kardexService) {
         this.compraRepository = compraRepository;
         this.sucursalRepository = sucursalRepository;
         this.usuarioRepository = usuarioRepository;
@@ -46,18 +51,19 @@ public class CompraServiceImpl implements CompraService {
         this.loteRepository = loteRepository;
         this.inventarioRepository = inventarioRepository;
         this.farmaciaRepository = farmaciaRepository;
+        this.kardexService = kardexService;
     }
 
     @Override
     public CompraResponseDTO crear(Long farmaciaId, CompraCreateDTO dto) {
         Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
 
-        // Quien registra la compra es quien esta autenticado, nunca un id del request (M4)
+        // El registrador se extrae del contexto de seguridad para evitar
+        // que el cliente pueda suplantar otro usuario en el request body
         Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = buscarUsuario(farmaciaId, solicitante.getUsuarioId());
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
-        // 1. Crear Cabecera
         Compra compra = Compra.builder()
                 .sucursal(sucursal)
                 .usuario(usuario)
@@ -70,13 +76,21 @@ public class CompraServiceImpl implements CompraService {
 
         BigDecimal totalAcumulado = BigDecimal.ZERO;
 
-        // 2. Procesar Detalles y Lotes
+        // Se captura el stock antes de cualquier modificación por detalle,
+        // para registrar correctamente el stockAnterior en el kardex
+        Map<Long, Integer> stockAnteriorMap = new HashMap<>();
+
         for (CompraDetalleCreateDTO detDto : dto.getDetalles()) {
             Producto producto = buscarProducto(farmaciaId, detDto.getProductoId());
 
-            // Buscar lote existente (scopeado a sucursal+producto) o crear uno nuevo.
-            // Sin el scope, findByLoteNumero global podia sumar stock al lote de otra
-            // farmacia que compartiera el mismo numero de lote (A2).
+            int stockActual = inventarioRepository
+                    .findByProductoYSucursalForUpdate(producto.getProductoId(), sucursal.getSucursalId())
+                    .map(Inventario::getInventarioCantidadActual)
+                    .orElse(0);
+            stockAnteriorMap.put(producto.getProductoId(), stockActual);
+
+            // El lote se busca scopeado a sucursal+producto para evitar que dos farmacias
+            // con el mismo número de lote compartan o contaminen stock entre sí
             InventarioLotes lote = loteRepository
                     .findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
                             detDto.getNumeroLote(), sucursal.getSucursalId(), producto.getProductoId())
@@ -90,33 +104,47 @@ public class CompraServiceImpl implements CompraService {
                             .farmacia(farmacia)
                             .build());
 
-            // Aumentar stock del lote
             lote.setLoteCantidadActual(lote.getLoteCantidadActual() + detDto.getCantidad());
             loteRepository.save(lote);
 
-            // Mantener sincronizado el inventario agregado (producto+sucursal),
-            // creándolo si la compra es el primer ingreso de stock de ese par (M9)
+            // Sincroniza el inventario agregado producto+sucursal;
+            // si es el primer ingreso de ese par, lo crea automáticamente
             ajustarInventarioAgregado(farmacia, producto, sucursal, detDto.getCantidad());
 
-            // Cálculos
             BigDecimal subtotal = detDto.getPrecioUnitario().multiply(BigDecimal.valueOf(detDto.getCantidad()));
             totalAcumulado = totalAcumulado.add(subtotal);
 
-            // Crear detalle
-            CompraDetalle detalle = CompraDetalle.builder()
+            compra.getDetalles().add(CompraDetalle.builder()
                     .compra(compra)
                     .producto(producto)
                     .loteId(lote)
                     .detalleCantidad(detDto.getCantidad())
                     .detallePrecioUnitario(detDto.getPrecioUnitario())
                     .detalleSubtotal(subtotal)
-                    .build();
-
-            compra.getDetalles().add(detalle);
+                    .build());
         }
 
         compra.setCompraTotal(totalAcumulado);
         Compra guardada = compraRepository.save(compra);
+
+        // El kardex se registra después del save para disponer del compraId como referencia
+        for (CompraDetalle detalle : guardada.getDetalles()) {
+            int stockAnterior = stockAnteriorMap.get(detalle.getProducto().getProductoId());
+            kardexService.registrarMovimiento(
+                    detalle.getProducto(),
+                    farmacia,
+                    usuario,
+                    detalle.getDetalleCantidad(),
+                    TipoMovimiento.ENTRADA,
+                    stockAnterior,
+                    stockAnterior + detalle.getDetalleCantidad(),
+                    detalle.getDetallePrecioUnitario(),
+                    guardada.getCompraId(),
+                    "COMPRA",
+                    guardada.getCompraObservaciones()
+            );
+        }
+
         return CompraResponseDTO.fromEntity(guardada);
     }
 
@@ -144,11 +172,10 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CompraSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
+    public Page<CompraSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
         return compraRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(CompraSimpleDTO::fromEntity);
     }
-
 
     @Override
     public CompraResponseDTO actualizar(Long farmaciaId, Long id, CompraUpdateDTO dto) {
@@ -167,17 +194,17 @@ public class CompraServiceImpl implements CompraService {
         Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
 
-        // Revertir stock si se anula
         if (nuevoEstado == CompraEstado.anulada && compra.getCompraEstado() == CompraEstado.activa) {
             for (CompraDetalle detalle : compra.getDetalles()) {
-                // Lock pesimista: evita que una venta concurrente descuente el lote
-                // entre el check y el commit de la anulacion (M5)
+                // Lock pesimista para evitar race condition entre la anulación
+                // y una venta concurrente que descuente el mismo lote
                 InventarioLotes lote = loteRepository
                         .findByLoteIdAndFarmaciaIdForUpdate(detalle.getLoteId().getLoteId(), farmaciaId)
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Lote no encontrado en tu farmacia ID: " + detalle.getLoteId().getLoteId()));
 
-                // Si parte de lo comprado ya se vendio, revertir dejaria stock negativo (M5)
+                // Si el stock actual es menor a lo comprado, parte del lote ya fue vendido;
+                // revertir causaría stock negativo
                 if (lote.getLoteCantidadActual() < detalle.getDetalleCantidad()) {
                     throw new BadRequestException(
                             "No se puede anular la compra: el lote " + lote.getLoteNumero()
@@ -189,10 +216,6 @@ public class CompraServiceImpl implements CompraService {
                 lote.setLoteCantidadActual(lote.getLoteCantidadActual() - detalle.getDetalleCantidad());
                 loteRepository.save(lote);
 
-                // Revertir también la cantidad del inventario agregado (M9).
-                // El inventario ya existe (la compra original lo creó/incrementó), así
-                // que la farmacia solo se usaría al crear: la tomamos del lote, que
-                // siempre la tiene seteada.
                 ajustarInventarioAgregado(lote.getFarmacia(),
                         lote.getProducto(), lote.getSucursal(), -detalle.getDetalleCantidad());
             }
@@ -207,7 +230,6 @@ public class CompraServiceImpl implements CompraService {
         cambiarEstado(farmaciaId, id, CompraEstado.anulada);
     }
 
-    // Métodos auxiliares privados
     private Sucursal buscarSucursal(Long farmaciaId, Long id) {
         return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
@@ -224,10 +246,9 @@ public class CompraServiceImpl implements CompraService {
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
-    // Aplica un delta sobre el inventario agregado producto+sucursal, con lock
-    // pesimista. Si la compra es el primer ingreso de stock de ese par, no existe
-    // todavía la fila Inventario y se crea (cantidad mínima por defecto 0). Se
-    // bloquea después del lote para conservar un orden de locks consistente (M9).
+    // Aplica un delta positivo o negativo sobre el inventario agregado producto+sucursal.
+    // El lock pesimista se adquiere después del lote para mantener un orden de locks
+    // consistente y prevenir deadlocks en operaciones concurrentes
     private void ajustarInventarioAgregado(Farmacia farmacia, Producto producto, Sucursal sucursal, int delta) {
         Inventario inventario = inventarioRepository
                 .findByProductoYSucursalForUpdate(producto.getProductoId(), sucursal.getSucursalId())

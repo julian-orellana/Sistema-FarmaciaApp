@@ -51,7 +51,9 @@ public class AuthServiceImpl implements AuthService {
         claims.put("rol", usuario.getUsuarioRol().name());
         claims.put("nombre", usuario.getUsuarioNombre());
         claims.put("apellido", usuario.getUsuarioApellido());
-        claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+        if (usuario.getFarmacia() != null) {
+            claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+        }
 
         String accessToken = jwtUtil.generateToken(claims, nombreUsuario);
 
@@ -63,7 +65,9 @@ public class AuthServiceImpl implements AuthService {
         response.put("refreshToken", refreshToken.getToken());
         response.put("tipo", "Bearer");
         response.put("usuarioId", usuario.getUsuarioId());
-        response.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+        if (usuario.getFarmacia() != null) {
+            response.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+        }
         response.put("nombreUsuario", usuario.getNombreUsuarioUsuario());
         response.put("nombreCompleto", usuario.getUsuarioNombre() + " " + usuario.getUsuarioApellido());
         response.put("rol", usuario.getUsuarioRol().name());

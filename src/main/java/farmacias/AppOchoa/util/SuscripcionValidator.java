@@ -16,6 +16,7 @@ public final class SuscripcionValidator {
     }
 
     public static void validarVigencia(Farmacia farmacia) {
+        if(farmacia == null) return;
         if (Boolean.FALSE.equals(farmacia.getFarmaciaActiva())) {
             throw new SuscripcionVencidaException("Tu farmacia está desactivada. Contacta al administrador del sistema.");
         }

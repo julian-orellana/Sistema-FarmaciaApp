@@ -1,6 +1,7 @@
 package farmacias.AppOchoa.repository;
 
 import farmacias.AppOchoa.model.Usuario;
+import farmacias.AppOchoa.model.UsuarioRol;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -24,6 +25,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Page<Usuario> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     Optional<Usuario> findByUsuarioIdAndFarmacia_FarmaciaId(Long usuarioId, Long farmaciaId);
     long countByFarmacia_FarmaciaIdAndUsuarioEstadoTrue(Long farmaciaId);
+    boolean existsByUsuarioRol(UsuarioRol usuarioRol);
 
 
     @Query("SELECT u FROM Usuario u WHERE " +

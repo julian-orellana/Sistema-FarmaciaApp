@@ -1,6 +1,6 @@
 package farmacias.AppOchoa.model;
 
-public enum KardexEstado {
+public enum TipoMovimiento {
     ENTRADA,
     SALIDA,
     AJUSTE
