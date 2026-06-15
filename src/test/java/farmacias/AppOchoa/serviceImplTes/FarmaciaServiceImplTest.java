@@ -4,8 +4,11 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaCreateDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaResponseDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaSimpleDTO;
+import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
+import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.PlanTipo;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.serviceimpl.FarmaciaServiceImpl;
 import farmacias.AppOchoa.services.SucursalService;
@@ -36,7 +39,9 @@ public class FarmaciaServiceImplTest {
 
     @Mock
     private FarmaciaRepository farmaciaRepository;
+    @Mock
     private UsuarioService usuarioService;
+    @Mock
     private SucursalService sucursalService;
 
     @InjectMocks
@@ -64,6 +69,21 @@ public class FarmaciaServiceImplTest {
         farmacia.setPruebaHasta(LocalDate.of(2026, 5,30));
         farmacia.setPlanTipo(PlanTipo.basico);
         farmacia.setSuscripcionVigencia(LocalDate.of(2026, 3, 25));
+
+        // adminInicial en el DTO
+        UsuarioCreateDTO adminDTO = new UsuarioCreateDTO();
+        adminDTO.setNombreUsuario("admin");
+        adminDTO.setContrasena("Admin1234x");
+        adminDTO.setNombre("Admin");
+        adminDTO.setApellido("Test");
+        dto.setAdminInicial(adminDTO);
+
+        Sucursal sucursalMock = new Sucursal();
+        sucursalMock.setSucursalId(1L);
+        when(sucursalService.crearSucursalPrincipal(any())).thenReturn(sucursalMock);
+        when(usuarioService.crearAdminInicial(any(), any(), any())).thenReturn(new UsuarioResponseDTO());
+
+        when(farmaciaRepository.existsByFarmaciaNit(any())).thenReturn(false);
 
         when(farmaciaRepository.save(any(Farmacia.class))).thenReturn(farmacia);
 
