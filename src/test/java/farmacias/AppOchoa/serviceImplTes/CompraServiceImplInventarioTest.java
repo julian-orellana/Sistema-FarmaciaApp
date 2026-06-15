@@ -5,6 +5,7 @@ import farmacias.AppOchoa.dto.compradetalle.CompraDetalleCreateDTO;
 import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.CompraServiceImpl;
+import farmacias.AppOchoa.services.KardexService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,7 @@ public class CompraServiceImplInventarioTest {
     @Mock private InventarioLotesRepository loteRepository;
     @Mock private InventarioRepository inventarioRepository;
     @Mock private FarmaciaRepository farmaciaRepository;
+    @Mock private KardexService kardexService;
     @InjectMocks private CompraServiceImpl compraService;
 
     private Farmacia farmacia;

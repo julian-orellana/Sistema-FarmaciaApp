@@ -13,6 +13,7 @@ import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
 import farmacias.AppOchoa.serviceimpl.VentaServiceImpl;
+import farmacias.AppOchoa.services.KardexService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ public class VentaServiceImplTest {
     private SucursalRepository sucursalRepository;
     @InjectMocks
     private VentaServiceImpl ventaService;
+    @Mock private KardexService kardexService;
     @Mock
     private FarmaciaRepository farmaciaRepository;
 
