@@ -1,0 +1,1 @@
+ALTER TABLE usuarios MODIFY COLUMN farmacia_id BIGINT NULL;

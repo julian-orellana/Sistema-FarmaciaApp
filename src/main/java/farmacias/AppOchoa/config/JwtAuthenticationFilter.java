@@ -101,7 +101,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Farmacia desactivada o vencida: rechazar aunque el token siga siendo válido (A8)
             try {
-                SuscripcionValidator.validarVigencia(usuario.getFarmacia());
+                if (usuario.getFarmacia() != null) {
+                    SuscripcionValidator.validarVigencia(usuario.getFarmacia());
+                }
             } catch (SuscripcionVencidaException e) {
                 log.warn("[JWT] Farmacia sin suscripción vigente intentó acceder a {}: {}", request.getRequestURI(), username);
                 escribirErrorJson(response, HttpStatus.UNAUTHORIZED, e.getMessage());

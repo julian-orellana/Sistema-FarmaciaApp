@@ -15,44 +15,50 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class Kardex {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "kardex_id")
     private Long kardexId;
 
-    @Column(name = "fecha_ingreso", nullable = false,updatable = false)
     @CreationTimestamp
-    private LocalDateTime fechaIngreso;
+    @Column(name = "fecha_movimiento", nullable = false, updatable = false)
+    private LocalDateTime fechaMovimiento;
 
-    @Column(name = "precio_compra")
-    private BigDecimal precioCompra;
-
-    @Column(name = "precio_venta")
-    private BigDecimal precioVenta;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_movimiento", nullable = false)
+    private TipoMovimiento tipoMovimiento;
 
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 
-    @Column(name = "ventas")
-    private BigDecimal ventas;
+    @Column(name = "stock_anterior", nullable = false)
+    private Integer stockAnterior;
 
-    @Column(name = "stock", nullable = false)
-    private Integer stock;
+    @Column(name = "stock_resultante", nullable = false)
+    private Integer stockResultante;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_movimiento", nullable = false)
-    private KardexEstado kardexEstado;
+    @Column(name = "costo_unitario")
+    private BigDecimal costoUnitario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "farmacia_id", nullable = false)
-    private Farmacia farmacia;
+    @Column(name = "referencia_id")
+    private Long referenciaId;
+
+    @Column(name = "referencia_tipo")
+    private String referenciaTipo;
+
+    @Column(name = "observacion")
+    private String observacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "farmacia_id", nullable = false)
+    private Farmacia farmacia;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
-
 }

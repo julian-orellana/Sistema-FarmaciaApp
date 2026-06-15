@@ -9,6 +9,7 @@ import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
+import farmacias.AppOchoa.services.KardexService;
 import farmacias.AppOchoa.services.VentaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public class VentaServiceImpl implements VentaService {
     private final InventarioLotesRepository loteRepository;
     private final InventarioRepository inventarioRepository;
     private final FarmaciaRepository farmaciaRepository;
-
+    private final KardexService kardexService;
 
     public VentaServiceImpl(
             VentaRepository ventaRepository,
@@ -41,7 +42,8 @@ public class VentaServiceImpl implements VentaService {
             ProductoRepository productoRepository,
             InventarioLotesRepository loteRepository,
             InventarioRepository inventarioRepository,
-            FarmaciaRepository farmaciaRepository) {
+            FarmaciaRepository farmaciaRepository,
+            KardexService kardexService) {
         this.ventaRepository = ventaRepository;
         this.sucursalRepository = sucursalRepository;
         this.usuarioRepository = usuarioRepository;
@@ -49,19 +51,19 @@ public class VentaServiceImpl implements VentaService {
         this.loteRepository = loteRepository;
         this.inventarioRepository = inventarioRepository;
         this.farmaciaRepository = farmaciaRepository;
+        this.kardexService = kardexService;
     }
 
     @Override
     public VentaResponseDTO crear(Long farmaciaId, VentaCreateDTO dto) {
         Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
 
-        // El cajero es quien esta autenticado, nunca un id del request (M4).
-        // Se re-busca en BD para obtener la entidad managed y validar el tenant.
+        // El cajero se extrae del contexto de seguridad para evitar
+        // que el cliente pueda suplantar otro usuario en el request body
         Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = buscarUsuario(farmaciaId, solicitante.getUsuarioId());
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
-        // Crear cabecera de venta
         Venta venta = Venta.builder()
                 .sucursal(sucursal)
                 .usuario(usuario)
@@ -74,9 +76,8 @@ public class VentaServiceImpl implements VentaService {
 
         BigDecimal acumuladorSubtotal = BigDecimal.ZERO;
 
-        // Procesar Detalles y Actualizar Inventario
-        // Orden determinista por loteId: evita deadlocks entre ventas concurrentes
-        // que bloquean los mismos lotes en distinto orden
+        // Orden determinista por loteId para prevenir deadlocks entre ventas
+        // concurrentes que bloqueen los mismos lotes en distinto orden
         List<VentaDetalleCreateDTO> detallesOrdenados = dto.getDetalles().stream()
                 .sorted(Comparator.comparing(VentaDetalleCreateDTO::getLoteId))
                 .toList();
@@ -85,63 +86,54 @@ public class VentaServiceImpl implements VentaService {
             Producto producto = buscarProducto(farmaciaId, detalleDto.getProductoId());
             InventarioLotes lote = buscarLote(farmaciaId, detalleDto.getLoteId());
 
-            // El lote debe pertenecer al producto indicado: si no, se estaria
-            // descontando stock del lote de un producto y cobrando el precio de
-            // otro (fraude de precios / corrupcion de inventario) (A1).
+            // Validar que el lote pertenece al producto indicado; de lo contrario
+            // se estaría descontando stock de un producto y cobrando el precio de otro
             if (lote.getProducto() == null ||
                     !lote.getProducto().getProductoId().equals(producto.getProductoId())) {
                 throw new BadRequestException(
                         "El lote " + lote.getLoteNumero() + " no pertenece al producto indicado");
             }
 
-            // El precio lo dicta el servidor, nunca el cliente
+            // El precio de venta lo dicta el servidor, nunca el cliente
             BigDecimal precioUnitario = producto.getProductoPrecioVenta();
 
-            // Validación de stock
             if (lote.getLoteCantidadActual() < detalleDto.getCantidad()) {
                 throw new BadRequestException("Stock insuficiente en el lote: " + lote.getLoteNumero());
             }
 
-            // Descuento de inventario por lote
             lote.setLoteCantidadActual(lote.getLoteCantidadActual() - detalleDto.getCantidad());
             loteRepository.save(lote);
 
-            // Mantener sincronizado el inventario agregado (producto+sucursal): es
-            // la fuente que consultan las alertas de stock bajo. Se bloquea después
-            // del lote para conservar un orden de locks consistente (M9).
+            // Sincroniza el inventario agregado producto+sucursal;
+            // se bloquea después del lote para mantener orden de locks consistente
             ajustarInventarioAgregado(producto.getProductoId(), sucursal.getSucursalId(),
                     -detalleDto.getCantidad());
 
-            // Cálculos monetarios
             BigDecimal subtotalLinea = precioUnitario.multiply(BigDecimal.valueOf(detalleDto.getCantidad()));
             acumuladorSubtotal = acumuladorSubtotal.add(subtotalLinea);
 
-            // Crear el objeto detalle
-            VentaDetalle detalle = VentaDetalle.builder()
+            venta.getDetalles().add(VentaDetalle.builder()
                     .producto(producto)
                     .lote(lote)
                     .venta(venta)
                     .detalleCantidad(detalleDto.getCantidad())
                     .detallePrecioUnitario(precioUnitario)
                     .detalleSubtotal(subtotalLinea)
-                    .build();
-
-            venta.getDetalles().add(detalle);
+                    .build());
         }
 
-        // Totales Finales
         venta.setVentaSubtotal(acumuladorSubtotal);
         BigDecimal descuento = dto.getDescuento() != null ? dto.getDescuento() : BigDecimal.ZERO;
 
-        // Solo un administrador puede aplicar descuentos
-        // (rol leido de BD via buscarUsuario, no del token)
+        // El rol se lee de BD vía buscarUsuario, no del token, para evitar
+        // que un token desactualizado otorgue privilegios revocados
         if (descuento.compareTo(BigDecimal.ZERO) > 0
                 && usuario.getUsuarioRol() != UsuarioRol.administrador) {
             throw new BadRequestException("Solo un administrador puede aplicar descuentos");
         }
 
-        // El descuento no puede superar el subtotal: un total negativo
-        // permitiria sacar dinero de caja como "vuelto" (M6)
+        // Un descuento mayor al subtotal generaría un total negativo,
+        // lo que permitiría extraer dinero de caja como vuelto
         if (descuento.compareTo(acumuladorSubtotal) > 0) {
             throw new BadRequestException("El descuento no puede superar el subtotal de la venta");
         }
@@ -149,8 +141,35 @@ public class VentaServiceImpl implements VentaService {
         venta.setVentaDescuento(descuento);
         venta.setVentaTotal(acumuladorSubtotal.subtract(descuento));
 
-        // Guardar (Se guarda cabecera y detalles por el CascadeType.ALL)
+        // Cabecera y detalles se persisten en un solo save por CascadeType.ALL
         Venta guardada = ventaRepository.save(venta);
+
+        // Kardex post-save para disponer del ventaId como referencia del movimiento;
+        // el stockResultante se recalcula desde el inventario ya actualizado
+        for (VentaDetalle detalle : guardada.getDetalles()) {
+            int stockResultante = inventarioRepository
+                    .findByProductoYSucursalForUpdate(
+                            detalle.getProducto().getProductoId(),
+                            sucursal.getSucursalId())
+                    .map(Inventario::getInventarioCantidadActual)
+                    .orElse(0);
+            int stockAnterior = stockResultante + detalle.getDetalleCantidad();
+
+            kardexService.registrarMovimiento(
+                    detalle.getProducto(),
+                    farmacia,
+                    usuario,
+                    detalle.getDetalleCantidad(),
+                    TipoMovimiento.SALIDA,
+                    stockAnterior,
+                    stockResultante,
+                    detalle.getDetallePrecioUnitario(),
+                    guardada.getVentaId(),
+                    "VENTA",
+                    null
+            );
+        }
+
         return VentaResponseDTO.fromEntity(guardada);
     }
 
@@ -178,7 +197,7 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<VentaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
+    public Page<VentaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
         return ventaRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(VentaSimpleDTO::fromEntity);
     }
@@ -188,12 +207,10 @@ public class VentaServiceImpl implements VentaService {
         Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
 
-        // Actualizar datos como el nombre del cliente o NIT si hubo error
         if (dto.getNombreCliente() != null) venta.setVentaNombreCliente(dto.getNombreCliente());
         if (dto.getNitCliente() != null) venta.setVentaNitCliente(dto.getNitCliente());
 
-        Venta guardar = ventaRepository.save(venta);
-        return VentaResponseDTO.fromEntity(guardar);
+        return VentaResponseDTO.fromEntity(ventaRepository.save(venta));
     }
 
     @Override
@@ -201,34 +218,46 @@ public class VentaServiceImpl implements VentaService {
         Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
 
-        // Una venta anulada es definitiva: no puede reactivarse a completada
-        // (reactivar sin re-descontar stock corrompería el inventario)
+        // Reactivar una venta anulada corrompería el inventario
+        // porque el stock ya fue devuelto al momento de la anulación
         if (venta.getVentaEstado() == VentaEstado.anulada && nuevoEstado == VentaEstado.completada) {
             throw new BadRequestException("Una venta anulada no puede volver a completarse");
         }
 
-        // ANULAR una venta que estaba COMPLETADA
         if (nuevoEstado == VentaEstado.anulada && venta.getVentaEstado() == VentaEstado.completada) {
             for (VentaDetalle detalle : venta.getDetalles()) {
                 InventarioLotes lote = detalle.getLote();
 
-                // Devolvemos el stock al lote
                 lote.setLoteCantidadActual(lote.getLoteCantidadActual() + detalle.getDetalleCantidad());
 
-                // Si el lote estaba agotado, ahora tiene stock, así que vuelve a estar disponible
+                // Si el lote estaba agotado, la devolución lo reactiva
                 if (lote.getLoteEstado() == LoteEstado.agotado) {
                     lote.setLoteEstado(LoteEstado.disponible);
                 }
 
                 loteRepository.save(lote);
 
-                // Devolver también la cantidad al inventario agregado (M9)
+                // El kardex registra la devolución como ENTRADA referenciando
+                // la venta original para mantener trazabilidad completa
+                kardexService.registrarMovimiento(
+                        lote.getProducto(),
+                        lote.getFarmacia(),
+                        venta.getUsuario(),
+                        detalle.getDetalleCantidad(),
+                        TipoMovimiento.ENTRADA,
+                        lote.getLoteCantidadActual() - detalle.getDetalleCantidad(),
+                        lote.getLoteCantidadActual(),
+                        detalle.getDetallePrecioUnitario(),
+                        venta.getVentaId(),
+                        "ANULACION_VENTA",
+                        null
+                );
+
                 ajustarInventarioAgregado(lote.getProducto().getProductoId(),
                         lote.getSucursal().getSucursalId(), detalle.getDetalleCantidad());
             }
         }
 
-        // Actualizamos el estado de la venta
         venta.setVentaEstado(nuevoEstado);
         ventaRepository.save(venta);
     }
@@ -238,7 +267,6 @@ public class VentaServiceImpl implements VentaService {
         cambiarEstado(farmaciaId, id, VentaEstado.anulada);
     }
 
-    // Métodos auxiliares privados
     private Sucursal buscarSucursal(Long farmaciaId, Long id) {
         return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
@@ -255,16 +283,15 @@ public class VentaServiceImpl implements VentaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
-    // Carga con lock pesimista: la fila queda bloqueada hasta el commit de la venta
+    // Lock pesimista sobre el lote: la fila queda bloqueada hasta el commit
+    // para evitar que una venta concurrente descuente el mismo lote simultáneamente
     private InventarioLotes buscarLote(Long farmaciaId, Long id) {
         return loteRepository.findByLoteIdAndFarmaciaIdForUpdate(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado en tu farmacia ID: " + id));
     }
 
-    // Aplica un delta (negativo al vender, positivo al anular) sobre el inventario
-    // agregado producto+sucursal, con lock pesimista. En una venta el inventario
-    // siempre debe existir (no se vende sin stock previo); si falta es una
-    // inconsistencia de datos y se aborta antes de torcer más el inventario (M9).
+    // Aplica un delta sobre el inventario agregado producto+sucursal con lock pesimista.
+    // En ventas el inventario siempre debe existir; si falta indica inconsistencia de datos
     private void ajustarInventarioAgregado(Long productoId, Long sucursalId, int delta) {
         Inventario inventario = inventarioRepository
                 .findByProductoYSucursalForUpdate(productoId, sucursalId)
