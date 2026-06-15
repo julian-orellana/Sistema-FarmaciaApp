@@ -12,6 +12,7 @@ import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.CompraServiceImpl;
+import farmacias.AppOchoa.services.KardexService;
 import org.hibernate.cache.spi.AbstractCacheTransactionSynchronization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +48,8 @@ public class CompraServiceImplTest {
     private InventarioLotesRepository loteRepository;
     @InjectMocks
     private CompraServiceImpl compraService;
+    @Mock
+    private KardexService kardexService;
     @Mock
     private FarmaciaRepository farmaciaRepository;
 

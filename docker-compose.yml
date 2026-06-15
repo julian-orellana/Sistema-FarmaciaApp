@@ -18,6 +18,8 @@ services:
       LOKI_USERNAME: ${LOKI_USERNAME}
       LOKI_PASSWORD: ${LOKI_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
+      SUPERADMIN_USER: ${SUPERADMIN_USER}
+      SUPERADMIN_PASS: ${SUPERADMIN_PASS}
 
       # Area a revisar: ajustar MaxRAMPercentage según carga real en producción
       JAVA_OPTS: >-

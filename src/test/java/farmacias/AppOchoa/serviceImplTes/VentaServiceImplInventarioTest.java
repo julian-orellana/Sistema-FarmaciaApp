@@ -6,6 +6,7 @@ import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.VentaServiceImpl;
+import farmacias.AppOchoa.services.KardexService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,7 @@ public class VentaServiceImplInventarioTest {
     @Mock private InventarioLotesRepository loteRepository;
     @Mock private InventarioRepository inventarioRepository;
     @Mock private FarmaciaRepository farmaciaRepository;
+    @Mock private KardexService kardexService;
     @InjectMocks private VentaServiceImpl ventaService;
 
     private Farmacia farmacia;
