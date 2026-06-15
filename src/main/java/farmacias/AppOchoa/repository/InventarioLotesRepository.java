@@ -5,6 +5,7 @@ import farmacias.AppOchoa.model.LoteEstado;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -61,4 +63,7 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     @Query("SELECT l FROM InventarioLotes l WHERE l.farmacia.farmaciaId = :farmaciaId AND " +
             "LOWER(l.loteNumero) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<InventarioLotes> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    List<InventarioLotes> findByProducto_ProductoIdAndSucursal_SucursalIdAndFarmacia_FarmaciaIdAndLoteEstadoAndLoteCantidadActualGreaterThan(
+            Long productoId, Long sucursalId, Long farmaciaId, LoteEstado estado, int cantidad,
+            Sort sort);
 }

@@ -1,6 +1,8 @@
 package farmacias.AppOchoa.dto.farmacia;
 
+import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
 import farmacias.AppOchoa.model.PlanTipo;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,4 +39,8 @@ public class FarmaciaCreateDTO {
 
     private LocalDate pruebaHasta;
     private LocalDate suscripcionVigencia;
+
+    @NotNull(message = "El administrador inicial es obligatorio")
+    @Valid
+    private UsuarioCreateDTO adminInicial;
 }

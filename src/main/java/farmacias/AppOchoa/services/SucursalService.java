@@ -4,12 +4,16 @@ import farmacias.AppOchoa.dto.sucursal.SucursalCreateDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalResponseDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalSimpleDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalUpdateDTO;
+import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.Sucursal;
+import farmacias.AppOchoa.model.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface SucursalService {
 
     SucursalResponseDTO crear(Long farmaciaId, SucursalCreateDTO dto);
+    Sucursal crearSucursalPrincipal(Farmacia farmacia);
     SucursalResponseDTO actualizar(Long farmaciaId, Long id, SucursalUpdateDTO dto);
     void cambiarEstado(Long farmaciaId, Long id, Boolean estado);
     void eliminar(Long farmaciaId, Long id);

@@ -6,11 +6,13 @@ import farmacias.AppOchoa.dto.sucursal.SucursalSimpleDTO;
 import farmacias.AppOchoa.dto.sucursal.SucursalUpdateDTO;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
+import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
+import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.services.SucursalService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,7 @@ public class SucursalServiceImpl implements SucursalService {
 
     private final SucursalRepository sucursalRepository;
     private final FarmaciaRepository farmaciaRepository;
+
 
     public SucursalServiceImpl(SucursalRepository sucursalRepository, FarmaciaRepository farmaciaRepository){
         this.sucursalRepository = sucursalRepository;
@@ -55,6 +58,17 @@ public class SucursalServiceImpl implements SucursalService {
                 .build();
 
         return SucursalResponseDTO.fromEntity(sucursalRepository.save(sucursal));
+    }
+    @Override
+    public Sucursal crearSucursalPrincipal(Farmacia farmacia){
+        Sucursal sucursal = Sucursal.builder()
+                .sucursalNombre("Principal")
+                .sucursalDireccion("Por definir")
+                .sucursalEstado(true)
+                .farmacia(farmacia)
+                .build();
+
+        return sucursalRepository.save(sucursal);
     }
 
     @Override

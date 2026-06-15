@@ -2,7 +2,6 @@ package farmacias.AppOchoa.serviceImplTes;
 
 import farmacias.AppOchoa.dto.compra.CompraCreateDTO;;
 import farmacias.AppOchoa.dto.compra.CompraResponseDTO;
-import farmacias.AppOchoa.dto.compra.CompraUpdateDTO;
 import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.model.Compra;
 import farmacias.AppOchoa.model.CompraDetalle;
@@ -13,7 +12,6 @@ import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.CompraServiceImpl;
 import farmacias.AppOchoa.services.KardexService;
-import org.hibernate.cache.spi.AbstractCacheTransactionSynchronization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

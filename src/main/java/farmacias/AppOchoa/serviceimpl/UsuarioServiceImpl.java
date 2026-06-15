@@ -78,7 +78,23 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
     }
-
+    @Override
+    public UsuarioResponseDTO crearAdminInicial(UsuarioCreateDTO dto, Farmacia farmacia, Sucursal sucursal){
+        if(usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())){
+            throw new DuplicateResourceException("El usuario " + dto.getNombreUsuario() + "Ya esta en uso");
+        }
+        Usuario usuario = Usuario.builder()
+                .nombreUsuarioUsuario(dto.getNombreUsuario())
+                .usuarioContrasenaHash(passwordEncoder.encode(dto.getContrasena()))
+                .usuarioNombre(dto.getNombre())
+                .usuarioApellido(dto.getApellido())
+                .usuarioRol(dto.getRol())
+                .sucursal(sucursal)
+                .farmacia(farmacia)
+                .usuarioEstado(true)
+                .build();
+        return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
+    }
     @Override
     @Transactional(readOnly = true)
     public UsuarioResponseDTO obtenerPorId(Long farmaciaId, Long id) {

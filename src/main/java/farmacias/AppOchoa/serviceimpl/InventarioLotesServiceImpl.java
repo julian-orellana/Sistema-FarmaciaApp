@@ -15,10 +15,12 @@ import farmacias.AppOchoa.services.InventarioLotesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Transactional
@@ -67,6 +69,17 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
                 .build();
 
         return InventarioLotesResponseDTO.fromEntity(inventarioLotesRepository.save(lote));
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<InventarioLotesSimpleDTO> buscarPorProductoFEFO(Long farmaciaId, Long productoId, Long sucursalId) {
+        return inventarioLotesRepository
+                .findByProducto_ProductoIdAndSucursal_SucursalIdAndFarmacia_FarmaciaIdAndLoteEstadoAndLoteCantidadActualGreaterThan(
+                        productoId, sucursalId, farmaciaId, LoteEstado.disponible, 0,
+                        Sort.by("loteFechaVencimiento").ascending())
+                .stream()
+                .map(InventarioLotesSimpleDTO::fromEntity)
+                .toList();
     }
 
     @Override

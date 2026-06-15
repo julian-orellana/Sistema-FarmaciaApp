@@ -97,6 +97,8 @@ public class CompraServiceImpl implements CompraService {
                     .orElseGet(() -> InventarioLotes.builder()
                             .loteNumero(detDto.getNumeroLote())
                             .loteFechaVencimiento(detDto.getFechaVencimiento())
+                            .loteCantidadInicial(detDto.getCantidad())
+                            .lotePrecioCompra(detDto.getPrecioUnitario())
                             .loteCantidadActual(0)
                             .loteEstado(LoteEstado.disponible)
                             .producto(producto)
