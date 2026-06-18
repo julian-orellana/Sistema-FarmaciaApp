@@ -1,5 +1,6 @@
 package farmacias.AppOchoa.repository;
 
+import farmacias.AppOchoa.model.Inventario;
 import farmacias.AppOchoa.model.InventarioLotes;
 import farmacias.AppOchoa.model.LoteEstado;
 import jakarta.persistence.LockModeType;
@@ -66,4 +67,12 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     List<InventarioLotes> findByProducto_ProductoIdAndSucursal_SucursalIdAndFarmacia_FarmaciaIdAndLoteEstadoAndLoteCantidadActualGreaterThan(
             Long productoId, Long sucursalId, Long farmaciaId, LoteEstado estado, int cantidad,
             Sort sort);
+
+    List<InventarioLotes> findByFarmacia_FarmaciaIdAndSucursal_SucursalIdAndProducto_Categoria_CategoriaId(
+            Long farmaciaId, Long sucursalId, Long categoriaId);
+
+    List<InventarioLotes>findByFarmacia_FarmaciaIdAndSucursal_SucursalId(Long farmaciaId, Long sucursalId);
+
+    List<InventarioLotes> findByFarmacia_FarmaciaId(Long farmaciaId);
+
 }

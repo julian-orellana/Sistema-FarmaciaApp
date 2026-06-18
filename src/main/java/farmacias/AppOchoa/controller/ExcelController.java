@@ -28,4 +28,14 @@ public class ExcelController extends BaseController {
             HttpServletResponse response) throws Exception{
         excelService.exportarInventario(farmaciaId, sucursalId, categoriaId, response);
     }
+
+    @PreAuthorize("hasAuthority('administrador')")
+    @GetMapping("inventario/completo")
+    public void inventarioCompleto(
+            @RequestParam Long farmaciaId,
+            @RequestParam(required = false) Long sucursalId,
+            @RequestParam(required = false) Long categoriaId,
+            HttpServletResponse response) throws Exception {
+        excelService.inventarioCompleto(farmaciaId, sucursalId, categoriaId, response);
+    }
 }

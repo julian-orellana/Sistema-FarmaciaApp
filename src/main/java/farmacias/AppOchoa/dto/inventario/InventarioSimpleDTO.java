@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
 
 import java.math.BigDecimal;
 
@@ -26,8 +27,7 @@ public class InventarioSimpleDTO {
     private BigDecimal productoPrecioVenta;
 
 
-
-    public static InventarioSimpleDTO fromEntity (Inventario inventario){
+    public static InventarioSimpleDTO fromEntity(Inventario inventario) {
         return InventarioSimpleDTO.builder()
                 .inventarioId(inventario.getInventarioId())
                 .cantidadActual(inventario.getInventarioCantidadActual())
