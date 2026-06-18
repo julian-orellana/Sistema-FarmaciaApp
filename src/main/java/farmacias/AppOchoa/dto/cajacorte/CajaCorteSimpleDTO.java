@@ -42,9 +42,12 @@ public class CajaCorteSimpleDTO {
                 .corteTotalEfectivo(cajaCorte.getCorteTotalEfectivo())
                 .corteTotalTarjetaCredito(cajaCorte.getCorteTotalTarjetaCredito())
                 .corteTotalTarjetaDebito(cajaCorte.getCorteTotalTarjetaDebito())
-                .sesionFondoInicial(cajaCorte.getCajaSesiones().getSesionFondoInicial())
-                .sesionFechaApertura(cajaCorte.getCajaSesiones().getSesionFechaApertura())
-                .sesionFechaCierre(cajaCorte.getCajaSesiones().getSesionFechaCierre())
+                .sesionFondoInicial(cajaCorte.getCajaSesiones() != null ?
+                        cajaCorte.getCajaSesiones().getSesionFondoInicial() : null)
+                .sesionFechaApertura(cajaCorte.getCajaSesiones() != null ?
+                        cajaCorte.getCajaSesiones().getSesionFechaApertura() : null)
+                .sesionFechaCierre(cajaCorte.getCajaSesiones() != null ?
+                        cajaCorte.getCajaSesiones().getSesionFechaCierre() : null)
                 .build();
     }
 }
