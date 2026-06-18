@@ -17,27 +17,37 @@ import java.time.LocalDateTime;
 @Builder
 public class CajaCorteResponseDTO {
     private Long corteId;
-    private UsuarioSimpleDTO supervisor;
-    private CajaSesionesSimpleDTO sesion;
-    private BigDecimal corteTotalEfectivo;
+    private UsuarioSimpleDTO usuarioNombre;
+    private UsuarioSimpleDTO usuarioRol;
+    private String sucursalNombre;
     private BigDecimal corteTotalTarjetaCredito;
+    private BigDecimal corteTotalEfectivo;
     private BigDecimal corteTotalTarjetaDebito;
     private BigDecimal corteTotalVentas;
     private LocalDateTime corteFecha;
+    private BigDecimal sesionFondoInicial;
+    private LocalDateTime sesionFechaApertura;
+    private LocalDateTime sesionFechaCierre;
 
-    public static CajaCorteResponseDTO fromEntity(CajaCorte cajaCorte){
+
+    public static CajaCorteResponseDTO fromEntity(CajaCorte cajaCorte) {
         return CajaCorteResponseDTO.builder()
                 .corteId(cajaCorte.getCorteId())
-                .supervisor(cajaCorte.getUsuario() != null ?
+                .usuarioNombre(cajaCorte.getUsuario() != null ?
+                        UsuarioSimpleDTO.fromEntity(cajaCorte.getUsuario()) : null)
+                .usuarioRol(cajaCorte.getUsuario() != null?
                         UsuarioSimpleDTO.fromEntity(cajaCorte.getUsuario()): null)
-                .sesion(cajaCorte.getCajaSesiones() != null ?
-                        CajaSesionesSimpleDTO.fromEntity(cajaCorte.getCajaSesiones()): null)
+                .corteTotalVentas(cajaCorte.getCorteTotalVentas())
+                .corteFecha(cajaCorte.getCorteFecha())
                 .corteTotalEfectivo(cajaCorte.getCorteTotalEfectivo())
                 .corteTotalTarjetaCredito(cajaCorte.getCorteTotalTarjetaCredito())
                 .corteTotalTarjetaDebito(cajaCorte.getCorteTotalTarjetaDebito())
-                .corteTotalVentas(cajaCorte.getCorteTotalVentas())
-                .corteFecha(cajaCorte.getCorteFecha())
+                .sesionFondoInicial(cajaCorte.getCajaSesiones() != null ?
+                        cajaCorte.getCajaSesiones().getSesionFondoInicial() : null)
+                .sesionFechaApertura(cajaCorte.getCajaSesiones() != null ?
+                        cajaCorte.getCajaSesiones().getSesionFechaApertura() : null)
+                .sesionFechaCierre(cajaCorte.getCajaSesiones() != null ?
+                        cajaCorte.getCajaSesiones().getSesionFechaCierre() : null)
                 .build();
-
     }
 }
