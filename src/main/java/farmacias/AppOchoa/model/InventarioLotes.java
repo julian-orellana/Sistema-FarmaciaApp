@@ -53,5 +53,12 @@ public class InventarioLotes {
     @JoinColumn(name = "farmacia_id")
     private Farmacia farmacia;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "producto_id", referencedColumnName = "producto_id", insertable = false, updatable = false),
+            @JoinColumn(name = "sucursal_id", referencedColumnName = "sucursal_id", insertable = false, updatable = false)
+    })
+    private Inventario inventario;
+
 
 }

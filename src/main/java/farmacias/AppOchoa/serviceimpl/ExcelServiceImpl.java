@@ -104,9 +104,8 @@ public class ExcelServiceImpl implements ExcelService {
             inventarioLotes = inventarioLotesRepository.findByFarmacia_FarmaciaId(farmaciaId);
         }
 
-        Sheet sheet;
         try (Workbook workbook = new SXSSFWorkbook()) {
-            sheet = workbook.createSheet("Inventario");
+            Sheet sheet = workbook.createSheet("Inventario");
 
 
             Row header = sheet.createRow(0);
@@ -132,27 +131,27 @@ public class ExcelServiceImpl implements ExcelService {
 
             int rowNum = 1;
             for (InventarioLotes item : inventarioLotes) {
-                Optional<Inventario> inventarioOpt = inventarioRepository
-                        .findByProducto_ProductoIdAndSucursal_SucursalId(
-                                item.getProducto().getProductoId(),
-                                item.getSucursal().getSucursalId());
+                Inventario inv = item.getInventario();
+                Integer cantidadActual = inv != null ? inv.getInventarioCantidadActual() : 0;
+                Integer cantidadMinima = inv != null ? inv.getInventarioCantidadMinima() : 0;
 
-                Integer cantidadActual = inventarioOpt.map(Inventario::getInventarioCantidadActual).orElse(null);
-                Integer cantidadMinima = inventarioOpt.map(Inventario::getInventarioCantidadMinima).orElse(null);
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(item.getProducto().getProductoCodigoBarras());
                 row.createCell(1).setCellValue(item.getProducto().getProductoNombre());
                 row.createCell(2).setCellValue("Q " + item.getProducto().getProductoPrecioCompra());
                 row.createCell(3).setCellValue("Q " + item.getProducto().getProductoPrecioVenta());
-                row.createCell(4).setCellValue(item.getLoteFechaVencimiento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                row.createCell(4).setCellValue(item.getLoteFechaVencimiento() != null?
+                        item.getLoteFechaVencimiento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")): "");
                 row.createCell(5).setCellValue(cantidadActual != null ? cantidadActual : 0);
                 row.createCell(6).setCellValue(cantidadMinima != null ? cantidadMinima : 0);
-                row.createCell(7).setCellValue(item.getProducto().getCategoria().getCategoriaNombre());
+                row.createCell(7).setCellValue(item.getProducto().getCategoria() !=  null
+                        ? item.getProducto().getCategoria().getCategoriaNombre() : "");
             }
 
             long totalProductos = inventarioLotes.stream()
                     .map(i -> i.getProducto().getProductoId()).distinct().count();
             long totalCategorias = inventarioLotes.stream()
+                    .filter(i -> i.getProducto().getCategoria() != null)
                     .map(i -> i.getProducto().getCategoria().getCategoriaId()).distinct().count();
             long totalUnidades = inventarioLotes.stream()
                     .mapToInt(InventarioLotes::getLoteCantidadActual).sum();
@@ -163,9 +162,11 @@ public class ExcelServiceImpl implements ExcelService {
                             * (1 + i.getProducto().getProductoIva().doubleValue() / 100)
                             * i.getLoteCantidadActual()).sum();
             long vencidos = inventarioLotes.stream()
-                    .filter(i -> i.getLoteFechaVencimiento().isBefore(LocalDate.now())).count();
+                    .filter(i -> i.getLoteFechaVencimiento() != null
+                            && i.getLoteFechaVencimiento().isBefore(LocalDate.now())).count();
             long proximosAVencer = inventarioLotes.stream()
-                    .filter(i -> i.getLoteFechaVencimiento().isAfter(LocalDate.now())
+                    .filter(i -> i.getLoteFechaVencimiento() != null
+                            && i.getLoteFechaVencimiento().isAfter(LocalDate.now())
                             && i.getLoteFechaVencimiento().isBefore(LocalDate.now().plusDays(30))).count();
 
             Sheet resumen = workbook.createSheet("Resumen");
