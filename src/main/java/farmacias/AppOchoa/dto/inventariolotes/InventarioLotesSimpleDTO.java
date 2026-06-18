@@ -13,14 +13,12 @@ import java.time.LocalDate;
 public class InventarioLotesSimpleDTO {
 
     private Long loteId;
-
     private String numeroLote;
-
     private LocalDate fechaVencimiento;
-
     private Integer cantidadActual;
-
     private LoteEstado estado;
+    private Long productoId;
+    private String productoNombre;
 
     public static InventarioLotesSimpleDTO fromEntity(InventarioLotes lote) {
         return InventarioLotesSimpleDTO.builder()
@@ -29,6 +27,8 @@ public class InventarioLotesSimpleDTO {
                 .fechaVencimiento(lote.getLoteFechaVencimiento())
                 .cantidadActual(lote.getLoteCantidadActual())
                 .estado(lote.getLoteEstado())
+                .productoId(lote.getProducto().getProductoId())
+                .productoNombre(lote.getProducto().getProductoNombre())
                 .build();
     }
 }
