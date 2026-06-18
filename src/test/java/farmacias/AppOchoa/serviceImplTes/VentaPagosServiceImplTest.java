@@ -59,12 +59,12 @@ public class VentaPagosServiceImplTest {
         VentaPagoCreateDTO dto = new VentaPagoCreateDTO();
         dto.setVentaId(1L);
         dto.setCajaSesionId(1L);
-        dto.setMetodoPago(MetodoPagoEstado.efectivo);
+        dto.setMetodoPago(MetodoPagoEstado.EFECTIVO);
         dto.setMontoRecibido(new BigDecimal("100.00"));
 
         VentaPago ventaPago = new VentaPago();
         ventaPago.setPagoId(1L);
-        ventaPago.setMetodoPago(MetodoPagoEstado.efectivo);
+        ventaPago.setMetodoPago(MetodoPagoEstado.EFECTIVO);
         ventaPago.setMontoRecibido(new BigDecimal("100.00"));
         ventaPago.setMontoVuelto(new BigDecimal("55.15"));
 
@@ -103,7 +103,7 @@ public class VentaPagosServiceImplTest {
         VentaPagoCreateDTO dto = new VentaPagoCreateDTO();
         dto.setVentaId(1L);
         dto.setCajaSesionId(1L);
-        dto.setMetodoPago(MetodoPagoEstado.efectivo);
+        dto.setMetodoPago(MetodoPagoEstado.EFECTIVO);
         dto.setMontoRecibido(new BigDecimal("10.00"));
 
         CajaSesiones cajaSesiones = new CajaSesiones();
@@ -135,7 +135,7 @@ public class VentaPagosServiceImplTest {
 
         VentaPago ventaPago = new VentaPago();
         ventaPago.setPagoId(1L);
-        ventaPago.setMetodoPago(MetodoPagoEstado.efectivo);
+        ventaPago.setMetodoPago(MetodoPagoEstado.EFECTIVO);
         ventaPago.setMontoRecibido(new BigDecimal(100.00));
         ventaPago.setMontoVuelto(new BigDecimal(55.15));
 
