@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,12 +54,11 @@ public class ExcelServiceImpl implements ExcelService {
 
             // Encabezado
             Row header = sheet.createRow(0);
-            header.createCell(0).setCellValue("Producto");
-            header.createCell(1).setCellValue("Cantidad en Sistema");
-            header.createCell(2).setCellValue("Conteo Físico");
-            header.createCell(3).setCellValue("Diferencia");
-            header.createCell(4).setCellValue("Precio Compra");
-            header.createCell(5).setCellValue("Código de Barras");
+            header.createCell(0).setCellValue("Código de Barras");
+            header.createCell(1).setCellValue("Producto");
+            header.createCell(2).setCellValue("Cantidad en Sistema");
+            header.createCell(3).setCellValue("Conteo Físico");
+            header.createCell(4).setCellValue("Diferencia");
 
             // Anchos de columna
             sheet.setColumnWidth(0, 8000);
@@ -65,19 +66,18 @@ public class ExcelServiceImpl implements ExcelService {
             sheet.setColumnWidth(2, 4000);
             sheet.setColumnWidth(3, 4000);
             sheet.setColumnWidth(4, 4000);
-            sheet.setColumnWidth(5, 4000);
 
             // Data
             int rowNum = 1;
             for (Inventario item : inventario) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(item.getProducto().getProductoNombre());
-                row.createCell(1).setCellValue(item.getInventarioCantidadActual());
-                row.createCell(2).setCellValue("");
-                row.createCell(3).setCellValue("");
-                row.createCell(4).setCellValue(item.getProducto().getProductoPrecioCompra().doubleValue());
-                row.createCell(5).setCellValue(item.getProducto().getProductoCodigoBarras() != null
+                row.createCell(0).setCellValue(item.getProducto().getProductoCodigoBarras() != null
                         ? item.getProducto().getProductoCodigoBarras() : "");
+                row.createCell(1).setCellValue(item.getProducto().getProductoNombre());
+                row.createCell(2).setCellValue(item.getInventarioCantidadActual());
+                row.createCell(3).setCellValue("");
+                row.createCell(4).setCellValue("");
+
             }
 
             // Respuesta HTTP
@@ -111,31 +111,27 @@ public class ExcelServiceImpl implements ExcelService {
 
             Row header = sheet.createRow(0);
 
-            header.createCell(0).setCellValue("ProductoId");
-            header.createCell(1).setCellValue("Código de Barras");
-            header.createCell(2).setCellValue("Producto");
-            header.createCell(3).setCellValue("Precio Compra");
-            header.createCell(4).setCellValue("Precio Venta");
-            header.createCell(5).setCellValue("Fecha Vencimiento");
-            header.createCell(6).setCellValue("Cantidad Actual");
-            header.createCell(7).setCellValue("Cantidad Minima");
-            header.createCell(8).setCellValue("Categoria");
+            header.createCell(0).setCellValue("Código de Barras");
+            header.createCell(1).setCellValue("Producto");
+            header.createCell(2).setCellValue("Precio Compra");
+            header.createCell(3).setCellValue("Precio Venta");
+            header.createCell(4).setCellValue("Fecha Vencimiento");
+            header.createCell(5).setCellValue("Cantidad Actual");
+            header.createCell(6).setCellValue("Cantidad Minima");
+            header.createCell(7).setCellValue("Categoria");
 
             sheet.setColumnWidth(0, 8000);
             sheet.setColumnWidth(1, 5000);
             sheet.setColumnWidth(2, 4000);
             sheet.setColumnWidth(3, 4000);
-            sheet.setColumnWidth(4, 4000);
+            sheet.setColumnWidth(4, 6000);
             sheet.setColumnWidth(5, 4000);
             sheet.setColumnWidth(6, 8000);
             sheet.setColumnWidth(7, 5000);
-            sheet.setColumnWidth(8, 4000);
-            sheet.setColumnWidth(9, 4000);
 
 
             int rowNum = 1;
             for (InventarioLotes item : inventarioLotes) {
-
                 Optional<Inventario> inventarioOpt = inventarioRepository
                         .findByProducto_ProductoIdAndSucursal_SucursalId(
                                 item.getProducto().getProductoId(),
@@ -144,24 +140,63 @@ public class ExcelServiceImpl implements ExcelService {
                 Integer cantidadActual = inventarioOpt.map(Inventario::getInventarioCantidadActual).orElse(null);
                 Integer cantidadMinima = inventarioOpt.map(Inventario::getInventarioCantidadMinima).orElse(null);
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(item.getProducto().getProductoId());
-                row.createCell(1).setCellValue(item.getProducto().getProductoCodigoBarras());
-                row.createCell(2).setCellValue(item.getProducto().getProductoNombre());
-                row.createCell(3).setCellValue(item.getProducto().getProductoPrecioCompra().doubleValue());
-                row.createCell(4).setCellValue(item.getProducto().getProductoPrecioVenta().doubleValue());
-                row.createCell(5).setCellValue(item.getLoteFechaVencimiento().toString());
-                row.createCell(6).setCellValue(cantidadActual != null ? cantidadActual : 0);
-                row.createCell(7).setCellValue(cantidadMinima != null ? cantidadMinima : 0);
-                row.createCell(8).setCellValue(item.getProducto().getCategoria().getCategoriaNombre());
-
+                row.createCell(0).setCellValue(item.getProducto().getProductoCodigoBarras());
+                row.createCell(1).setCellValue(item.getProducto().getProductoNombre());
+                row.createCell(2).setCellValue("Q " + item.getProducto().getProductoPrecioCompra());
+                row.createCell(3).setCellValue("Q " + item.getProducto().getProductoPrecioVenta());
+                row.createCell(4).setCellValue(item.getLoteFechaVencimiento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                row.createCell(5).setCellValue(cantidadActual != null ? cantidadActual : 0);
+                row.createCell(6).setCellValue(cantidadMinima != null ? cantidadMinima : 0);
+                row.createCell(7).setCellValue(item.getProducto().getCategoria().getCategoriaNombre());
             }
+
+            long totalProductos = inventarioLotes.stream()
+                    .map(i -> i.getProducto().getProductoId()).distinct().count();
+            long totalCategorias = inventarioLotes.stream()
+                    .map(i -> i.getProducto().getCategoria().getCategoriaId()).distinct().count();
+            long totalUnidades = inventarioLotes.stream()
+                    .mapToInt(InventarioLotes::getLoteCantidadActual).sum();
+            double totalSinIVA = inventarioLotes.stream()
+                    .mapToDouble(i -> i.getProducto().getProductoPrecioVenta().doubleValue() * i.getLoteCantidadActual()).sum();
+            double totalConIVA = inventarioLotes.stream()
+                    .mapToDouble(i -> i.getProducto().getProductoPrecioVenta().doubleValue()
+                            * (1 + i.getProducto().getProductoIva().doubleValue() / 100)
+                            * i.getLoteCantidadActual()).sum();
+            long vencidos = inventarioLotes.stream()
+                    .filter(i -> i.getLoteFechaVencimiento().isBefore(LocalDate.now())).count();
+            long proximosAVencer = inventarioLotes.stream()
+                    .filter(i -> i.getLoteFechaVencimiento().isAfter(LocalDate.now())
+                            && i.getLoteFechaVencimiento().isBefore(LocalDate.now().plusDays(30))).count();
+
+            Sheet resumen = workbook.createSheet("Resumen");
+            Row fila0 = resumen.createRow(0);
+            fila0.createCell(0).setCellValue("Total Productos");
+            fila0.createCell(1).setCellValue(totalProductos);
+            Row fila1 = resumen.createRow(1);
+            fila1.createCell(0).setCellValue("Total Categorías");
+            fila1.createCell(1).setCellValue(totalCategorias);
+            Row fila2 = resumen.createRow(2);
+            fila2.createCell(0).setCellValue("Total Unidades");
+            fila2.createCell(1).setCellValue(totalUnidades);
+            Row fila3 = resumen.createRow(3);
+            fila3.createCell(0).setCellValue("Total sin IVA");
+            fila3.createCell(1).setCellValue("Q " + String.format("%.2f", totalSinIVA));
+            Row fila4 = resumen.createRow(4);
+            fila4.createCell(0).setCellValue("Total con IVA");
+            fila4.createCell(1).setCellValue("Q " + String.format("%.2f", totalConIVA));
+            Row fila5 = resumen.createRow(5);
+            fila5.createCell(0).setCellValue("Vencidos");
+            fila5.createCell(1).setCellValue(vencidos);
+            Row fila6 = resumen.createRow(6);
+            fila6.createCell(0).setCellValue("Próximos a Vencer (30 días)");
+            fila6.createCell(1).setCellValue(proximosAVencer);
 
             // Respuesta HTTP
             httpServletResponse.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             httpServletResponse.setHeader("Content-Disposition", "attachment; filename=inventario.xlsx");
 
             workbook.write(httpServletResponse.getOutputStream());
-        }
-    }
 
+            }
+        }
     }
