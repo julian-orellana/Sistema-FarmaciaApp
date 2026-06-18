@@ -47,8 +47,8 @@ public class CajaCorteServiceImpl implements CajaCorteService {
         Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = buscarUsuario(farmaciaId, solicitante.getUsuarioId());
 
-        BigDecimal totalCredito = ventaPagoRepository.sumarPorSesionYMetodo(cajaSesiones.getSesionId(), MetodoPagoEstado.tarjetaDeCredito);
-        BigDecimal totalDebito = ventaPagoRepository.sumarPorSesionYMetodo(cajaSesiones.getSesionId(), MetodoPagoEstado.tarjetaDeDebito);
+        BigDecimal totalCredito = ventaPagoRepository.sumarPorSesionYMetodo(cajaSesiones.getSesionId(), MetodoPagoEstado.TARJETA_CREDITO);
+        BigDecimal totalDebito = ventaPagoRepository.sumarPorSesionYMetodo(cajaSesiones.getSesionId(), MetodoPagoEstado.TARJETA_DEBITO);
         BigDecimal totalVentas = ventaPagoRepository.sumarTotalPorSesion(cajaSesiones.getSesionId());
 
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);

@@ -30,7 +30,7 @@ public class VentaFelNotasCredito {
     @Enumerated(EnumType.STRING)
     @Column(name = "nota_estado", nullable = false)
     @Builder.Default
-    private NotaEstado notaEstado = NotaEstado.pendiente;
+    private NotaEstado notaEstado = NotaEstado.PENDIENTE;
 
     @Column(name = "nota_xml", columnDefinition = "TEXT")
     private String notaXml;

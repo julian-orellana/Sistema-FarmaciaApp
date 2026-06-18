@@ -64,7 +64,7 @@ public class VentaPagosServiceImpl implements VentaPagoService {
 
         // Multipago permitido: la suma de lo ya abonado mas este pago no puede
         // exceder el total de la venta. El vuelto lo calcula el servidor sobre el
-        // saldo pendiente, no se acepta del cliente (A9).
+        // saldo pendiente, no se acepta del cliente
         BigDecimal total = venta.getVentaTotal();
         BigDecimal yaAbonado = ventaPagoRepository.sumarAbonadoPorVenta(venta.getVentaId());
         BigDecimal saldoPendiente = total.subtract(yaAbonado);

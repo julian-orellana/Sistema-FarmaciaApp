@@ -49,7 +49,6 @@ public class VentaResponseDTO {
 
         return VentaResponseDTO.builder()
                 .ventaId(venta.getVentaId())
-                // Datos FEL - Asegúrate de que estos campos existan en Venta.java
                 .uuid(venta.getVentaUuid())
                 .numeroAutorizacion(venta.getVentaNumeroAutorizacion())
                 .serie(venta.getVentaSerie())

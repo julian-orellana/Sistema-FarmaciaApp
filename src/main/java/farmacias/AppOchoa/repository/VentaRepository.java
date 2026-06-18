@@ -2,6 +2,7 @@ package farmacias.AppOchoa.repository;
 
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaEstado;
+import org.antlr.v4.runtime.atn.SemanticContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -53,4 +55,12 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
             "LOWER(v.ventaNumeroFactura) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(v.usuario.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')))")
     Page<Venta> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+
+    @Query("SELECT SUM(v.ventaTotal) FROM Venta v WHERE v.farmacia.farmaciaId = :farmaciaId AND v.sucursal.sucursalId = :sucursalId AND v.ventaFecha BETWEEN :fechaInicio AND :fechaFin AND v.ventaEstado = farmacias.AppOchoa.model.VentaEstado.completada")
+    BigDecimal sumarVentasPorRango(
+            @Param("farmaciaId") Long farmaciaId,
+            @Param("sucursalId") Long sucursalId,
+            @Param("fechaInicio") LocalDateTime fechaInicio,
+            @Param("fechaFin") LocalDateTime fechaFin);
 }
+

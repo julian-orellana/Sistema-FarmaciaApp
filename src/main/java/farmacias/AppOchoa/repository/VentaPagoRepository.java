@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface VentaPagoRepository extends JpaRepository<VentaPago, Long> {
@@ -38,4 +39,13 @@ public interface VentaPagoRepository extends JpaRepository<VentaPago, Long> {
     Page<VentaPago> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
     Page<VentaPago> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<VentaPago> findByPagoIdAndFarmacia_FarmaciaId(Long pagoId, Long farmaciaId);
+
+    @Query("SELECT SUM(vp.montoRecibido) FROM VentaPago vp WHERE vp.farmacia.farmaciaId = :farmaciaId AND vp.venta.sucursal.sucursalId = :sucursalId " +
+            "AND vp.metodoPago = :metodo AND vp.venta.ventaFecha BETWEEN :fechaInicio AND :fechaFin")
+    BigDecimal sumarPorMetodoPago(
+            @Param("farmaciaId") Long farmaciaId,
+            @Param("sucursalId") Long sucursalId,
+            @Param("metodo") MetodoPagoEstado metodo,
+            @Param("fechaInicio")LocalDateTime fechaInicio,
+            @Param("fechaFin") LocalDateTime fechaFin);
 }

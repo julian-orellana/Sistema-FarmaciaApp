@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -33,6 +34,7 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
 
     // Verificar si existe un producto en una sucursal
     boolean existsByProducto_ProductoIdAndSucursal_SucursalId(Long productoId, Long sucursalId);
+    List<Inventario> findByFarmacia_FarmaciaId(Long farmaciaId);
 
     // Buscar productos con stock bajo el mínimo - con paginación
     @Query("SELECT i FROM Inventario i WHERE i.inventarioCantidadActual < i.inventarioCantidadMinima")
@@ -40,6 +42,9 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
 
     // Buscar por ID de inventario
     Optional<Inventario> findByInventarioId(Long inventarioId);
+    List<Inventario> findByFarmacia_FarmaciaIdAndSucursal_SucursalId(Long farmaciaId, Long sucursalId);
+    List<Inventario> findByFarmacia_FarmaciaIdAndSucursal_SucursalIdAndProducto_Categoria_CategoriaId(
+            Long farmaciaId, Long sucursalId, Long categoriaId);
 
     // Para listar activos (con stock mayor a 0)
     @Query("SELECT i FROM Inventario i WHERE i.inventarioCantidadActual > 0")

@@ -1,9 +1,6 @@
 package farmacias.AppOchoa.controller;
 
-import farmacias.AppOchoa.dto.venta.VentaCreateDTO;
-import farmacias.AppOchoa.dto.venta.VentaResponseDTO;
-import farmacias.AppOchoa.dto.venta.VentaSimpleDTO;
-import farmacias.AppOchoa.dto.venta.VentaUpdateDTO;
+import farmacias.AppOchoa.dto.venta.*;
 import farmacias.AppOchoa.model.VentaEstado;
 import farmacias.AppOchoa.services.VentaService;
 import farmacias.AppOchoa.util.JwtUtil;
@@ -75,4 +72,12 @@ public class VentaController extends  BaseController{
         ventaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/cobrar")
+    public ResponseEntity<VentaCobroResponseDTO> crearConCobro(
+            @Valid @RequestBody VentaCreateCobroDTO dto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(ventaService.crearConCobro(getFarmaciaId(), dto));
+    }
+
+
 }

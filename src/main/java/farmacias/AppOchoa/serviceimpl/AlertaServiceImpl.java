@@ -75,7 +75,7 @@ public class AlertaServiceImpl implements AlertaService {
     @Override
     @Transactional(readOnly = true)
     public Page<AlertaSimpleDTO> listarNoLeidasPaginadas(Long farmaciaId, Pageable pageable) {
-        return alertaRepository.findByAlertaLeidaFalse(pageable)
+        return alertaRepository.findByFarmacia_FarmaciaIdAndAlertaLeidaFalse(farmaciaId, pageable)
                 .map(AlertaSimpleDTO::fromEntity);
     }
     @Override

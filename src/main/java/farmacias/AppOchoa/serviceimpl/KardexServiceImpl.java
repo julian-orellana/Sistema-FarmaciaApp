@@ -6,6 +6,7 @@ import farmacias.AppOchoa.repository.KardexRepository;
 import farmacias.AppOchoa.services.KardexService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,6 +42,7 @@ public class KardexServiceImpl implements KardexService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<KardexResponseDTO> obtenerKardex(Long productoId, Long farmaciaId) {
         return kardexRepository.findByProductoAndFarmacia(productoId, farmaciaId)
                 .stream()
