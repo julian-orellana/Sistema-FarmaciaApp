@@ -4,6 +4,7 @@ import farmacias.AppOchoa.model.InventarioLotes;
 import farmacias.AppOchoa.model.LoteEstado;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -19,6 +20,8 @@ public class InventarioLotesSimpleDTO {
     private LoteEstado estado;
     private Long productoId;
     private String productoNombre;
+    private Integer cantidadInicial;
+    private BigDecimal precioCompra;
 
     public static InventarioLotesSimpleDTO fromEntity(InventarioLotes lote) {
         return InventarioLotesSimpleDTO.builder()
@@ -29,6 +32,8 @@ public class InventarioLotesSimpleDTO {
                 .estado(lote.getLoteEstado())
                 .productoId(lote.getProducto().getProductoId())
                 .productoNombre(lote.getProducto().getProductoNombre())
+                .cantidadInicial(lote.getLoteCantidadInicial())
+                .precioCompra(lote.getLotePrecioCompra())
                 .build();
     }
 }
