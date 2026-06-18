@@ -48,6 +48,10 @@ public class CajaCorteSimpleDTO {
                         cajaCorte.getCajaSesiones().getSesionFechaApertura() : null)
                 .sesionFechaCierre(cajaCorte.getCajaSesiones() != null ?
                         cajaCorte.getCajaSesiones().getSesionFechaCierre() : null)
+                .sucursalNombre(cajaCorte.getCajaSesiones() != null
+                        && cajaCorte.getCajaSesiones().getCaja() != null
+                        && cajaCorte.getCajaSesiones().getCaja().getSucursal() != null
+                        ? cajaCorte.getCajaSesiones().getCaja().getSucursal().getSucursalNombre() : null)
                 .build();
     }
 }
