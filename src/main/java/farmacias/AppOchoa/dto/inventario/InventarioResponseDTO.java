@@ -22,6 +22,7 @@ public class InventarioResponseDTO {
     private String productoCodigoBarras;
     private BigDecimal productoPrecioCompra;
     private BigDecimal productoPrecioVenta;
+    private BigDecimal productoIva;
 
     public static InventarioResponseDTO fromEntity(Inventario inventario) {
         return InventarioResponseDTO.builder()
@@ -37,6 +38,7 @@ public class InventarioResponseDTO {
                 .productoCodigoBarras(inventario.getProducto().getProductoCodigoBarras())
                 .productoPrecioCompra(inventario.getProducto().getProductoPrecioCompra())
                 .productoPrecioVenta(inventario.getProducto().getProductoPrecioVenta())
+                .productoIva(inventario.getProducto().getProductoIva())
                 .build();
     }
 }

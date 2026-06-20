@@ -25,6 +25,7 @@ public class InventarioSimpleDTO {
     private String productoCodigoBarras;
     private BigDecimal productoPrecioCompra;
     private BigDecimal productoPrecioVenta;
+    private BigDecimal productoIva;
 
 
     public static InventarioSimpleDTO fromEntity(Inventario inventario) {
@@ -40,6 +41,7 @@ public class InventarioSimpleDTO {
                 .productoPrecioVenta(inventario.getProducto().getProductoPrecioVenta())
                 .sucursal(inventario.getSucursal() != null ?
                         SucursalSimpleDTO.fromEntity(inventario.getSucursal()) : null)
+                .productoIva(inventario.getProducto().getProductoIva())
                 .build();
     }
 }
