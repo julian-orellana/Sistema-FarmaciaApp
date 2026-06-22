@@ -52,20 +52,20 @@ public class ProductoController extends  BaseController {
 
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<ProductoResponseDTO> agregarProducto(@Valid @RequestBody ProductoCreateDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productoService.agregarProducto(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<ProductoResponseDTO> actualizarProducto(
             @PathVariable Long id, @Valid @RequestBody ProductoUpdateDTO dto) {
         return ResponseEntity.ok(productoService.actualizarProducto(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam Boolean estado) {
         productoService.cambiarEstado(getFarmaciaId(), id, estado);
         return ResponseEntity.noContent().build();

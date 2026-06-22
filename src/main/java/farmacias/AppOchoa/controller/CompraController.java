@@ -49,20 +49,20 @@ public class CompraController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<CompraResponseDTO> crear(@Valid @RequestBody CompraCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(compraService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<CompraResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody CompraUpdateDTO dto){
         return ResponseEntity.ok(compraService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> cambiarEstado(
             @PathVariable Long id, @RequestParam CompraEstado compraEstado){
         compraService.cambiarEstado(getFarmaciaId(), id, compraEstado);
@@ -70,7 +70,7 @@ public class CompraController extends  BaseController{
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         compraService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

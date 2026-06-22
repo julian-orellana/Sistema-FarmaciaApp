@@ -56,6 +56,10 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
             throw new BadRequestException("No se puede asignar el rol superadmin");
         }
 
+        if (dto.getRol() == UsuarioRol.encargado && dto.getSucursalId() == null) {
+            throw new BadRequestException("Un encargado debe tener una sucursal asignada");
+        }
+
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         validarCupoUsuarios(farmaciaId, farmacia.getMaxUsuarios());
@@ -131,6 +135,9 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
         if (dto.getRol() == UsuarioRol.superadmin) {
             throw new BadRequestException("No se puede asignar el rol superadmin");
+        }
+        if (dto.getRol() == UsuarioRol.encargado && dto.getSucursalId() == null) {
+            throw new BadRequestException("Un encargado debe tener una sucursal asignada");
         }
 
         if (dto.getSucursalId() != null) {

@@ -59,7 +59,7 @@ public class VentaController extends  BaseController{
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> cambiarEstado(
             @PathVariable Long id, @RequestBody VentaEstado ventaEstado){
         ventaService.cambiarEstado(getFarmaciaId(), id, ventaEstado);
@@ -67,7 +67,7 @@ public class VentaController extends  BaseController{
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         ventaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

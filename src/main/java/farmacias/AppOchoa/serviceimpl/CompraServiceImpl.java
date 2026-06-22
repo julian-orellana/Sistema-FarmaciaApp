@@ -56,12 +56,18 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     public CompraResponseDTO crear(Long farmaciaId, CompraCreateDTO dto) {
-        Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
 
         // El registrador se extrae del contexto de seguridad para evitar
         // que el cliente pueda suplantar otro usuario en el request body
         Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = buscarUsuario(farmaciaId, solicitante.getUsuarioId());
+
+        Sucursal sucursal;
+        if (usuario.getUsuarioRol() == UsuarioRol.encargado) {
+            sucursal = usuario.getSucursal();
+        } else {
+            sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        }
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Compra compra = Compra.builder()

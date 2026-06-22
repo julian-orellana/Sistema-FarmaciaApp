@@ -44,27 +44,27 @@ public class PresentacionController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<PresentacionResponseDTO> crear(@Valid @RequestBody PresentacionCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(presentacionService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<PresentacionResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody PresentacionUpdateDTO dto){
         return ResponseEntity.ok(presentacionService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam Boolean estado){
         presentacionService.cambiarEstado(getFarmaciaId(), id, estado);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         presentacionService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

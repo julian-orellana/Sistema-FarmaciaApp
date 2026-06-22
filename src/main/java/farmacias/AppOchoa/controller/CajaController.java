@@ -47,20 +47,20 @@ public class CajaController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<CajaResponseDTO> crearCaja(@Valid @RequestBody CajaCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(cajaService.crearCaja(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<CajaResponseDTO> actualizarCaja(
             @PathVariable Long id, @Valid @RequestBody CajaUpdateDTO dto){
         return ResponseEntity.ok(cajaService.actualizarCaja(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> cambiarEstado(
             @PathVariable Long id, @RequestBody CajaEstado cajaEstado){
         cajaService.cambiarEstado(getFarmaciaId(), id, cajaEstado);
@@ -68,7 +68,7 @@ public class CajaController extends  BaseController{
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         cajaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
