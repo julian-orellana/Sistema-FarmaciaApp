@@ -42,9 +42,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new TokenRefreshException("Usuario no encontrado con ID: " + usuarioId));
 
+        if (usuario.getSucursal() != null) {
+            usuario.getSucursal().getSucursalId();
+        }
+
         RefreshToken refreshToken = RefreshToken.builder()
                 .usuario(usuario)
-                .token(UUID.randomUUID().toString()) // UUID aleatorio
+                .token(UUID.randomUUID().toString())
                 .expiraEn(LocalDateTime.now().plusSeconds(refreshExpirationMs / 1000))
                 .build();
 

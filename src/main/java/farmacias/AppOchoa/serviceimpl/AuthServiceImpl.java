@@ -55,6 +55,11 @@ public class AuthServiceImpl implements AuthService {
             claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
         }
 
+        if (usuario.getSucursal() != null) {
+            claims.put("sucursalId", usuario.getSucursal().getSucursalId());
+            claims.put("nombreSucursal", usuario.getSucursal().getSucursalNombre());
+        }
+
         String accessToken = jwtUtil.generateToken(claims, nombreUsuario);
 
         // Crear refresh token en BD y devolver su UUID

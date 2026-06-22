@@ -61,6 +61,11 @@ public class AuthController {
         claims.put("apellido", usuario.getUsuarioApellido());
         claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
 
+        if (usuario.getSucursal() != null) {
+            claims.put("sucursalId", usuario.getSucursal().getSucursalId());
+            claims.put("nombreSucursal", usuario.getSucursal().getSucursalNombre());
+        }
+
         String nuevoAccessToken = jwtUtil.generateToken(claims, usuario.getNombreUsuarioUsuario());
 
         Map<String, Object> response = new HashMap<>();
