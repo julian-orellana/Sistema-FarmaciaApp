@@ -82,9 +82,10 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
     }
+
     @Override
-    public UsuarioResponseDTO crearAdminInicial(UsuarioCreateDTO dto, Farmacia farmacia, Sucursal sucursal){
-        if(usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())){
+    public UsuarioResponseDTO crearAdminInicial(UsuarioCreateDTO dto, Farmacia farmacia, Sucursal sucursal) {
+        if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
             throw new DuplicateResourceException("El usuario " + dto.getNombreUsuario() + "Ya esta en uso");
         }
         Usuario usuario = Usuario.builder()
@@ -99,6 +100,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
                 .build();
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
     }
+
     @Override
     @Transactional(readOnly = true)
     public UsuarioResponseDTO obtenerPorId(Long farmaciaId, Long id) {
@@ -116,7 +118,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UsuarioSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
+    public Page<UsuarioSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
         return usuarioRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(UsuarioSimpleDTO::fromEntity);
     }
@@ -219,7 +221,13 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByNombreUsuarioUsuario(username)
+        Usuario usuario = usuarioRepository.findByNombreUsuarioUsuario(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+
+        if (usuario.getSucursal() != null) {
+            usuario.getSucursal().getSucursalId();
+        }
+
+        return usuario;
     }
 }

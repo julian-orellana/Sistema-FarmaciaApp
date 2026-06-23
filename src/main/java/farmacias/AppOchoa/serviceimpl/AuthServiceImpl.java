@@ -6,6 +6,7 @@ import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.services.AuthService;
 import farmacias.AppOchoa.util.JwtUtil;
 import farmacias.AppOchoa.util.SuscripcionValidator;
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public Map<String, Object> login(String nombreUsuario, String contrasena) {
 
         Authentication auth = authenticationManager.authenticate(
