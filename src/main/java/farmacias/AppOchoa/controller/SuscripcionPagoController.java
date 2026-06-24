@@ -28,20 +28,20 @@ public class SuscripcionPagoController extends  BaseController{
     // Los pagos de suscripcion son registros financieros de la farmacia:
     // su consulta y registro se restringen a roles administrativos (M3).
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('superadmin')")
     public ResponseEntity<Page<SuscripcionPagoSimpleDTO>> listarSuscripciones(
             @PageableDefault(size = 10, sort = "pagoPlan") Pageable pageable){
         return ResponseEntity.ok(suscripcionPagoService.listarSuscripciones(getFarmaciaId(), pageable));
     }
 
     @GetMapping("/buscar/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('superadmin')")
     public ResponseEntity<SuscripcionPagoResponseDTO> buscarPorId(@PathVariable Long id){
         return ResponseEntity.ok(suscripcionPagoService.buscarPorId(getFarmaciaId(), id));
     }
 
     @GetMapping("/buscar/texto")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('superadmin')")
     public ResponseEntity<Page<SuscripcionPagoSimpleDTO>> buscarPorTexto(
             @RequestParam String texto,
             @PageableDefault(size = 10, sort = "pagoPlan") Pageable pageable){
@@ -49,7 +49,7 @@ public class SuscripcionPagoController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('superadmin')")
     public ResponseEntity<SuscripcionPagoResponseDTO> crear(@Valid @RequestBody SuscripcionPagoCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(suscripcionPagoService.crear(getFarmaciaId(), dto));
     }
