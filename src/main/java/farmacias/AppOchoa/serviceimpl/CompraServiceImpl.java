@@ -149,7 +149,9 @@ public class CompraServiceImpl implements CompraService {
 
         // Persiste el inventario agregado una sola vez por producto (incluye los recién
         // creados); el encadenado en memoria ya dejó la cantidadActual final.
-        inventarioRepository.saveAll(inventarioPorProducto.values());
+        for (Inventario inv : inventarioPorProducto.values()) {
+            inventarioRepository.save(inv);
+        }
 
         compra.setCompraTotal(totalAcumulado);
         Compra guardada = compraRepository.save(compra);
