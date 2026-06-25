@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -57,17 +58,20 @@ public class CompraServiceImpl implements CompraService {
     @Override
     public CompraResponseDTO crear(Long farmaciaId, CompraCreateDTO dto) {
 
-        // El registrador se extrae del contexto de seguridad para evitar
-        // que el cliente pueda suplantar otro usuario en el request body
+        // El registrador se extrae del contexto de seguridad, no del request body,
+        // para evitar que el cliente suplante a otro usuario enviando un usuarioId ajeno.
         Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = buscarUsuario(farmaciaId, solicitante.getUsuarioId());
 
+        // Regla de autorización: el encargado solo registra compras de su propia
+        // sucursal; los demás roles pueden elegirla en el DTO.
         Sucursal sucursal;
         if (usuario.getUsuarioRol() == UsuarioRol.encargado) {
             sucursal = usuario.getSucursal();
         } else {
             sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
         }
+
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Compra compra = Compra.builder()
@@ -82,21 +86,34 @@ public class CompraServiceImpl implements CompraService {
 
         BigDecimal totalAcumulado = BigDecimal.ZERO;
 
-        // Se captura el stock antes de cualquier modificación por detalle,
-        // para registrar correctamente el stockAnterior en el kardex
-        Map<Long, Integer> stockAnteriorMap = new HashMap<>();
+        // Inventario agregado gestionado, indexado por producto. Se lee de BD con lock
+        // una sola vez (en la primera línea del producto) y su cantidadActual funciona
+        // como stock corriente que se encadena línea a línea dentro de esta compra: así,
+        // si el mismo producto entra en varios lotes, cada línea parte del saldo que dejó
+        // la anterior en lugar de releer una BD ya modificada.
+        Map<Long, Inventario> inventarioPorProducto = new HashMap<>();
+
+        // Foto del movimiento de kardex POR LÍNEA de detalle (no por producto): cada
+        // detalle conserva su propio stockAnterior/stockPosterior. Se difiere hasta
+        // después del save porque el movimiento referencia el compraId ya generado.
+        List<KardexSnapshot> snapshotsKardex = new ArrayList<>();
 
         for (CompraDetalleCreateDTO detDto : dto.getDetalles()) {
             Producto producto = buscarProducto(farmaciaId, detDto.getProductoId());
 
-            int stockActual = inventarioRepository
-                    .findByProductoYSucursalForUpdate(producto.getProductoId(), sucursal.getSucursalId())
-                    .map(Inventario::getInventarioCantidadActual)
-                    .orElse(0);
-            stockAnteriorMap.put(producto.getProductoId(), stockActual);
+            // Lee el inventario (con lock pesimista) solo la primera vez que aparece el
+            // producto; las líneas siguientes reutilizan la entidad gestionada en memoria.
+            Inventario inventario = inventarioPorProducto.computeIfAbsent(
+                    producto.getProductoId(),
+                    pid -> obtenerInventarioConLock(farmacia, producto, sucursal));
 
-            // El lote se busca scopeado a sucursal+producto para evitar que dos farmacias
-            // con el mismo número de lote compartan o contaminen stock entre sí
+            int stockAnterior = inventario.getInventarioCantidadActual();
+            int stockPosterior = stockAnterior + detDto.getCantidad();
+            inventario.setInventarioCantidadActual(stockPosterior);
+
+            // El lote se busca scopeado a sucursal+producto para que dos farmacias con el
+            // mismo número de lote no compartan ni contaminen stock entre sí. Si no existe
+            // se crea; si existe, se le acumula la cantidad.
             InventarioLotes lote = loteRepository
                     .findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
                             detDto.getNumeroLote(), sucursal.getSucursalId(), producto.getProductoId())
@@ -115,38 +132,39 @@ public class CompraServiceImpl implements CompraService {
             lote.setLoteCantidadActual(lote.getLoteCantidadActual() + detDto.getCantidad());
             loteRepository.save(lote);
 
-            // Sincroniza el inventario agregado producto+sucursal;
-            // si es el primer ingreso de ese par, lo crea automáticamente
-            ajustarInventarioAgregado(farmacia, producto, sucursal, detDto.getCantidad());
-
             BigDecimal subtotal = detDto.getPrecioUnitario().multiply(BigDecimal.valueOf(detDto.getCantidad()));
             totalAcumulado = totalAcumulado.add(subtotal);
 
-            compra.getDetalles().add(CompraDetalle.builder()
+            CompraDetalle detalle = CompraDetalle.builder()
                     .compra(compra)
                     .producto(producto)
                     .loteId(lote)
                     .detalleCantidad(detDto.getCantidad())
                     .detallePrecioUnitario(detDto.getPrecioUnitario())
                     .detalleSubtotal(subtotal)
-                    .build());
+                    .build();
+            compra.getDetalles().add(detalle);
+            snapshotsKardex.add(new KardexSnapshot(detalle, stockAnterior, stockPosterior));
         }
+
+        // Persiste el inventario agregado una sola vez por producto (incluye los recién
+        // creados); el encadenado en memoria ya dejó la cantidadActual final.
+        inventarioRepository.saveAll(inventarioPorProducto.values());
 
         compra.setCompraTotal(totalAcumulado);
         Compra guardada = compraRepository.save(compra);
 
-        // El kardex se registra después del save para disponer del compraId como referencia
-        for (CompraDetalle detalle : guardada.getDetalles()) {
-            int stockAnterior = stockAnteriorMap.get(detalle.getProducto().getProductoId());
+        // El kardex se registra después del save para disponer del compraId como referencia.
+        for (KardexSnapshot snap : snapshotsKardex) {
             kardexService.registrarMovimiento(
-                    detalle.getProducto(),
+                    snap.detalle().getProducto(),
                     farmacia,
                     usuario,
-                    detalle.getDetalleCantidad(),
+                    snap.detalle().getDetalleCantidad(),
                     TipoMovimiento.ENTRADA,
-                    stockAnterior,
-                    stockAnterior + detalle.getDetalleCantidad(),
-                    detalle.getDetallePrecioUnitario(),
+                    snap.stockAnterior(),
+                    snap.stockPosterior(),
+                    snap.detalle().getDetallePrecioUnitario(),
                     guardada.getCompraId(),
                     "COMPRA",
                     guardada.getCompraObservaciones()
@@ -190,6 +208,8 @@ public class CompraServiceImpl implements CompraService {
         Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
 
+        // Solo se permite editar observaciones; montos y stock son inmutables una vez
+        // registrada la compra (se corrigen vía anulación).
         if (dto.getObservaciones() != null) {
             compra.setCompraObservaciones(dto.getObservaciones());
         }
@@ -202,17 +222,17 @@ public class CompraServiceImpl implements CompraService {
         Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
 
+        // Al anular una compra activa hay que revertir el stock que ingresó.
         if (nuevoEstado == CompraEstado.anulada && compra.getCompraEstado() == CompraEstado.activa) {
             for (CompraDetalle detalle : compra.getDetalles()) {
-                // Lock pesimista para evitar race condition entre la anulación
-                // y una venta concurrente que descuente el mismo lote
+                // Lock pesimista sobre el lote para evitar race condition entre la anulación
+                // y una venta concurrente que descuente el mismo lote.
                 InventarioLotes lote = loteRepository
                         .findByLoteIdAndFarmaciaIdForUpdate(detalle.getLoteId().getLoteId(), farmaciaId)
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Lote no encontrado en tu farmacia ID: " + detalle.getLoteId().getLoteId()));
 
-                // Si el stock actual es menor a lo comprado, parte del lote ya fue vendido;
-                // revertir causaría stock negativo
+                // Si parte del lote ya se vendió, revertir dejaría stock negativo: se rechaza.
                 if (lote.getLoteCantidadActual() < detalle.getDetalleCantidad()) {
                     throw new BadRequestException(
                             "No se puede anular la compra: el lote " + lote.getLoteNumero()
@@ -224,6 +244,7 @@ public class CompraServiceImpl implements CompraService {
                 lote.setLoteCantidadActual(lote.getLoteCantidadActual() - detalle.getDetalleCantidad());
                 loteRepository.save(lote);
 
+                // Refleja la reversión en el inventario agregado.
                 ajustarInventarioAgregado(lote.getFarmacia(),
                         lote.getProducto(), lote.getSucursal(), -detalle.getDetalleCantidad());
             }
@@ -235,8 +256,11 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     public void eliminar(Long farmaciaId, Long id) {
+        // Borrado lógico: una compra nunca se elimina físicamente, se anula
+        // (preserva la traza contable y de kardex).
         cambiarEstado(farmaciaId, id, CompraEstado.anulada);
     }
+
 
     private Sucursal buscarSucursal(Long farmaciaId, Long id) {
         return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
@@ -249,16 +273,19 @@ public class CompraServiceImpl implements CompraService {
     }
 
     private Producto buscarProducto(Long farmaciaId, Long id) {
+        // Filtro por farmacia para impedir referenciar productos de otra (multi-tenancy).
         return productoRepository.findById(id)
                 .filter(p -> p.getFarmacia().getFarmaciaId().equals(farmaciaId))
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
-    // Aplica un delta positivo o negativo sobre el inventario agregado producto+sucursal.
-    // El lock pesimista se adquiere después del lote para mantener un orden de locks
-    // consistente y prevenir deadlocks en operaciones concurrentes
-    private void ajustarInventarioAgregado(Farmacia farmacia, Producto producto, Sucursal sucursal, int delta) {
-        Inventario inventario = inventarioRepository
+    /**
+     * Obtiene el inventario agregado producto+sucursal con lock pesimista
+     * (SELECT ... FOR UPDATE), o construye uno nuevo en memoria si es el primer
+     * ingreso de ese par. No persiste: el llamador decide cuándo guardar.
+     */
+    private Inventario obtenerInventarioConLock(Farmacia farmacia, Producto producto, Sucursal sucursal) {
+        return inventarioRepository
                 .findByProductoYSucursalForUpdate(producto.getProductoId(), sucursal.getSucursalId())
                 .orElseGet(() -> Inventario.builder()
                         .producto(producto)
@@ -267,8 +294,23 @@ public class CompraServiceImpl implements CompraService {
                         .inventarioCantidadActual(0)
                         .inventarioCantidadMinima(0)
                         .build());
+    }
 
+    /**
+     * Aplica un delta (positivo o negativo) sobre el inventario agregado
+     * producto+sucursal bajo lock pesimista y lo persiste. Usado por la anulación;
+     * el alta de compra encadena el stock en memoria y persiste con saveAll.
+     */
+    private void ajustarInventarioAgregado(Farmacia farmacia, Producto producto, Sucursal sucursal, int delta) {
+        Inventario inventario = obtenerInventarioConLock(farmacia, producto, sucursal);
         inventario.setInventarioCantidadActual(inventario.getInventarioCantidadActual() + delta);
         inventarioRepository.save(inventario);
     }
+
+    /**
+     * Foto del stock de una línea de detalle para registrar su movimiento de kardex
+     * tras persistir la compra. Es por línea (no por producto) para que varias líneas
+     * del mismo producto conserven cada una su anterior/posterior encadenado.
+     */
+    private record KardexSnapshot(CompraDetalle detalle, int stockAnterior, int stockPosterior) {}
 }

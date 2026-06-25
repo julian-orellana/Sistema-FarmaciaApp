@@ -50,6 +50,8 @@ public class CompraServiceImplTest {
     private KardexService kardexService;
     @Mock
     private FarmaciaRepository farmaciaRepository;
+    @Mock
+    private InventarioRepository inventarioRepository;
 
     @AfterEach
     void limpiarContextoSeguridad() {
