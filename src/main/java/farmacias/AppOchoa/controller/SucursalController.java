@@ -44,27 +44,27 @@ public class SucursalController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('administrador')")
     public ResponseEntity<SucursalResponseDTO> crear(@Valid @RequestBody SucursalCreateDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(sucursalService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('administrador')")
     public ResponseEntity<SucursalResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody SucursalUpdateDTO dto) {
         return ResponseEntity.ok(sucursalService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('administrador')")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam Boolean estado) {
         sucursalService.cambiarEstado(getFarmaciaId(), id, estado);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('administrador')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         sucursalService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
