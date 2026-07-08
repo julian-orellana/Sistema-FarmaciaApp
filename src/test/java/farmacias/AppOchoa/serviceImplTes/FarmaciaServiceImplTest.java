@@ -4,10 +4,14 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaCreateDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaResponseDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaSimpleDTO;
+import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
+import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.PlanTipo;
+import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.serviceimpl.FarmaciaServiceImpl;
+import farmacias.AppOchoa.services.UsuarioService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +38,8 @@ public class FarmaciaServiceImplTest {
 
     @Mock
     private FarmaciaRepository farmaciaRepository;
+    @Mock
+    private UsuarioService usuarioService;
     @InjectMocks
     private FarmaciaServiceImpl farmaciaService;
 
@@ -49,6 +55,14 @@ public class FarmaciaServiceImplTest {
         dto.setPlanTipo(PlanTipo.basico);
         dto.setSuscripcionVigencia(LocalDate.of(2026, 3, 25));
 
+        UsuarioCreateDTO adminInicial = new UsuarioCreateDTO();
+        adminInicial.setNombreUsuario("adminochoa");
+        adminInicial.setContrasena("Password123");
+        adminInicial.setNombre("Admin");
+        adminInicial.setApellido("Ochoa");
+        adminInicial.setRol(UsuarioRol.administrador);
+        dto.setAdminInicial(adminInicial);
+
         Farmacia farmacia = new Farmacia();
         farmacia.setFarmaciaId(1L);
         farmacia.setFarmaciaNombre("Ochoa");
@@ -59,6 +73,7 @@ public class FarmaciaServiceImplTest {
         farmacia.setSuscripcionVigencia(LocalDate.of(2026, 3, 25));
 
         when(farmaciaRepository.save(any(Farmacia.class))).thenReturn(farmacia);
+        when(usuarioService.crearAdminInicial(any(), any())).thenReturn(new UsuarioResponseDTO());
 
         FarmaciaResponseDTO resultado  = farmaciaService.crear(dto);
         assertNotNull(resultado);
