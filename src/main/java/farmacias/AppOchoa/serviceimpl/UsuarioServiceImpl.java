@@ -84,6 +84,28 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
     }
 
     @Override
+    public UsuarioResponseDTO crearAdminInicial(UsuarioCreateDTO dto, Farmacia farmacia) {
+        if (usuarioRepository.existsByNombreUsuarioUsuario(dto.getNombreUsuario())) {
+            throw new DuplicateResourceException("El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso");
+        }
+        // El rol lo dicta el servidor: este endpoint SIEMPRE crea al administrador
+        // inicial. Ignora dto.getRol() para no permitir crear un encargado sin sucursal
+        // o un superadmin colgado de una farmacia por la puerta lateral.
+        // La sucursal nace null: en el modelo 1:1 la crea el propio admin tras entrar.
+        Usuario usuario = Usuario.builder()
+                .nombreUsuarioUsuario(dto.getNombreUsuario())
+                .usuarioContrasenaHash(passwordEncoder.encode(dto.getContrasena()))
+                .usuarioNombre(dto.getNombre())
+                .usuarioApellido(dto.getApellido())
+                .usuarioRol(UsuarioRol.administrador)
+                .sucursal(null)
+                .farmacia(farmacia)
+                .usuarioEstado(true)
+                .build();
+        return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuario));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public UsuarioResponseDTO obtenerPorId(Long farmaciaId, Long id) {
         return usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)

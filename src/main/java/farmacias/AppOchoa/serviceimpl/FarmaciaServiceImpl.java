@@ -10,6 +10,7 @@ import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.PlanTipo;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.services.FarmaciaService;
+import farmacias.AppOchoa.services.UsuarioService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class FarmaciaServiceImpl implements FarmaciaService {
     private final FarmaciaRepository farmaciaRepository;
+    private final UsuarioService usuarioService;
 
-    public FarmaciaServiceImpl(FarmaciaRepository farmaciaRepository1){
+    public FarmaciaServiceImpl(FarmaciaRepository farmaciaRepository1,
+                               UsuarioService usuarioService){
         this.farmaciaRepository = farmaciaRepository1;
+        this.usuarioService = usuarioService;
     }
 
     @Override
@@ -44,7 +48,9 @@ public class FarmaciaServiceImpl implements FarmaciaService {
                 .build();
 
 
-        return FarmaciaResponseDTO.fromEntity(farmaciaRepository.save(farmacia));
+        Farmacia farmaciaGuardada = farmaciaRepository.save(farmacia);
+        usuarioService.crearAdminInicial(dto.getAdminInicial(), farmaciaGuardada);
+        return FarmaciaResponseDTO.fromEntity(farmaciaGuardada);
     }
     private int resolverMaxSucursales(PlanTipo plan) {
         return switch (plan) {
