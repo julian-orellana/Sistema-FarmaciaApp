@@ -24,6 +24,7 @@ public class SucursalServiceImpl implements SucursalService {
     private final SucursalRepository sucursalRepository;
     private final FarmaciaRepository farmaciaRepository;
 
+
     public SucursalServiceImpl(SucursalRepository sucursalRepository, FarmaciaRepository farmaciaRepository){
         this.sucursalRepository = sucursalRepository;
         this.farmaciaRepository = farmaciaRepository;
@@ -57,7 +58,6 @@ public class SucursalServiceImpl implements SucursalService {
 
         return SucursalResponseDTO.fromEntity(sucursalRepository.save(sucursal));
     }
-
     @Override
     @Transactional(readOnly = true)
     public SucursalResponseDTO obtenerPorId(Long farmaciaId, Long id){

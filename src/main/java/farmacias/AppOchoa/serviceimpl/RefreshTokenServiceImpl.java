@@ -39,12 +39,20 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Override
     @Transactional
     public RefreshToken crear(Long usuarioId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        Usuario usuario = usuarioRepository.findByIdWithSucursalAndFarmacia(usuarioId)
                 .orElseThrow(() -> new TokenRefreshException("Usuario no encontrado con ID: " + usuarioId));
+
+        if (usuario.getSucursal() != null) {
+            usuario.getSucursal().getSucursalId();
+            usuario.getSucursal().getSucursalNombre();
+        }
+        if (usuario.getFarmacia() != null) {
+            usuario.getFarmacia().getFarmaciaId();
+        }
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .usuario(usuario)
-                .token(UUID.randomUUID().toString()) // UUID aleatorio
+                .token(UUID.randomUUID().toString())
                 .expiraEn(LocalDateTime.now().plusSeconds(refreshExpirationMs / 1000))
                 .build();
 

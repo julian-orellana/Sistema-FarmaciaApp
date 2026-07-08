@@ -6,6 +6,7 @@ import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.services.AuthService;
 import farmacias.AppOchoa.util.JwtUtil;
 import farmacias.AppOchoa.util.SuscripcionValidator;
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public Map<String, Object> login(String nombreUsuario, String contrasena) {
 
         Authentication auth = authenticationManager.authenticate(
@@ -53,6 +55,11 @@ public class AuthServiceImpl implements AuthService {
         claims.put("apellido", usuario.getUsuarioApellido());
         if (usuario.getFarmacia() != null) {
             claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+        }
+
+        if (usuario.getSucursal() != null) {
+            claims.put("sucursalId", usuario.getSucursal().getSucursalId());
+            claims.put("nombreSucursal", usuario.getSucursal().getSucursalNombre());
         }
 
         String accessToken = jwtUtil.generateToken(claims, nombreUsuario);

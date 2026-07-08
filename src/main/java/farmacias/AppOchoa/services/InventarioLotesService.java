@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface InventarioLotesService {
     InventarioLotesResponseDTO crear(Long farmaciaId, InventarioLotesCreateDTO dto);
@@ -17,4 +18,5 @@ public interface InventarioLotesService {
     InventarioLotesResponseDTO actualizar(Long farmaciaId, Long id, InventarioLotesUpdateDTO dto);
     Page<InventarioLotesSimpleDTO> listarProximosAVencerPaginado(Long farmaciaId, LocalDate fechaLimite, Pageable pageable);
     void eliminar(Long farmaciaId, Long id);
+    List<InventarioLotesSimpleDTO> buscarPorProductoFEFO(Long farmaciaId, Long productoId, Long sucursalId);
 }

@@ -1,0 +1,1 @@
+ALTER TABLE kardex DROP COLUMN fecha_ingreso;

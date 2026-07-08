@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface AlertaRepository extends JpaRepository<Alerta, Long> {
     Page<Alerta> findByProducto_ProductoId(Long productoId, Pageable pageable);
-    Page<Alerta> findByAlertaLeidaFalse(Pageable pageable);
+    Page<Alerta> findByFarmacia_FarmaciaIdAndAlertaLeidaFalse(Long farmaciaId, Pageable pageable);
     Page<Alerta> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<Alerta> findByAlertaIdAndFarmacia_FarmaciaId(Long alertaId, Long farmaciaId);
     @Query("SELECT a FROM Alerta a WHERE " +
@@ -27,4 +27,5 @@ public interface AlertaRepository extends JpaRepository<Alerta, Long> {
     //Métodos nuevos
     Optional<Alerta> findByAlertaIdAndSucursal_SucursalId(Long alertaId, Long sucursalId);
     Page<Alerta>findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+    Page<Alerta> findBySucursal_SucursalIdAndAlertaLeidaFalse(Long sucursalId, Pageable pageable);
 }
