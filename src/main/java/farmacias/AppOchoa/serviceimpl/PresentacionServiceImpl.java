@@ -4,10 +4,10 @@ import farmacias.AppOchoa.dto.presentacion.PresentacionCreateDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionResponseDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionSimpleDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionUpdateDTO;
-import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Presentacion;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.PresentacionRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.PresentacionService;
@@ -24,65 +24,79 @@ import java.util.stream.Collectors;
 public class PresentacionServiceImpl implements PresentacionService {
 
     private final PresentacionRepository presentacionRepository;
-    private final FarmaciaRepository farmaciaRepository;
+    private final SucursalRepository sucursalRepository;
 
     public PresentacionServiceImpl(
             PresentacionRepository presentacionRepository,
-            FarmaciaRepository farmaciaRepository){
+            SucursalRepository sucursalRepository){
         this.presentacionRepository = presentacionRepository;
-        this.farmaciaRepository = farmaciaRepository;
+        this.sucursalRepository = sucursalRepository;
+    }
+
+    //Método auxiliar
+    private Sucursal buscarSucursal(Long farmaciaId){
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada para tu farmacia"));
     }
 
     @Override
     public PresentacionResponseDTO crear(Long farmaciaId, PresentacionCreateDTO dto){
-        if(presentacionRepository.existsByFarmacia_FarmaciaIdAndPresentacionNombre(farmaciaId, dto.getNombre())){
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+
+        if(presentacionRepository.existsBySucursal_SucursalIdAndPresentacionNombre(sucursal.getSucursalId(), dto.getNombre())){
             throw new DuplicateResourceException("Ya existe una presentación con ese nombre: " + dto.getNombre());
         }
-        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Presentacion presentacion = Presentacion.builder()
                 .presentacionNombre(dto.getNombre())
                 .presentacionEstado(true)
-                .farmacia(farmacia)
+                .farmacia(sucursal.getFarmacia())
+                .sucursal(sucursal)
                 .build();
 
         return PresentacionResponseDTO.fromEntity(presentacionRepository.save(presentacion));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PresentacionResponseDTO obtenerPorId(Long farmaciaId, Long id){
-        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
         return PresentacionResponseDTO.fromEntity(presentacion);
     }
     @Override
     @Transactional(readOnly = true)
     public Page<PresentacionSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return presentacionRepository.findByFarmacia_FarmaciaIdAndPresentacionEstadoTrue(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return presentacionRepository.findBySucursal_SucursalIdAndPresentacionEstadoTrue(sucursal.getSucursalId(), pageable)
                 .map(PresentacionSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<PresentacionSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return presentacionRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return presentacionRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(PresentacionSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<PresentacionSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return presentacionRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return presentacionRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(PresentacionSimpleDTO::fromEntity);
     }
 
     @Override
     public PresentacionResponseDTO actualizar(Long farmaciaId, Long id, PresentacionUpdateDTO dto){
-        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
 
         if(!presentacion.getPresentacionNombre().equalsIgnoreCase(dto.getNombre())){
-            if(presentacionRepository.existsByFarmacia_FarmaciaIdAndPresentacionNombre(farmaciaId, dto.getNombre())){
+            if(presentacionRepository.existsBySucursal_SucursalIdAndPresentacionNombre(sucursal.getSucursalId(), dto.getNombre())){
                 throw new DuplicateResourceException("Ya existe otra presentación con el nombre: " + dto.getNombre());
             }
         }
@@ -98,7 +112,8 @@ public class PresentacionServiceImpl implements PresentacionService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
-        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Presentacion presentacion = presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada por ID: " + id));
         presentacion.setPresentacionEstado(estado);
         presentacionRepository.save(presentacion);

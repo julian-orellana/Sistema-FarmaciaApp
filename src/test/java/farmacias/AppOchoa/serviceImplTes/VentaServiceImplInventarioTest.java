@@ -42,7 +42,6 @@ public class VentaServiceImplInventarioTest {
     @Mock private ProductoRepository productoRepository;
     @Mock private InventarioLotesRepository loteRepository;
     @Mock private InventarioRepository inventarioRepository;
-    @Mock private FarmaciaRepository farmaciaRepository;
     @Mock private KardexService kardexService;
     @InjectMocks private VentaServiceImpl ventaService;
 
@@ -113,13 +112,12 @@ public class VentaServiceImplInventarioTest {
     @Test
     @DisplayName("Vender decrementa el lote y también el inventario agregado")
     void ventaDecrementaInventarioAgregado() {
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(SUCURSAL_ID, FARMACIA_ID))
+        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
                 .thenReturn(Optional.of(sucursal));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(USUARIO_ID, FARMACIA_ID))
                 .thenReturn(Optional.of(usuario));
-        when(farmaciaRepository.getReferenceById(FARMACIA_ID)).thenReturn(farmacia);
         when(productoRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(producto));
-        when(loteRepository.findByLoteIdAndFarmaciaIdForUpdate(LOTE_ID, FARMACIA_ID))
+        when(loteRepository.findByLoteIdAndSucursalIdForUpdate(LOTE_ID, SUCURSAL_ID))
                 .thenReturn(Optional.of(lote(50)));
         Inventario inv = inventario(50);
         when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
@@ -135,13 +133,12 @@ public class VentaServiceImplInventarioTest {
     @Test
     @DisplayName("Si no existe inventario agregado al vender, se aborta con error")
     void ventaSinInventarioAgregadoFalla() {
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(SUCURSAL_ID, FARMACIA_ID))
+        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
                 .thenReturn(Optional.of(sucursal));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(USUARIO_ID, FARMACIA_ID))
                 .thenReturn(Optional.of(usuario));
-        when(farmaciaRepository.getReferenceById(FARMACIA_ID)).thenReturn(farmacia);
         when(productoRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(producto));
-        when(loteRepository.findByLoteIdAndFarmaciaIdForUpdate(LOTE_ID, FARMACIA_ID))
+        when(loteRepository.findByLoteIdAndSucursalIdForUpdate(LOTE_ID, SUCURSAL_ID))
                 .thenReturn(Optional.of(lote(50)));
         when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
                 .thenReturn(Optional.empty());
@@ -164,7 +161,9 @@ public class VentaServiceImplInventarioTest {
                 .sucursal(sucursal)
                 .build();
 
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(7L, FARMACIA_ID))
+        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
+                .thenReturn(Optional.of(sucursal));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(7L, SUCURSAL_ID))
                 .thenReturn(Optional.of(venta));
         Inventario inv = inventario(47);
         when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))

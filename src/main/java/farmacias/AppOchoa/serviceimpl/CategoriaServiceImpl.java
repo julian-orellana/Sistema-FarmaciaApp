@@ -8,8 +8,10 @@ import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Categoria;
 import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CategoriaRepository;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.services.CategoriaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,25 +26,27 @@ import java.util.stream.Collectors;
 public class CategoriaServiceImpl implements CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
-    private final FarmaciaRepository farmaciaRepository;
+    private final SucursalRepository sucursalRepository;
 
     public CategoriaServiceImpl(
             CategoriaRepository categoriaRepository,
-            FarmaciaRepository farmaciaRepository){
+            SucursalRepository sucursalRepository) {
         this.categoriaRepository = categoriaRepository;
-        this.farmaciaRepository = farmaciaRepository;
+        this.sucursalRepository = sucursalRepository;
     }
+
     @Override
-    public CategoriaResponseDTO crear(Long farmaciaId, CategoriaCreateDTO dto){
-        if(categoriaRepository.existsByFarmacia_FarmaciaIdAndCategoriaNombre(farmaciaId, dto.getNombre())){
+    public CategoriaResponseDTO crear(Long farmaciaId, CategoriaCreateDTO dto) {
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+
+        if (categoriaRepository.existsBySucursal_SucursalIdAndCategoriaNombre(sucursal.getSucursalId(), dto.getNombre())) {
             throw new DuplicateResourceException("Ya existe una categoría con ese nombre: " + dto.getNombre());
         }
-        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         Categoria categoria = Categoria.builder()
                 .categoriaNombre(dto.getNombre())
                 .categoriaEstado(true)
-                .farmacia(farmacia)
+                .sucursal(sucursal)
                 .build();
 
         Categoria guardada = categoriaRepository.save(categoria);
@@ -51,43 +55,52 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional(readOnly = true)
-    public CategoriaResponseDTO obtenerPorId(Long farmaciaId, Long id){
-        Categoria categoria = categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+    public CategoriaResponseDTO obtenerPorId(Long farmaciaId, Long id) {
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Categoria categoria = categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         return CategoriaResponseDTO.fromEntity(categoria);
     }
 
+    //Método auxiliar
+    private Sucursal buscarSucursal(Long farmaciaId){
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada para tu farmacia"));
+    }
+
     @Override
     @Transactional(readOnly = true)
     public Page<CategoriaSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return categoriaRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return categoriaRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(CategoriaSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CategoriaSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return categoriaRepository.findByFarmacia_FarmaciaIdAndCategoriaEstadoTrue(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return categoriaRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(CategoriaSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CategoriaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return categoriaRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return categoriaRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(CategoriaSimpleDTO::fromEntity);
     }
 
-
-
     @Override
     public CategoriaResponseDTO actualizar(Long farmaciaId, Long id, CategoriaUpdateDTO dto){
-        Categoria categoria = categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Categoria categoria = categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(()-> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         if(!categoria.getCategoriaNombre().equals(dto.getNombre())){
-            if(categoriaRepository.existsByFarmacia_FarmaciaIdAndCategoriaNombre(farmaciaId, dto.getNombre())){
+            if(categoriaRepository.existsBySucursal_SucursalIdAndCategoriaNombre(sucursal.getSucursalId(), dto.getNombre())){
                 throw new DuplicateResourceException("Ya existe otra categoría con el nombre: " + dto.getNombre());
             }
         }
@@ -101,7 +114,8 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, Boolean estado){
-        Categoria categoria = categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Categoria categoria = categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         categoria.setCategoriaEstado(estado);

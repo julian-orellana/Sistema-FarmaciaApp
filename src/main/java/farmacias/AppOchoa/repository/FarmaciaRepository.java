@@ -9,11 +9,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface FarmaciaRepository extends JpaRepository<Farmacia, Long> {
 
-    boolean existsByFarmaciaNit(String nit);
     Page<Farmacia> findByFarmaciaActivaTrue(Pageable pageable);
+    boolean existsByFarmaciaTelefono(String telefono);
+
     @Query("SELECT f FROM Farmacia f WHERE " +
             "LOWER(f.farmaciaNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
-            "LOWER(f.farmaciaNit) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(f.farmaciaTelefono) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Farmacia> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
 }

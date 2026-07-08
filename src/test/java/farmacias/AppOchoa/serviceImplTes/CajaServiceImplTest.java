@@ -6,9 +6,9 @@ import farmacias.AppOchoa.dto.caja.CajaSimpleDTO;
 import farmacias.AppOchoa.dto.caja.CajaUpdateDTO;
 import farmacias.AppOchoa.model.Caja;
 import farmacias.AppOchoa.model.CajaEstado;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CajaRepository;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.serviceimpl.CajaServiceImpl;
 import org.junit.jupiter.api.DisplayName;
@@ -37,10 +37,18 @@ public class CajaServiceImplTest {
     private CajaRepository cajaRepository;
     @Mock
     private SucursalRepository sucursalRepository;
-    @Mock
-    private FarmaciaRepository farmaciaRepository;
     @InjectMocks
     private CajaServiceImpl cajaService;
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
+    }
 
     @Test
     @DisplayName("Deberia de crear una caja en la Farmacia")
@@ -54,8 +62,7 @@ public class CajaServiceImplTest {
         dto.setCajaNombre("Caja 1");
 
         //Entidades Relacionales
-        Sucursal sucursal = new Sucursal();
-        sucursal.setSucursalId(1L);
+        Sucursal sucursal = sucursalDePrueba(farmaciaId, 1L);
 
         //Resultado simulado
         Caja caja = new Caja();
@@ -63,7 +70,7 @@ public class CajaServiceImplTest {
         caja.setCajaNombre(dto.getCajaNombre());
 
         //ACC
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
         //any, indica que no importa la caja que llegue, solo que la devuelva simulada
         when(cajaRepository.save(any(Caja.class))).thenReturn(caja);
 
@@ -91,7 +98,9 @@ public class CajaServiceImplTest {
         Page<Caja> page = new PageImpl<>(List.of(caja));
 
         //ACC
-        when(cajaRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(cajaRepository.buscarPorTexto(sucursalId, texto, pageable)).thenReturn(page);
 
         //ASSET
         Page<CajaSimpleDTO> resultado = cajaService.buscarPorTexto(farmaciaId, texto, pageable);
@@ -109,7 +118,9 @@ public class CajaServiceImplTest {
         Caja cajaMock = new Caja();
         cajaMock.setCajaId(id);
 
-        when(cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(cajaMock));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(cajaRepository.findByCajaIdAndSucursal_SucursalId(id, sucursalId)).thenReturn(Optional.of(cajaMock));
         // ACT
         cajaService.eliminar(farmaciaId, id);
         // ASSERT
@@ -126,8 +137,7 @@ public class CajaServiceImplTest {
         dto.setSucursalId(1L);
         dto.setCajaNombre("Caja 1");
 
-        Sucursal sucursal = new Sucursal();
-        sucursal.setSucursalId(1L);
+        Long sucursalId = 1L;
 
         Caja cajaRegistrada = Caja.builder()
                 .cajaId(1L)
@@ -141,7 +151,8 @@ public class CajaServiceImplTest {
                 .cajaEstado(CajaEstado.desactivada)
                 .build();
 
-        when(cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(cajaRegistrada));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(cajaRepository.findByCajaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(cajaRegistrada));
         when(cajaRepository.save(any(Caja.class))).thenReturn(cajaActualizada);
 
         CajaResponseDTO resultado = cajaService.actualizarCaja(farmaciaId, 1L, dto);

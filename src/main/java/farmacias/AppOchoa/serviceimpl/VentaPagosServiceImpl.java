@@ -6,13 +6,13 @@ import farmacias.AppOchoa.dto.ventapago.VentaPagoSimpleDTO;
 import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.CajaSesiones;
-import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.SesionEstado;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaEstado;
 import farmacias.AppOchoa.model.VentaPago;
 import farmacias.AppOchoa.repository.CajaSesionesRepository;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.VentaPagoRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
 import farmacias.AppOchoa.services.VentaPagoService;
@@ -29,22 +29,29 @@ public class VentaPagosServiceImpl implements VentaPagoService {
     private final VentaPagoRepository ventaPagoRepository;
     private final VentaRepository ventaRepository;
     private final CajaSesionesRepository cajaSesionesRepository;
-    private final FarmaciaRepository farmaciaRepository;
+    private final SucursalRepository sucursalRepository;
 
     public VentaPagosServiceImpl(
             VentaPagoRepository ventaPagoRepository,
             VentaRepository ventaRepository,
             CajaSesionesRepository cajaSesionesRepository,
-            FarmaciaRepository farmaciaRepository){
+            SucursalRepository sucursalRepository){
         this.ventaPagoRepository = ventaPagoRepository;
         this.ventaRepository = ventaRepository;
         this.cajaSesionesRepository = cajaSesionesRepository;
-        this.farmaciaRepository = farmaciaRepository;
+        this.sucursalRepository = sucursalRepository;
     }
+
+    private Sucursal buscarSucursal(Long farmaciaId){
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada para tu farmacia"));
+    }
+
     @Override
     public VentaPagoResponseDTO crear(Long farmaciaId, VentaPagoCreateDTO dto){
-        Venta venta = buscarVentas(farmaciaId, dto.getVentaId());
-        CajaSesiones cajaSesiones = buscarSesiones(farmaciaId, dto.getCajaSesionId());
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Venta venta = buscarVentas(sucursal.getSucursalId(), dto.getVentaId());
+        CajaSesiones cajaSesiones = buscarSesiones(sucursal.getSucursalId(), dto.getCajaSesionId());
 
         // No registrar pagos sobre una venta anulada
         if (venta.getVentaEstado() == VentaEstado.anulada) {
@@ -79,8 +86,6 @@ public class VentaPagosServiceImpl implements VentaPagoService {
                 ? montoRecibido.subtract(saldoPendiente)
                 : BigDecimal.ZERO;
 
-        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
-
         VentaPago ventaPago = VentaPago.builder()
                 .venta(venta)
                 .cajaSesiones(cajaSesiones)
@@ -88,39 +93,43 @@ public class VentaPagosServiceImpl implements VentaPagoService {
                 .referenciaTransaccion(dto.getReferenciaTransaccion())
                 .montoRecibido(montoRecibido)
                 .montoVuelto(montoVuelto)
-                .farmacia(farmacia)
+                .farmacia(sucursal.getFarmacia())
+                .sucursal(sucursal)
                 .build();
 
         return VentaPagoResponseDTO.fromEntity(ventaPagoRepository.save(ventaPago));
     }
-    private Venta buscarVentas(Long farmaciaId, Long id){
+    private Venta buscarVentas(Long sucursalId, Long id){
         if(id == null) return null;
-        return ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
+        return ventaRepository.findByVentaIdAndSucursal_SucursalId(id, sucursalId)
                 .orElseThrow(()-> new ResourceNotFoundException("Venta no encontrada en tu farmacia"));
     }
-    private CajaSesiones buscarSesiones(Long farmaciaId, Long id){
+    private CajaSesiones buscarSesiones(Long sucursalId, Long id){
         if(id == null) return null;
-        return cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        return cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(id, sucursalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sesion no encontrada en tu farmacia"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public VentaPagoResponseDTO buscarPorId(Long farmaciaId, Long id){
-        return ventaPagoRepository.findByPagoIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return ventaPagoRepository.findByPagoIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .map(VentaPagoResponseDTO::fromEntity)
                 .orElseThrow(()-> new ResourceNotFoundException("Pago no encontrado por ID"));
     }
     @Override
     @Transactional(readOnly = true)
     public Page<VentaPagoSimpleDTO> listarActivas(Long farmaciaId, Pageable pageable){
-        return ventaPagoRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return ventaPagoRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(VentaPagoSimpleDTO::fromEntity);
     }
     @Override
     @Transactional(readOnly = true)
     public Page<VentaPagoSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return ventaPagoRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return ventaPagoRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(VentaPagoSimpleDTO::fromEntity);
     }
     @Override

@@ -43,7 +43,6 @@ public class FarmaciaServiceImplTest {
 
         FarmaciaCreateDTO dto = new FarmaciaCreateDTO();
         dto.setFarmaciaNombre("Ochoa");
-        dto.setFarmaciaNit("101363498");
         dto.setFarmaciaEmail("farmapp@ochoa.com");
         dto.setFarmaciaTelefono("55371140");
         dto.setPruebaHasta(LocalDate.of(2026, 5,30));
@@ -53,7 +52,6 @@ public class FarmaciaServiceImplTest {
         Farmacia farmacia = new Farmacia();
         farmacia.setFarmaciaId(1L);
         farmacia.setFarmaciaNombre("Ochoa");
-        farmacia.setFarmaciaNit("101363498");
         farmacia.setFarmaciaEmail("farmapp@ochoa.com");
         farmacia.setFarmaciaTelefono("55371140");
         farmacia.setPruebaHasta(LocalDate.of(2026, 5,30));
@@ -64,7 +62,7 @@ public class FarmaciaServiceImplTest {
 
         FarmaciaResponseDTO resultado  = farmaciaService.crear(dto);
         assertNotNull(resultado);
-        assertEquals(dto.getFarmaciaNit(), resultado.getFarmaciaNit());
+        assertEquals(dto.getFarmaciaTelefono(), resultado.getFarmaciaTelefono());
 
         ArgumentCaptor<Farmacia> captor = ArgumentCaptor.forClass(Farmacia.class);
         verify(farmaciaRepository).save(captor.capture());

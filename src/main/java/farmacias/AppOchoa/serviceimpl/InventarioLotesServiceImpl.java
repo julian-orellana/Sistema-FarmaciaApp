@@ -5,7 +5,6 @@ import farmacias.AppOchoa.dto.inventariolotes.InventarioLotesResponseDTO;
 import farmacias.AppOchoa.dto.inventariolotes.InventarioLotesSimpleDTO;
 import farmacias.AppOchoa.dto.inventariolotes.InventarioLotesUpdateDTO;
 import farmacias.AppOchoa.model.*;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.InventarioLotesRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
@@ -27,32 +26,29 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     private final InventarioLotesRepository inventarioLotesRepository;
     private final ProductoRepository productoRepository;
     private final SucursalRepository sucursalRepository;
-    private final FarmaciaRepository farmaciaRepository;
 
     public InventarioLotesServiceImpl(
             InventarioLotesRepository inventarioLotesRepository,
             ProductoRepository productoRepository,
-            SucursalRepository sucursalRepository,
-            FarmaciaRepository farmaciaRepository) {
+            SucursalRepository sucursalRepository) {
         this.inventarioLotesRepository = inventarioLotesRepository;
         this.productoRepository = productoRepository;
         this.sucursalRepository = sucursalRepository;
-        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
     public InventarioLotesResponseDTO crear(Long farmaciaId, InventarioLotesCreateDTO dto) {
+        // Sucursal 1:1 con la farmacia: se deriva del tenant, no se acepta del cliente
+        Sucursal sucursal = buscarSucursal(farmaciaId);
         Producto producto = buscarProducto(farmaciaId, dto.getProductoId());
-        Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
 
         // Unicidad por (sucursal, producto, numeroLote): mismo criterio que el
         // alta de lotes durante una compra (A2). Un mismo numero de lote puede
         // existir para productos distintos.
         if (inventarioLotesRepository.existsByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
-                dto.getNumeroLote(), dto.getSucursalId(), dto.getProductoId())) {
+                dto.getNumeroLote(), sucursal.getSucursalId(), dto.getProductoId())) {
             throw new DuplicateResourceException("El número de lote " + dto.getNumeroLote() + " ya existe para este producto en esta sucursal");
         }
-        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         InventarioLotes lote = InventarioLotes.builder()
                 .loteNumero(dto.getNumeroLote())
@@ -63,7 +59,7 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
                 .loteEstado(LoteEstado.disponible)
                 .producto(producto)
                 .sucursal(sucursal)
-                .farmacia(farmacia)
+                .farmacia(sucursal.getFarmacia())
                 .build();
 
         return InventarioLotesResponseDTO.fromEntity(inventarioLotesRepository.save(lote));
@@ -72,7 +68,8 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     @Transactional(readOnly = true)
     public InventarioLotesResponseDTO buscarPorId(Long farmaciaId, Long id) {
-        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
         return InventarioLotesResponseDTO.fromEntity(lote);
     }
@@ -80,7 +77,9 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     @Transactional(readOnly = true)
     public Page<InventarioLotesSimpleDTO> listarPorSucursalPaginado(Long farmaciaId, Long sucursalId, Pageable pageable) {
-        return inventarioLotesRepository.findBySucursal_SucursalIdAndFarmacia_FarmaciaId(sucursalId, farmaciaId, pageable)
+        // Sucursal 1:1 con la farmacia: se deriva del tenant, el sucursalId del cliente no se usa
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return inventarioLotesRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(InventarioLotesSimpleDTO::fromEntity);
     }
 
@@ -94,13 +93,15 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     @Override
     @Transactional(readOnly = true)
     public Page<InventarioLotesSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return inventarioLotesRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return inventarioLotesRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(InventarioLotesSimpleDTO::fromEntity);
     }
 
     @Override
     public InventarioLotesResponseDTO actualizar(Long farmaciaId, Long id, InventarioLotesUpdateDTO dto) {
-        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado ID: " + id));
 
         lote.setLoteCantidadActual(dto.getCantidadActual());
@@ -111,7 +112,8 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
 
     @Override
     public void eliminar(Long farmaciaId, Long id) {
-        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        InventarioLotes lote = inventarioLotesRepository.findByLoteIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado con ID: " + id));
         inventarioLotesRepository.delete(lote);
     }
@@ -123,8 +125,8 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
-    private Sucursal buscarSucursal(Long farmaciaId, Long id) {
-        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
+    private Sucursal buscarSucursal(Long farmaciaId) {
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada para tu farmacia"));
     }
 }

@@ -28,6 +28,10 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
 
     Page<Compra> findByCompraFechaBetween(LocalDate fechaInicio, LocalDate fechaFin, Pageable pageable);
 
+    Optional<Compra> findByCompraIdAndSucursal_SucursalId(Long compraId, Long sucursalId);
+    Page<Compra>findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+
+
     //Corrección de nombres compuestos - con paginación
     Page<Compra> findBySucursalSucursalIdAndCompraEstado(Long sucursalId, CompraEstado estado, Pageable pageable);
 
@@ -50,9 +54,9 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
     List<Object[]> findTotalComprasPorMes(@Param("anio") int anio,
                                           @Param("sucursalId") Long sucursalId);
 
-    @Query("SELECT c FROM Compra c WHERE c.farmacia.farmaciaId = :farmaciaId AND (" +
+    @Query("SELECT c FROM Compra c WHERE c.sucursal.sucursalId = :sucursalId AND (" +
             "LOWER(c.compraObservaciones) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(c.usuario.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(c.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%')))")
-    Page<Compra> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    Page<Compra> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
 }

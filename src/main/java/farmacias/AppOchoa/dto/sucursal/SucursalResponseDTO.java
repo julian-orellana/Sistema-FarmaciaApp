@@ -17,6 +17,7 @@ public class SucursalResponseDTO {
 
     private Long sucursalId;
     private String nombre;
+    private String sucursalNit;
     private String direccion;
     private String telefono;
     private Boolean estado;
@@ -26,6 +27,7 @@ public class SucursalResponseDTO {
         return SucursalResponseDTO.builder()
                 .sucursalId(sucursal.getSucursalId())
                 .nombre(sucursal.getSucursalNombre())
+                .sucursalNit(sucursal.getSucursalNit())
                 .direccion(sucursal.getSucursalDireccion())
                 .telefono(sucursal.getSucursalTelefono())
                 .estado(sucursal.getSucursalEstado())

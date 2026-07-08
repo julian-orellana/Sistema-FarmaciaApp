@@ -6,11 +6,13 @@ import farmacias.AppOchoa.dto.cajasesiones.CajaSesionesSimpleDTO;
 import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.model.Caja;
 import farmacias.AppOchoa.model.CajaSesiones;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.SesionEstado;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.CajaRepository;
 import farmacias.AppOchoa.repository.CajaSesionesRepository;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.serviceimpl.CajaSesionesServiceImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -48,13 +50,23 @@ public class CajaSesionesImplTest {
     @Mock
     private CajaSesionesRepository cajaSesionesRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
     @InjectMocks
     private CajaSesionesServiceImpl cajaSesionesService;
 
     @AfterEach
     void limpiarContextoSeguridad() {
         SecurityContextHolder.clearContext();
+    }
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
     }
 
     @Test
@@ -82,8 +94,10 @@ public class CajaSesionesImplTest {
         cajaSesiones.setSesionId(1L);
         caja.setCajaNombre("Caja1");
 
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(usuario));
-        when(cajaRepository.findByCajaIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(caja));
+        when(cajaRepository.findByCajaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(caja));
         when(cajaSesionesRepository.save(any(CajaSesiones.class))).thenReturn(cajaSesiones);
 
         CajaSesionesResponseDTO resultado = cajaSesionesService.crear(farmaciaId, dto);
@@ -108,9 +122,11 @@ public class CajaSesionesImplTest {
         CajaSesiones cajaSesiones = new CajaSesiones();
         cajaSesiones.setSesionId(1L);
 
+        Long sucursalId = 1L;
         Page<CajaSesiones> page = new PageImpl<>(List.of(cajaSesiones));
 
-        when(cajaSesionesRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(cajaSesionesRepository.buscarPorTexto(sucursalId, texto, pageable)).thenReturn(page);
 
         // ACT
         Page<CajaSesionesSimpleDTO> resultado = cajaSesionesService.buscarPorTexto(farmaciaId, texto, pageable);
@@ -130,7 +146,9 @@ public class CajaSesionesImplTest {
         sesion.setSesionId(1L);
         sesion.setSesionEstado(SesionEstado.abierta);
 
-        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sesion));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(sesion));
         when(cajaSesionesRepository.save(any(CajaSesiones.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CajaSesionesResponseDTO resultado = cajaSesionesService.cerrar(farmaciaId, 1L);
@@ -151,7 +169,9 @@ public class CajaSesionesImplTest {
         sesion.setSesionId(1L);
         sesion.setSesionEstado(SesionEstado.cerrada);
 
-        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sesion));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(sesion));
 
         assertThrows(BadRequestException.class, () -> cajaSesionesService.cerrar(farmaciaId, 1L));
         verify(cajaSesionesRepository, Mockito.never()).save(any(CajaSesiones.class));

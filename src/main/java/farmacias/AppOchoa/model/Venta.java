@@ -90,7 +90,7 @@ public class Venta {
     private List<VentaDetalle> detalles = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "farmacia_id")
+    @JoinColumn(name = "farmacia_id", nullable = false)
     private Farmacia farmacia;
 
 }

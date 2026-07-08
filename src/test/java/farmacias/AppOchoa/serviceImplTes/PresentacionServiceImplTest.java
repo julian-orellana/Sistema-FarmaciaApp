@@ -4,12 +4,12 @@ import farmacias.AppOchoa.dto.categoria.CategoriaUpdateDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionCreateDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionResponseDTO;
 import farmacias.AppOchoa.dto.presentacion.PresentacionUpdateDTO;
-import farmacias.AppOchoa.model.Categoria;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Presentacion;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.PresentacionRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.serviceimpl.PresentacionServiceImpl;
-import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmSetType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,9 +31,19 @@ class PresentacionServiceImplTest {
     @Mock
     private PresentacionRepository presentacionRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
     @InjectMocks
     private PresentacionServiceImpl presentacionService;
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
+    }
 
     //TEST PARA AGREGAR PRESENTACION
     @Test
@@ -50,7 +60,8 @@ class PresentacionServiceImplTest {
                 .presentacionEstado(true)
                 .build();
 
-        when(presentacionRepository.existsByFarmacia_FarmaciaIdAndPresentacionNombre(any(),anyString())).thenReturn(false);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(presentacionRepository.existsBySucursal_SucursalIdAndPresentacionNombre(any(),anyString())).thenReturn(false);
         when(presentacionRepository.save(ArgumentMatchers.any(Presentacion.class))).thenReturn(presentacionGuardado);
 
         //ACT
@@ -77,7 +88,8 @@ class PresentacionServiceImplTest {
                 .presentacionEstado(true)
                 .build();
 
-        when(presentacionRepository.existsByFarmacia_FarmaciaIdAndPresentacionNombre(any(),any())).thenReturn(true);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(presentacionRepository.existsBySucursal_SucursalIdAndPresentacionNombre(any(),any())).thenReturn(true);
 
         //ASSERT & ACT
         assertThrows(RuntimeException.class, () ->{
@@ -93,7 +105,8 @@ class PresentacionServiceImplTest {
 
         Long farmaciaId = 1L;
         Long idNoExistente = 1l;
-        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(idNoExistente, farmaciaId)).thenReturn(Optional.empty());
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(idNoExistente, 1L)).thenReturn(Optional.empty());
 
         //ACT & ASSERT
         assertThrows(RuntimeException.class, () ->
@@ -112,7 +125,8 @@ class PresentacionServiceImplTest {
         presentacionMock.setPresentacionId(id);
         presentacionMock.setPresentacionEstado(true);
 
-        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(presentacionMock));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.of(presentacionMock));
         //ACT
         presentacionService.eliminar(farmaciaId, id);
         //ASSERT
@@ -141,7 +155,8 @@ class PresentacionServiceImplTest {
                 .presentacionEstado(true)
                 .build();
 
-        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(presentacionRegistrada));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.of(presentacionRegistrada));
         when(presentacionRepository.save(any(Presentacion.class))).thenReturn(presentacionActualizacion);
         //ACT
         PresentacionResponseDTO resultado = presentacionService.actualizar(farmaciaId, id, dto);
@@ -159,7 +174,8 @@ class PresentacionServiceImplTest {
         PresentacionUpdateDTO dto = new PresentacionUpdateDTO();
         dto.setNombre("Lactancia");
 
-        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.empty());
         //ASSERT
         assertThrows(RuntimeException.class, () ->{
             presentacionService.actualizar(farmaciaId, id, dto);

@@ -3,12 +3,12 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.venta.VentaCreateDTO;
 import farmacias.AppOchoa.dto.venta.VentaResponseDTO;
 import farmacias.AppOchoa.exception.BadRequestException;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaEstado;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
@@ -45,12 +45,20 @@ public class VentaServiceImplTest {
     @InjectMocks
     private VentaServiceImpl ventaService;
     @Mock private KardexService kardexService;
-    @Mock
-    private FarmaciaRepository farmaciaRepository;
 
     @AfterEach
     void limpiarContextoSeguridad() {
         SecurityContextHolder.clearContext();
+    }
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
     }
 
     @Test
@@ -62,9 +70,12 @@ public class VentaServiceImplTest {
         dto.setSucursalId(1L);
         dto.setDetalles(new ArrayList<>());
 
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
         Sucursal sucursal = new Sucursal();
         sucursal.setSucursalId(1L);
         sucursal.setSucursalNombre("Farmacia Central Ochoa");
+        sucursal.setFarmacia(farmacia);
 
         Usuario usuario = new Usuario();
         usuario.setUsuarioId(1L);
@@ -88,7 +99,7 @@ public class VentaServiceImplTest {
                 .build();
 
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(usuario));
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
         when(ventaRepository.save(any(Venta.class))).thenReturn(venta);
         //ACT
         VentaResponseDTO resultado = ventaService.crear(farmaciaId, dto);
@@ -107,8 +118,7 @@ public class VentaServiceImplTest {
         dto.setDetalles(new ArrayList<>());
         dto.setDescuento(BigDecimal.valueOf(50)); // subtotal queda en 0 (sin detalles)
 
-        Sucursal sucursal = new Sucursal();
-        sucursal.setSucursalId(1L);
+        Sucursal sucursal = sucursalDePrueba(farmaciaId, 1L);
 
         Usuario admin = new Usuario();
         admin.setUsuarioId(1L);
@@ -118,7 +128,7 @@ public class VentaServiceImplTest {
                 new UsernamePasswordAuthenticationToken(admin, null));
 
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(admin));
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
 
         BadRequestException ex = assertThrows(BadRequestException.class,
                 () -> ventaService.crear(farmaciaId, dto));
@@ -135,12 +145,14 @@ public class VentaServiceImplTest {
         Long id = 1L;
         Venta venta = new Venta();
         venta.setVentaId(1L);
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(venta));
         VentaResponseDTO resultado = ventaService.listarPorId(farmaciaId, id);
         //ASSERT
         assertNotNull(resultado);
         assertEquals(1L, resultado.getVentaId());
-        verify(ventaRepository).findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId);
+        verify(ventaRepository).findByVentaIdAndSucursal_SucursalId(1L, sucursalId);
     }
 
     @Test
@@ -149,7 +161,9 @@ public class VentaServiceImplTest {
 
         Long farmaciaId = 1L;
         Long id = 1L;
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.empty());
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class,() ->{
             ventaService.listarPorId(farmaciaId, 1L);
         });
@@ -165,7 +179,9 @@ public class VentaServiceImplTest {
         venta.setVentaId(1L);
         venta.setVentaEstado(VentaEstado.completada);
 
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(venta));
         //ACT & ASSERT
         ventaService.eliminar(farmaciaId, 1L);
         ArgumentCaptor<Venta> captor = ArgumentCaptor.forClass(Venta.class);
@@ -178,7 +194,9 @@ public class VentaServiceImplTest {
 
         Long farmaciaId = 1L;
         Long id = 1L;
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.empty());
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.empty());
         //ACT
         assertThrows(RuntimeException.class,() ->{
             ventaService.eliminar(farmaciaId, 1L);

@@ -22,8 +22,6 @@ public class Farmacia {
     @Column(name = "farmacia_nombre", nullable = false)
     private String farmaciaNombre;
 
-    @Column(name = "farmacia_nit", nullable = false, unique = true)
-    private String farmaciaNit;
 
     @Column(name = "farmacia_email", nullable = false, unique = true)
     private String farmaciaEmail;

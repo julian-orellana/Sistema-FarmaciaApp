@@ -47,7 +47,7 @@ public class Compra {
     private Sucursal sucursal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
     @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -55,6 +55,6 @@ public class Compra {
     private List<CompraDetalle> detalles = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "farmacia_id")
+    @JoinColumn(name = "farmacia_id", nullable = false)
     private Farmacia farmacia;
 }

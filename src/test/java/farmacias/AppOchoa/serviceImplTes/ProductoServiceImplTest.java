@@ -7,10 +7,11 @@ import farmacias.AppOchoa.model.Categoria;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Presentacion;
 import farmacias.AppOchoa.model.Producto;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CategoriaRepository;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.PresentacionRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.serviceimpl.ProductoServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,10 +40,20 @@ class ProductoServiceImplTest {
     @Mock
     private PresentacionRepository presentacionRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
 
     @InjectMocks
     private ProductoServiceImpl productoService;
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
+    }
 
     // TESTS PARA AGREGAR PRODUCTO
 
@@ -84,11 +95,12 @@ class ProductoServiceImplTest {
                 .productoEstado(true)
                 .build();
 
-        when(farmaciaRepository.findById(farmaciaId)).thenReturn(Optional.of(farmaciaMock));
-        when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, dto.getNombre())).thenReturn(false);
-        when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, dto.getCodigoBarras())).thenReturn(false);
-        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(categoriaMock));
-        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(presentacionMock));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(productoRepository.existsBySucursal_SucursalIdAndProductoNombre(sucursalId, dto.getNombre())).thenReturn(false);
+        when(productoRepository.existsBySucursal_SucursalIdAndProductoCodigoBarras(sucursalId, dto.getCodigoBarras())).thenReturn(false);
+        when(categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(categoriaMock));
+        when(presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(presentacionMock));
         when(productoRepository.save(any(Producto.class))).thenReturn(productoGuardado);
 
         // ACT
@@ -112,8 +124,9 @@ class ProductoServiceImplTest {
         ProductoCreateDTO dto = new ProductoCreateDTO();
         dto.setNombre("Aspirina");
 
-        when(farmaciaRepository.findById(farmaciaId)).thenReturn(Optional.of(farmaciaMock));
-        when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, "Aspirina")).thenReturn(true);
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(productoRepository.existsBySucursal_SucursalIdAndProductoNombre(sucursalId, "Aspirina")).thenReturn(true);
 
         // ACT & ASSERT
         RuntimeException excepcion = assertThrows(RuntimeException.class, () -> {
@@ -158,11 +171,13 @@ class ProductoServiceImplTest {
         Presentacion presMock = new Presentacion();
         presMock.setPresentacionId(2L);
 
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
         when(productoRepository.findById(idProducto)).thenReturn(Optional.of(productoExistente));
-        when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, "Nuevo Nombre")).thenReturn(false);
-        when(productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, "99999")).thenReturn(false);
-        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(anyLong(), eq(farmaciaId))).thenReturn(Optional.of(catMock));
-        when(presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(anyLong(), eq(farmaciaId))).thenReturn(Optional.of(presMock));
+        when(productoRepository.existsBySucursal_SucursalIdAndProductoNombre(sucursalId, "Nuevo Nombre")).thenReturn(false);
+        when(productoRepository.existsBySucursal_SucursalIdAndProductoCodigoBarras(sucursalId, "99999")).thenReturn(false);
+        when(categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(anyLong(), eq(sucursalId))).thenReturn(Optional.of(catMock));
+        when(presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(anyLong(), eq(sucursalId))).thenReturn(Optional.of(presMock));
         when(productoRepository.save(any(Producto.class))).thenReturn(productoExistente);
 
         // ACT
