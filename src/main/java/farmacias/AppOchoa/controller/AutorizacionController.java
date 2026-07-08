@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +44,7 @@ public class AutorizacionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<AutorizacionResponseDTO> crear(@Valid @RequestBody AutorizacionCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(autorizacionService.crear(getFarmaciaId(), dto));
     }
@@ -54,6 +56,7 @@ public class AutorizacionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         autorizacionService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

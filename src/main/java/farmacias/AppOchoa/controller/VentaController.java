@@ -51,18 +51,20 @@ public class VentaController extends  BaseController{
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<VentaResponseDTO> crear(@Valid @RequestBody VentaCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(ventaService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<VentaResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody VentaUpdateDTO dto){
         return ResponseEntity.ok(ventaService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> cambiarEstado(
             @PathVariable Long id, @RequestBody VentaEstado ventaEstado){
         ventaService.cambiarEstado(getFarmaciaId(), id, ventaEstado);
@@ -70,7 +72,7 @@ public class VentaController extends  BaseController{
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','superadmin')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         ventaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

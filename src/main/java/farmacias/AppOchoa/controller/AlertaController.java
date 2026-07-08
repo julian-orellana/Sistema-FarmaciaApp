@@ -52,12 +52,13 @@ public class AlertaController extends BaseController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('administrador')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<AlertaResponseDTO> crear(@Valid @RequestBody AlertaCreateDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(alertaService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<AlertaResponseDTO> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody AlertaUpdateDTO dto) {
@@ -65,13 +66,14 @@ public class AlertaController extends BaseController {
     }
 
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id) {
         alertaService.cambiarEstado(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('administrador')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         alertaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
