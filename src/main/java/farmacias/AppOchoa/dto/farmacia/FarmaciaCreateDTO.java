@@ -1,8 +1,6 @@
 package farmacias.AppOchoa.dto.farmacia;
 
-import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
 import farmacias.AppOchoa.model.PlanTipo;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,10 +19,6 @@ public class FarmaciaCreateDTO {
     @Size(min = 2, max = 50, message = "El nombre debe tener entre 2 y 50 caracteres")
     private String farmaciaNombre;
 
-    @NotBlank(message = "El NIT de la farmacia es obligatorio")
-    @Size(max = 9, message = "El NIT no debe exceder 9 caracteres")
-    private String farmaciaNit;
-
     @NotBlank(message = "El email de la farmacia es obligatorio")
     @Email(message = "El email no tiene un formato válido")
     @Size(max = 100, message = "El email no debe exceder 100 caracteres")
@@ -39,8 +33,4 @@ public class FarmaciaCreateDTO {
 
     private LocalDate pruebaHasta;
     private LocalDate suscripcionVigencia;
-
-    @NotNull(message = "El administrador inicial es obligatorio")
-    @Valid
-    private UsuarioCreateDTO adminInicial;
 }

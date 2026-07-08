@@ -4,15 +4,10 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaCreateDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaResponseDTO;
 import farmacias.AppOchoa.dto.farmacia.FarmaciaSimpleDTO;
-import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
-import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.PlanTipo;
-import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.serviceimpl.FarmaciaServiceImpl;
-import farmacias.AppOchoa.services.SucursalService;
-import farmacias.AppOchoa.services.UsuarioService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,11 +34,6 @@ public class FarmaciaServiceImplTest {
 
     @Mock
     private FarmaciaRepository farmaciaRepository;
-    @Mock
-    private UsuarioService usuarioService;
-    @Mock
-    private SucursalService sucursalService;
-
     @InjectMocks
     private FarmaciaServiceImpl farmaciaService;
 
@@ -53,7 +43,6 @@ public class FarmaciaServiceImplTest {
 
         FarmaciaCreateDTO dto = new FarmaciaCreateDTO();
         dto.setFarmaciaNombre("Ochoa");
-        dto.setFarmaciaNit("101363498");
         dto.setFarmaciaEmail("farmapp@ochoa.com");
         dto.setFarmaciaTelefono("55371140");
         dto.setPruebaHasta(LocalDate.of(2026, 5,30));
@@ -63,33 +52,17 @@ public class FarmaciaServiceImplTest {
         Farmacia farmacia = new Farmacia();
         farmacia.setFarmaciaId(1L);
         farmacia.setFarmaciaNombre("Ochoa");
-        farmacia.setFarmaciaNit("101363498");
         farmacia.setFarmaciaEmail("farmapp@ochoa.com");
         farmacia.setFarmaciaTelefono("55371140");
         farmacia.setPruebaHasta(LocalDate.of(2026, 5,30));
         farmacia.setPlanTipo(PlanTipo.basico);
         farmacia.setSuscripcionVigencia(LocalDate.of(2026, 3, 25));
 
-        // adminInicial en el DTO
-        UsuarioCreateDTO adminDTO = new UsuarioCreateDTO();
-        adminDTO.setNombreUsuario("admin");
-        adminDTO.setContrasena("Admin1234x");
-        adminDTO.setNombre("Admin");
-        adminDTO.setApellido("Test");
-        dto.setAdminInicial(adminDTO);
-
-        Sucursal sucursalMock = new Sucursal();
-        sucursalMock.setSucursalId(1L);
-        when(sucursalService.crearSucursalPrincipal(any())).thenReturn(sucursalMock);
-        when(usuarioService.crearAdminInicial(any(), any(), any())).thenReturn(new UsuarioResponseDTO());
-
-        when(farmaciaRepository.existsByFarmaciaNit(any())).thenReturn(false);
-
         when(farmaciaRepository.save(any(Farmacia.class))).thenReturn(farmacia);
 
         FarmaciaResponseDTO resultado  = farmaciaService.crear(dto);
         assertNotNull(resultado);
-        assertEquals(dto.getFarmaciaNit(), resultado.getFarmaciaNit());
+        assertEquals(dto.getFarmaciaTelefono(), resultado.getFarmaciaTelefono());
 
         ArgumentCaptor<Farmacia> captor = ArgumentCaptor.forClass(Farmacia.class);
         verify(farmaciaRepository).save(captor.capture());

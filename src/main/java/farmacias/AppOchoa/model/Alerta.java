@@ -22,6 +22,7 @@ public class Alerta {
 
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(name = "alerta_tipo", nullable = false)
     private AlertaTipo alertaTipo = AlertaTipo.stock_bajo;
 
@@ -33,6 +34,7 @@ public class Alerta {
     @CreationTimestamp
     private LocalDateTime alertaFecha;
 
+    @Builder.Default
     @Column(name = "alerta_leida")
     private Boolean alertaLeida = false;
 
@@ -41,7 +43,7 @@ public class Alerta {
     private Producto producto;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sucursal_id")
+    @JoinColumn(name = "sucursal_id", nullable = false)
     private Sucursal sucursal;
 
     @ManyToOne(fetch = FetchType.LAZY)

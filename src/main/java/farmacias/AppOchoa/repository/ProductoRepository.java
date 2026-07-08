@@ -28,8 +28,16 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
             "LOWER(p.productoCodigoBarras) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Producto> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
 
-    @Query("SELECT p FROM Producto p WHERE p.farmacia.farmaciaId = :farmaciaId AND (" +
+    @Query("SELECT p FROM Producto p WHERE p.sucursal.sucursalId = :sucursalId AND (" +
             "LOWER(p.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(p.productoCodigoBarras) LIKE LOWER(CONCAT('%', :texto, '%')))")
-    Page<Producto> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    Page<Producto> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
+
+    //Metodos nuevos del refactory
+
+    boolean existsBySucursal_SucursalIdAndProductoNombre(Long sucursalId, String productoNombre);
+    boolean existsBySucursal_SucursalIdAndProductoCodigoBarras(Long sucursalId, String codigoBarras);
+    Optional<Producto> findBySucursal_SucursalIdAndProductoCodigoBarras(Long sucursalId, String codigoBarras);
+    Page<Producto> findBySucursal_SucursalIdAndProductoEstadoTrue(Long sucursalId, Pageable pageable);
+    Page<Producto> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
 }

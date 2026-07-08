@@ -1,6 +1,9 @@
 package farmacias.AppOchoa.controller;
 
-import farmacias.AppOchoa.dto.venta.*;
+import farmacias.AppOchoa.dto.venta.VentaCreateDTO;
+import farmacias.AppOchoa.dto.venta.VentaResponseDTO;
+import farmacias.AppOchoa.dto.venta.VentaSimpleDTO;
+import farmacias.AppOchoa.dto.venta.VentaUpdateDTO;
 import farmacias.AppOchoa.model.VentaEstado;
 import farmacias.AppOchoa.services.VentaService;
 import farmacias.AppOchoa.util.JwtUtil;
@@ -48,18 +51,20 @@ public class VentaController extends  BaseController{
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<VentaResponseDTO> crear(@Valid @RequestBody VentaCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(ventaService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<VentaResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody VentaUpdateDTO dto){
         return ResponseEntity.ok(ventaService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> cambiarEstado(
             @PathVariable Long id, @RequestBody VentaEstado ventaEstado){
         ventaService.cambiarEstado(getFarmaciaId(), id, ventaEstado);
@@ -67,17 +72,9 @@ public class VentaController extends  BaseController{
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         ventaService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
     }
-
-    @PostMapping("/cobrar")
-    public ResponseEntity<VentaCobroResponseDTO> crearConCobro(
-            @Valid @RequestBody VentaCreateCobroDTO dto){
-        return ResponseEntity.status(HttpStatus.CREATED).body(ventaService.crearConCobro(getFarmaciaId(), dto));
-    }
-
-
 }

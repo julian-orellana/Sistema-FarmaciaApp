@@ -16,7 +16,6 @@ import java.time.LocalDate;
 public class FarmaciaResponseDTO {
     private Long farmaciaId;
     private String farmaciaNombre;
-    private String farmaciaNit;
     private String farmaciaEmail;
     private String farmaciaTelefono;
     private PlanTipo planTipo;
@@ -28,7 +27,6 @@ public class FarmaciaResponseDTO {
         return FarmaciaResponseDTO.builder()
                 .farmaciaId(farmacia.getFarmaciaId())
                 .farmaciaNombre(farmacia.getFarmaciaNombre())
-                .farmaciaNit(farmacia.getFarmaciaNit())
                 .farmaciaEmail(farmacia.getFarmaciaEmail())
                 .farmaciaTelefono(farmacia.getFarmaciaTelefono())
                 .planTipo(farmacia.getPlanTipo())

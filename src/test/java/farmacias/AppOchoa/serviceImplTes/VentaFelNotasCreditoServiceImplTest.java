@@ -3,9 +3,11 @@ package farmacias.AppOchoa.serviceImplTes;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoCreateDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoResponseDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoSimpleDTO;
+import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.VentaFel;
 import farmacias.AppOchoa.model.VentaFelNotasCredito;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.VentaFelNotasCreditoRepository;
 import farmacias.AppOchoa.repository.VentaFelRepository;
 import farmacias.AppOchoa.serviceimpl.VentaFelNotasCreditoServiceImpl;
@@ -37,9 +39,19 @@ public class VentaFelNotasCreditoServiceImplTest {
     @Mock
     private VentaFelRepository ventaFelRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
     @InjectMocks
     private VentaFelNotasCreditoServiceImpl ventaFelNotasCreditoService;
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
+    }
 
     @Test
     @DisplayName("Deberia de crear una Nota de Credito correctamente")
@@ -59,7 +71,9 @@ public class VentaFelNotasCreditoServiceImplTest {
         VentaFel ventaFel = new VentaFel();
         ventaFel.setFelId(1L);
 
-        when(ventaFelRepository.findByFelIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(ventaFel));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaFelRepository.findByFelIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(ventaFel));
         when(ventaFelNotasCreditoRepository.save(any(VentaFelNotasCredito.class))).thenReturn(ventaFelNotasCredito);
 
         VentaFelNotasCreditoResponseDTO resultado = ventaFelNotasCreditoService.crear(farmaciaId, dto);
@@ -83,8 +97,10 @@ public class VentaFelNotasCreditoServiceImplTest {
         VentaFelNotasCredito ventaFelNotasCredito = new VentaFelNotasCredito();
         ventaFelNotasCredito.setNotaId(1L);
 
+        Long sucursalId = 1L;
         Page<VentaFelNotasCredito> page = new PageImpl<>(List.of(ventaFelNotasCredito));
-        when(ventaFelNotasCreditoRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaFelNotasCreditoRepository.buscarPorTexto(sucursalId, texto, pageable)).thenReturn(page);
         Page<VentaFelNotasCreditoSimpleDTO> resultado = ventaFelNotasCreditoService.buscarPorTexto(
                 farmaciaId, texto, pageable);
 

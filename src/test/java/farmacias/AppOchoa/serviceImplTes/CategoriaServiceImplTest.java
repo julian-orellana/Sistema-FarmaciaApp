@@ -4,8 +4,10 @@ import farmacias.AppOchoa.dto.categoria.CategoriaCreateDTO;
 import farmacias.AppOchoa.dto.categoria.CategoriaResponseDTO;
 import farmacias.AppOchoa.dto.categoria.CategoriaUpdateDTO;
 import farmacias.AppOchoa.model.Categoria;
+import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CategoriaRepository;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.serviceimpl.CategoriaServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,9 +29,19 @@ class CategoriaServiceImplTest {
     @Mock
     private CategoriaRepository categoriaRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
     @InjectMocks
     private CategoriaServiceImpl categoriaService;
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
+    }
 
     //TEST PARA CREAR CATEGORIA
     //ARRANGE
@@ -45,7 +57,8 @@ class CategoriaServiceImplTest {
                 .categoriaEstado(true)
                 .build();
 
-        when(categoriaRepository.existsByFarmacia_FarmaciaIdAndCategoriaNombre(any(), any())).thenReturn(false);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(categoriaRepository.existsBySucursal_SucursalIdAndCategoriaNombre(any(), any())).thenReturn(false);
         when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoria);
 
         CategoriaResponseDTO resultado = categoriaService.crear(farmaciaId, dto);
@@ -62,7 +75,8 @@ class CategoriaServiceImplTest {
         CategoriaCreateDTO dto = new CategoriaCreateDTO();
         dto.setNombre("Suplementos");
 
-        when(categoriaRepository.existsByFarmacia_FarmaciaIdAndCategoriaNombre(any(), any())).thenReturn(true);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(categoriaRepository.existsBySucursal_SucursalIdAndCategoriaNombre(any(), any())).thenReturn(true);
 
         assertThrows(RuntimeException.class, () -> categoriaService.crear(farmaciaId, dto));
         verify(categoriaRepository, never()).save(any(Categoria.class));
@@ -72,7 +86,8 @@ class CategoriaServiceImplTest {
     void obtenerPorIdNoEncontrado(){
         Long farmaciaId = 1L;
         Long idNoExistente = 1L;
-        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(idNoExistente, farmaciaId)).thenReturn(Optional.empty());
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(idNoExistente, 1L)).thenReturn(Optional.empty());
         //ACT & ASSERT
         assertThrows(RuntimeException.class, () ->
                 categoriaService.obtenerPorId(farmaciaId, idNoExistente));
@@ -86,7 +101,8 @@ class CategoriaServiceImplTest {
         categoria.setCategoriaId(id);
         categoria.setCategoriaEstado(true);
 
-        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(categoria));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.of(categoria));
         //ACT
         categoriaService.eliminar(farmaciaId, id);
         //ASSERT
@@ -114,7 +130,8 @@ class CategoriaServiceImplTest {
                 .categoriaEstado(true)
                 .build();
 
-        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(categoriaRegistrada));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.of(categoriaRegistrada));
         when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoriaActualizada);
         //ACT
         CategoriaResponseDTO resultado = categoriaService.actualizar(farmaciaId, id, dto);
@@ -131,7 +148,8 @@ class CategoriaServiceImplTest {
         CategoriaUpdateDTO dto = new CategoriaUpdateDTO();
         dto.setNombre("Lactancia");
 
-        when(categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.empty());
         //ASSERT
         assertThrows(RuntimeException.class,() ->{
             categoriaService.actualizar(farmaciaId, id, dto);

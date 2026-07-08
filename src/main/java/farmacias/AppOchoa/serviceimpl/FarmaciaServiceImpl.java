@@ -8,12 +8,8 @@ import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.PlanTipo;
-import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
-import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.services.FarmaciaService;
-import farmacias.AppOchoa.services.SucursalService;
-import farmacias.AppOchoa.services.UsuarioService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,26 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class FarmaciaServiceImpl implements FarmaciaService {
     private final FarmaciaRepository farmaciaRepository;
-    private final SucursalService sucursalService;
-    private final UsuarioService usuarioService;
 
-    public FarmaciaServiceImpl(FarmaciaRepository farmaciaRepository1,
-                               UsuarioService usuarioService,
-                               SucursalService sucursalService){
+    public FarmaciaServiceImpl(FarmaciaRepository farmaciaRepository1){
         this.farmaciaRepository = farmaciaRepository1;
-        this.sucursalService = sucursalService;
-        this.usuarioService = usuarioService;
     }
 
     @Override
     public FarmaciaResponseDTO crear(FarmaciaCreateDTO dto){
-        if(farmaciaRepository.existsByFarmaciaNit(dto.getFarmaciaNit())){
-            throw new DuplicateResourceException("El NIT ya está en uso: " + dto.getFarmaciaNit());
+        if(farmaciaRepository.existsByFarmaciaTelefono(dto.getFarmaciaTelefono())){
+            throw new DuplicateResourceException("El teléfono ya está en uso: " + dto.getFarmaciaTelefono());
         }
 
         Farmacia farmacia = Farmacia.builder()
                 .farmaciaNombre(dto.getFarmaciaNombre())
-                .farmaciaNit(dto.getFarmaciaNit())
                 .farmaciaEmail(dto.getFarmaciaEmail())
                 .farmaciaTelefono(dto.getFarmaciaTelefono())
                 .pruebaHasta(dto.getPruebaHasta())
@@ -55,11 +44,7 @@ public class FarmaciaServiceImpl implements FarmaciaService {
                 .build();
 
 
-        Farmacia farmaciaGuardada = farmaciaRepository.save(farmacia);
-        Sucursal sucursal = sucursalService.crearSucursalPrincipal(farmaciaGuardada);
-        usuarioService.crearAdminInicial(dto.getAdminInicial(), farmaciaGuardada, sucursal);
-
-        return FarmaciaResponseDTO.fromEntity(farmaciaGuardada);
+        return FarmaciaResponseDTO.fromEntity(farmaciaRepository.save(farmacia));
     }
     private int resolverMaxSucursales(PlanTipo plan) {
         return switch (plan) {

@@ -48,20 +48,20 @@ public class InventarioController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<InventarioResponseDTO> crear(@Valid @RequestBody InventarioCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(inventarioService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<InventarioResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody InventarioUpdateDTO dto){
         return ResponseEntity.ok(inventarioService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         inventarioService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();

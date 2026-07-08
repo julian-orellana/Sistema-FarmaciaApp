@@ -6,10 +6,12 @@ import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Autorizacion;
 import farmacias.AppOchoa.model.AutorizacionTipo;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.model.UsuarioRol;
 import farmacias.AppOchoa.repository.AutorizacionRepository;
 import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.UsuarioRepository;
 import farmacias.AppOchoa.serviceimpl.AutorizacionServiceImpl;
 import org.junit.jupiter.api.DisplayName;
@@ -36,8 +38,16 @@ public class AutorizacionServiceImplTest {
     private UsuarioRepository usuarioRepository;
     @Mock
     private FarmaciaRepository farmaciaRepository;
+    @Mock
+    private SucursalRepository sucursalRepository;
     @InjectMocks
     private AutorizacionServiceImpl autorizacionService;
+
+    private Sucursal crearSucursal() {
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(5L);
+        return sucursal;
+    }
 
     private AutorizacionCreateDTO crearDto() {
         AutorizacionCreateDTO dto = new AutorizacionCreateDTO();
@@ -51,7 +61,7 @@ public class AutorizacionServiceImplTest {
     private Usuario crearCajero() {
         Usuario cajero = new Usuario();
         cajero.setUsuarioId(1L);
-        cajero.setUsuarioRol(UsuarioRol.vendedor);
+        cajero.setUsuarioRol(UsuarioRol.encargado);
         return cajero;
     }
 
@@ -67,6 +77,7 @@ public class AutorizacionServiceImplTest {
         Autorizacion autorizacion = new Autorizacion();
         autorizacion.setAutorizacionId(1L);
 
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(crearSucursal()));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(crearCajero()));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(2L, farmaciaId)).thenReturn(Optional.of(supervisor));
         when(autorizacionRepository.save(any(Autorizacion.class))).thenReturn(autorizacion);
@@ -82,6 +93,7 @@ public class AutorizacionServiceImplTest {
     void supervisorDeOtraFarmaciaFalla() {
         Long farmaciaId = 1L;
 
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(crearSucursal()));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(crearCajero()));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(2L, farmaciaId)).thenReturn(Optional.empty());
 
@@ -97,8 +109,9 @@ public class AutorizacionServiceImplTest {
 
         Usuario supervisor = new Usuario();
         supervisor.setUsuarioId(2L);
-        supervisor.setUsuarioRol(UsuarioRol.vendedor);
+        supervisor.setUsuarioRol(UsuarioRol.superadmin);
 
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(crearSucursal()));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(crearCajero()));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(2L, farmaciaId)).thenReturn(Optional.of(supervisor));
 

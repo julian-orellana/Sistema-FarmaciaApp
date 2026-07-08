@@ -31,15 +31,20 @@ public interface VentaPagoRepository extends JpaRepository<VentaPago, Long> {
     @Query("SELECT COALESCE(SUM(vp.montoRecibido - vp.montoVuelto), 0) FROM VentaPago vp " +
             "WHERE vp.venta.ventaId = :ventaId")
     BigDecimal sumarAbonadoPorVenta(@Param("ventaId") Long ventaId);
-    @Query("SELECT p FROM VentaPago p WHERE p.farmacia.farmaciaId = :farmaciaId AND (" +
+    @Query("SELECT p FROM VentaPago p WHERE p.sucursal.sucursalId = :sucursalId AND (" +
             "LOWER(p.referenciaTransaccion) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(CAST(p.metodoPago AS string)) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(p.venta.ventaNombreCliente) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(p.venta.ventaNitCliente) LIKE LOWER(CONCAT('%', :texto, '%')))")
-    Page<VentaPago> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    Page<VentaPago> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
     Page<VentaPago> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<VentaPago> findByPagoIdAndFarmacia_FarmaciaId(Long pagoId, Long farmaciaId);
 
+    // Métodos por sucursal (eje de tenancy operativo)
+    Page<VentaPago> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+    java.util.Optional<VentaPago> findByPagoIdAndSucursal_SucursalId(Long pagoId, Long sucursalId);
+
+    // Agregación aportada por main
     @Query("SELECT SUM(vp.montoRecibido) FROM VentaPago vp WHERE vp.farmacia.farmaciaId = :farmaciaId AND vp.venta.sucursal.sucursalId = :sucursalId " +
             "AND vp.metodoPago = :metodo AND vp.venta.ventaFecha BETWEEN :fechaInicio AND :fechaFin")
     BigDecimal sumarPorMetodoPago(

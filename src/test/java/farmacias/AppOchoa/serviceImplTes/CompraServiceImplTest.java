@@ -2,16 +2,19 @@ package farmacias.AppOchoa.serviceImplTes;
 
 import farmacias.AppOchoa.dto.compra.CompraCreateDTO;;
 import farmacias.AppOchoa.dto.compra.CompraResponseDTO;
+import farmacias.AppOchoa.dto.compra.CompraUpdateDTO;
 import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.model.Compra;
 import farmacias.AppOchoa.model.CompraDetalle;
 import farmacias.AppOchoa.model.CompraEstado;
+import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.InventarioLotes;
 import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.CompraServiceImpl;
 import farmacias.AppOchoa.services.KardexService;
+import org.hibernate.cache.spi.AbstractCacheTransactionSynchronization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,12 +53,20 @@ public class CompraServiceImplTest {
     private KardexService kardexService;
     @Mock
     private FarmaciaRepository farmaciaRepository;
-    @Mock
-    private InventarioRepository inventarioRepository;
 
     @AfterEach
     void limpiarContextoSeguridad() {
         SecurityContextHolder.clearContext();
+    }
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
     }
 
     @Test
@@ -67,8 +78,7 @@ public class CompraServiceImplTest {
         dto.setSucursalId(1L);
         dto.setDetalles(new ArrayList<>());
 
-        Sucursal sucursal = new Sucursal();
-        sucursal.setSucursalId(1L);
+        Sucursal sucursal = sucursalDePrueba(farmaciaId, 1L);
         sucursal.setSucursalNombre("Farmacia Central Ochoa");
 
         Usuario usuario = new Usuario();
@@ -89,8 +99,9 @@ public class CompraServiceImplTest {
                 .usuario(usuario)
                 .build();
 
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(usuario));
+        when(farmaciaRepository.getReferenceById(farmaciaId)).thenReturn(sucursal.getFarmacia());
         when(compraRepository.save(any(Compra.class))).thenReturn(compra);
         //ACT
         CompraResponseDTO resultado = compraService.crear(farmaciaId, dto);
@@ -108,7 +119,9 @@ public class CompraServiceImplTest {
         Compra compra = new Compra();
         compra.setCompraId(1L);
         compra.setCompraEstado(CompraEstado.activa);
-        when(compraRepository.findByCompraIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(compra));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(compraRepository.findByCompraIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(compra));
         //ACT
         compraService.eliminar(farmaciaId, id);
         //ASSERT
@@ -135,8 +148,10 @@ public class CompraServiceImplTest {
         compra.setCompraEstado(CompraEstado.activa);
         compra.getDetalles().add(detalle);
 
-        when(compraRepository.findByCompraIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(compra));
-        when(loteRepository.findByLoteIdAndFarmaciaIdForUpdate(1L, farmaciaId)).thenReturn(Optional.of(lote));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(compraRepository.findByCompraIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(compra));
+        when(loteRepository.findByLoteIdAndSucursalIdForUpdate(1L, sucursalId)).thenReturn(Optional.of(lote));
 
         assertThrows(BadRequestException.class, () -> compraService.eliminar(farmaciaId, 1L));
         verify(compraRepository, Mockito.never()).save(any(Compra.class));
@@ -148,7 +163,9 @@ public class CompraServiceImplTest {
     void buscarFallo(){
         Long farmaciaId = 1L;
         Long id =  1L;
-        when(compraRepository.findByCompraIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.empty());
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(compraRepository.findByCompraIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.empty());
         //ACT
         assertThrows(RuntimeException.class,()->{
             compraService.listarPorId(farmaciaId, 1L);

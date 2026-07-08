@@ -11,6 +11,7 @@ public class SucursalSimpleDTO {
 
     private Long sucursalId;
     private String nombre;
+    private String sucursalNit;
     private String direccion;
 
 
@@ -18,6 +19,7 @@ public class SucursalSimpleDTO {
         return SucursalSimpleDTO.builder()
                 .sucursalId(sucursal.getSucursalId())
                 .nombre(sucursal.getSucursalNombre())
+                .sucursalNit(sucursal.getSucursalNit())
                 .direccion(sucursal.getSucursalDireccion())
                 .build();
     }

@@ -7,7 +7,6 @@ import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Inventario;
 import farmacias.AppOchoa.model.Producto;
 import farmacias.AppOchoa.model.Sucursal;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.InventarioRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
@@ -33,8 +32,6 @@ public class InventarioServiceImplTest {
     private ProductoRepository productoRepository;
     @Mock
     private SucursalRepository sucursalRepository;
-    @Mock
-    private FarmaciaRepository farmaciaRepository;
 
     @InjectMocks
     private InventarioServiceImpl inventarioService;
@@ -48,9 +45,13 @@ public class InventarioServiceImplTest {
         dto.setCantidadActual(80);
         dto.setCantidadMinima(12);
 
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+
         Sucursal sucursal = new Sucursal();
         sucursal.setSucursalId(1L);
         sucursal.setSucursalNombre("Farmacia Central Ochoa");
+        sucursal.setFarmacia(farmacia);
 
         Producto producto = new Producto();
         producto.setProductoId(1L);
@@ -65,11 +66,9 @@ public class InventarioServiceImplTest {
                 .sucursal(sucursal)
                 .build();
 
-        Farmacia farmacia = new Farmacia();
-        farmacia.setFarmaciaId(farmaciaId);
         producto.setFarmacia(farmacia);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
         when(inventarioRepository.save(any(Inventario.class))).thenReturn(inventario);
         //ACT
         InventarioResponseDTO resultado = inventarioService.crear(farmaciaId, dto);
@@ -90,6 +89,14 @@ public class InventarioServiceImplTest {
         dto.setSucursalId(1L);
         dto.setCantidadActual(60);
         dto.setCantidadMinima(12);
+
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(1L);
+        sucursal.setFarmacia(farmacia);
+
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
         when(inventarioRepository.existsByProducto_ProductoIdAndSucursal_SucursalId(1L, 1L)).thenReturn(true);
         //ACT & ASSERT
         RuntimeException excepcion = assertThrows(RuntimeException.class, () ->{
@@ -108,7 +115,8 @@ public class InventarioServiceImplTest {
         dto.setCantidadActual(60);
         dto.setCantidadMinima(12);
         Producto producto = new Producto(); producto.setProductoId(1L);
-        Sucursal sucursal = new Sucursal(); sucursal.setSucursalId(1L);
+        Farmacia farmacia = new Farmacia(); farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal(); sucursal.setSucursalId(1L); sucursal.setFarmacia(farmacia);
 
         Inventario inventarioExistente = Inventario.builder()
                 .inventarioId(id)
@@ -124,7 +132,8 @@ public class InventarioServiceImplTest {
                 .inventarioCantidadActual(60)
                 .build();
 
-        when(inventarioRepository.findByInventarioIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(inventarioExistente));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(inventarioRepository.findByInventarioIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.of(inventarioExistente));
         when(inventarioRepository.save(any(Inventario.class))).thenReturn(inventarioActualizado);
 
         //ACT
@@ -140,7 +149,10 @@ public class InventarioServiceImplTest {
 
         Long farmaciaId = 1L;
         Long id = 1L;
-        when(inventarioRepository.findByInventarioIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
+        Farmacia farmacia = new Farmacia(); farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal(); sucursal.setSucursalId(1L); sucursal.setFarmacia(farmacia);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(inventarioRepository.findByInventarioIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, ()->{
             inventarioService.listaPorId(farmaciaId, id);
         });

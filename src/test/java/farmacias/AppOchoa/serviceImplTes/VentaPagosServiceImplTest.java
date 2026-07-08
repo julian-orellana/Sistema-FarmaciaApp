@@ -10,8 +10,10 @@ import farmacias.AppOchoa.model.SesionEstado;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaEstado;
 import farmacias.AppOchoa.model.VentaPago;
+import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CajaSesionesRepository;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.VentaPagoRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
 import farmacias.AppOchoa.serviceimpl.VentaPagosServiceImpl;
@@ -46,9 +48,19 @@ public class VentaPagosServiceImplTest {
     @Mock
     private CajaSesionesRepository cajaSesionesRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
     @InjectMocks
     private VentaPagosServiceImpl ventaPagosService;
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
+    }
 
     @Test
     @DisplayName("Deberia crear una ventan con pago")
@@ -78,8 +90,10 @@ public class VentaPagosServiceImplTest {
         venta.setVentaEstado(VentaEstado.completada);
         venta.setVentaTotal(new BigDecimal("44.85"));
 
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
-        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(cajaSesiones));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(venta));
+        when(cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(cajaSesiones));
         when(ventaPagoRepository.sumarAbonadoPorVenta(1L)).thenReturn(BigDecimal.ZERO);
         when(ventaPagoRepository.save(any(VentaPago.class))).thenReturn(ventaPago);
 
@@ -115,8 +129,10 @@ public class VentaPagosServiceImplTest {
         venta.setVentaEstado(VentaEstado.completada);
         venta.setVentaTotal(new BigDecimal("44.85"));
 
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
-        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(cajaSesiones));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(venta));
+        when(cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(cajaSesiones));
         // La venta ya esta totalmente abonada: el saldo pendiente es 0
         when(ventaPagoRepository.sumarAbonadoPorVenta(1L)).thenReturn(new BigDecimal("44.85"));
 
@@ -145,8 +161,10 @@ public class VentaPagosServiceImplTest {
         CajaSesiones cajaSesiones = new CajaSesiones();
         cajaSesiones.setSesionId(1L);
 
+        Long sucursalId = 1L;
         Page<VentaPago> page = new PageImpl<>(List.of(ventaPago));
-        when(ventaPagoRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaPagoRepository.buscarPorTexto(sucursalId, texto, pageable)).thenReturn(page);
         Page<VentaPagoSimpleDTO> resultado = ventaPagosService.buscarPorTexto(farmaciaId, texto, pageable);
 
         assertNotNull(resultado);

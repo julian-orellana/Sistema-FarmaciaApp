@@ -24,6 +24,7 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     Optional<InventarioLotes> findByProducto_ProductoIdAndSucursal_SucursalId(Long productoId, Long sucursalId);
 
     Page<InventarioLotes> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+    Optional<InventarioLotes> findByLoteIdAndSucursal_SucursalId(Long loteId, Long sucursalId);
     Page<InventarioLotes> findBySucursal_SucursalIdAndFarmacia_FarmaciaId(Long sucursalId, Long farmaciaId, Pageable pageable);
 
     // VALIDACIONES
@@ -57,13 +58,19 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT l FROM InventarioLotes l WHERE l.loteId = :loteId AND l.farmacia.farmaciaId = :farmaciaId")
     Optional<InventarioLotes> findByLoteIdAndFarmaciaIdForUpdate(@Param("loteId") Long loteId, @Param("farmaciaId") Long farmaciaId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT l FROM InventarioLotes l WHERE l.loteId = :loteId AND l.sucursal.sucursalId = :sucursalId")
+    Optional<InventarioLotes> findByLoteIdAndSucursalIdForUpdate(@Param("loteId") Long loteId, @Param("sucursalId") Long sucursalId);
     @Query("SELECT l FROM InventarioLotes l WHERE " +
             "LOWER(l.loteNumero) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<InventarioLotes> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
 
-    @Query("SELECT l FROM InventarioLotes l WHERE l.farmacia.farmaciaId = :farmaciaId AND " +
+    @Query("SELECT l FROM InventarioLotes l WHERE l.sucursal.sucursalId = :sucursalId AND " +
             "LOWER(l.loteNumero) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    Page<InventarioLotes> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    // Búsqueda por texto scopeada a sucursal (eje de tenancy operativo de develop)
+    Page<InventarioLotes> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
+
+    // Métodos aportados por main (agregaciones/overloads)
     List<InventarioLotes> findByProducto_ProductoIdAndSucursal_SucursalIdAndFarmacia_FarmaciaIdAndLoteEstadoAndLoteCantidadActualGreaterThan(
             Long productoId, Long sucursalId, Long farmaciaId, LoteEstado estado, int cantidad,
             Sort sort);
@@ -71,8 +78,7 @@ public interface InventarioLotesRepository extends JpaRepository<InventarioLotes
     List<InventarioLotes> findByFarmacia_FarmaciaIdAndSucursal_SucursalIdAndProducto_Categoria_CategoriaId(
             Long farmaciaId, Long sucursalId, Long categoriaId);
 
-    List<InventarioLotes>findByFarmacia_FarmaciaIdAndSucursal_SucursalId(Long farmaciaId, Long sucursalId);
+    List<InventarioLotes> findByFarmacia_FarmaciaIdAndSucursal_SucursalId(Long farmaciaId, Long sucursalId);
 
     List<InventarioLotes> findByFarmacia_FarmaciaId(Long farmaciaId);
-
 }

@@ -19,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/inventarioslotes")
@@ -56,29 +55,22 @@ public class InventarioLotesController extends  BaseController{
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<InventarioLotesResponseDTO> crear(@Valid @RequestBody InventarioLotesCreateDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(inventarioLotesService.crear(getFarmaciaId(), dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<InventarioLotesResponseDTO> actualizar(
             @PathVariable Long id, @Valid @RequestBody InventarioLotesUpdateDTO dto){
         return ResponseEntity.ok(inventarioLotesService.actualizar(getFarmaciaId(), id, dto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('administrador','encargado')")
+    @PreAuthorize("hasAnyAuthority('encargado', 'administrador')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id){
         inventarioLotesService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/por-producto")
-    public ResponseEntity<List<InventarioLotesSimpleDTO>> buscarPorProductoFEFO(
-            @RequestParam Long productoId,
-            @RequestParam Long sucursalId) {
-        return ResponseEntity.ok(inventarioLotesService.buscarPorProductoFEFO(getFarmaciaId(), productoId, sucursalId));
     }
 }

@@ -41,6 +41,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     Page<Venta> findByUsuario_UsuarioIdAndVentaFechaBetween(
             Long usuarioId, LocalDateTime inicio, LocalDateTime fin, Pageable pageable);
     Optional<Venta> findByVentaIdAndSucursal_Farmacia_FarmaciaId(Long ventaId, Long farmaciaId);
+    Optional<Venta> findByVentaIdAndSucursal_SucursalId(Long ventaId, Long sucursalId);
 
     // Total vendido por cajero hoy (mantiene query individual)
     @Query("SELECT SUM(v.ventaTotal) FROM Venta v " +
@@ -49,13 +50,16 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
             "AND v.ventaEstado = 'completada'")
     Double findTotalVendidoHoyPorUsuario(@Param("usuarioId") Long usuarioId);
     Page<Venta> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
-    @Query("SELECT v FROM Venta v WHERE v.farmacia.farmaciaId = :farmaciaId AND (" +
+    Page<Venta> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+    @Query("SELECT v FROM Venta v WHERE v.sucursal.sucursalId = :sucursalId AND (" +
             "LOWER(v.ventaNitCliente) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(v.ventaNombreCliente) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(v.ventaNumeroFactura) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(v.usuario.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')))")
-    Page<Venta> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    // Búsqueda por texto scopeada a sucursal (eje de tenancy operativo de develop)
+    Page<Venta> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
 
+    // Agregación aportada por main
     @Query("SELECT SUM(v.ventaTotal) FROM Venta v WHERE v.farmacia.farmaciaId = :farmaciaId AND v.sucursal.sucursalId = :sucursalId AND v.ventaFecha BETWEEN :fechaInicio AND :fechaFin AND v.ventaEstado = farmacias.AppOchoa.model.VentaEstado.completada")
     BigDecimal sumarVentasPorRango(
             @Param("farmaciaId") Long farmaciaId,
@@ -63,4 +67,3 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
             @Param("fechaInicio") LocalDateTime fechaInicio,
             @Param("fechaFin") LocalDateTime fechaFin);
 }
-

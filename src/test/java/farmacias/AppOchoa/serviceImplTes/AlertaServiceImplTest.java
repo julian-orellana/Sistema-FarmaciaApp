@@ -60,6 +60,7 @@ class AlertaServiceImplTest {
 
         Sucursal sucursal = new Sucursal();
         sucursal.setSucursalId(1L);
+        sucursal.setFarmacia(farmacia);
 
         InventarioLotes inventarioLotes = new InventarioLotes();
         inventarioLotes.setLoteId(1L);
@@ -67,6 +68,7 @@ class AlertaServiceImplTest {
         Producto producto = new Producto();
         producto.setProductoId(1L);
         producto.setFarmacia(farmacia);
+        producto.setSucursal(sucursal);
 
         // Resultado simulado de save
         Alerta alertaGuardada = new Alerta();
@@ -74,9 +76,11 @@ class AlertaServiceImplTest {
         alertaGuardada.setAlertaMensaje(dto.getMensaje());
 
         // Mocks
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(sucursal));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        when(inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(inventarioLotes));
+        when(farmaciaRepository.getReferenceById(farmaciaId)).thenReturn(farmacia);
+        when(inventarioLotesRepository.findByLoteIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(inventarioLotes));
         when(alertaRepository.save(any(Alerta.class))).thenReturn(alertaGuardada);
 
         // ACT
@@ -105,7 +109,13 @@ class AlertaServiceImplTest {
 
         Alerta alerta = new Alerta();
         alerta.setAlertaId(id);
-        when(alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.of(alerta));
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(1L);
+        sucursal.setFarmacia(farmacia);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(alertaRepository.findByAlertaIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.of(alerta));
 
         alertaService.eliminar(farmaciaId, id);
 
@@ -118,7 +128,13 @@ class AlertaServiceImplTest {
         Long farmaciaId = 1L;
         Long id = 1L;
 
-        when(alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)).thenReturn(Optional.empty());
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(1L);
+        sucursal.setFarmacia(farmacia);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursal));
+        when(alertaRepository.findByAlertaIdAndSucursal_SucursalId(id, 1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             alertaService.eliminar(farmaciaId, id);

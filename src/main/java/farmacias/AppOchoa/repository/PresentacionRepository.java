@@ -23,11 +23,18 @@ public interface PresentacionRepository extends JpaRepository<Presentacion, Long
     boolean existsByFarmacia_FarmaciaIdAndPresentacionNombre(Long farmaciaId, String nombre);
     Page<Presentacion> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<Presentacion> findByPresentacionIdAndFarmacia_FarmaciaId(Long presentacionId, Long farmaciaId);
+
+    // Métodos por sucursal (eje de tenancy operativo)
+    Page<Presentacion> findBySucursal_SucursalIdAndPresentacionEstadoTrue(Long sucursalId, Pageable pageable);
+    boolean existsBySucursal_SucursalIdAndPresentacionNombre(Long sucursalId, String nombre);
+    Page<Presentacion> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+    java.util.Optional<Presentacion> findByPresentacionIdAndSucursal_SucursalId(Long presentacionId, Long sucursalId);
+
     @Query("SELECT p FROM Presentacion p WHERE " +
             "LOWER(p.presentacionNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Presentacion> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
 
-    @Query("SELECT p FROM Presentacion p WHERE p.farmacia.farmaciaId = :farmaciaId AND " +
+    @Query("SELECT p FROM Presentacion p WHERE p.sucursal.sucursalId = :sucursalId AND " +
             "LOWER(p.presentacionNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    Page<Presentacion> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    Page<Presentacion> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
 }

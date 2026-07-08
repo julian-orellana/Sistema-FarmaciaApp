@@ -4,10 +4,7 @@ import farmacias.AppOchoa.dto.alerta.AlertaCreateDTO;
 import farmacias.AppOchoa.dto.alerta.AlertaResponseDTO;
 import farmacias.AppOchoa.dto.alerta.AlertaSimpleDTO;
 import farmacias.AppOchoa.dto.alerta.AlertaUpdateDTO;
-import farmacias.AppOchoa.model.Alerta;
-import farmacias.AppOchoa.model.InventarioLotes;
-import farmacias.AppOchoa.model.Producto;
-import farmacias.AppOchoa.model.Sucursal;
+import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.services.AlertaService;
@@ -24,26 +21,30 @@ public class AlertaServiceImpl implements AlertaService {
     private final ProductoRepository productoRepository;
     private final SucursalRepository sucursalRepository;
     private final InventarioLotesRepository inventarioLotesRepository;
+    private final FarmaciaRepository farmaciaRepository;
 
     public AlertaServiceImpl(
             AlertaRepository alertaRepository,
             ProductoRepository productoRepository,
             SucursalRepository sucursalRepository,
-            InventarioLotesRepository inventarioLotesRepository) {
+            InventarioLotesRepository inventarioLotesRepository,
+            FarmaciaRepository farmaciaRepository) {
         this.alertaRepository = alertaRepository;
         this.productoRepository = productoRepository;
         this.sucursalRepository = sucursalRepository;
         this.inventarioLotesRepository = inventarioLotesRepository;
+        this.farmaciaRepository = farmaciaRepository;
     }
 
     @Override
     public AlertaResponseDTO crear(Long farmaciaId, AlertaCreateDTO dto) {
-        Producto producto = buscarProducto(farmaciaId, dto.getProductoId());
-        Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Producto producto = buscarProducto(sucursal.getSucursalId(), dto.getProductoId());
+        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         InventarioLotes lote = null;
         if (dto.getLoteId() != null) {
-            lote = buscarInventarioLotes(farmaciaId, dto.getLoteId());
+            lote = buscarInventarioLotes(sucursal.getSucursalId(), dto.getLoteId());
         }
 
         Alerta alerta = Alerta.builder()
@@ -51,6 +52,7 @@ public class AlertaServiceImpl implements AlertaService {
                 .alertaLeida(false)
                 .producto(producto)
                 .sucursal(sucursal)
+                .farmacia(farmacia)
                 .lote(lote)
                 .build();
 
@@ -60,7 +62,8 @@ public class AlertaServiceImpl implements AlertaService {
     @Override
     @Transactional(readOnly = true)
     public AlertaResponseDTO listarPorId(Long farmaciaId, Long id) {
-        Alerta alerta = alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Alerta alerta = alertaRepository.findByAlertaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Alerta no encontrada ID: " + id));
         return AlertaResponseDTO.fromEntity(alerta);
     }
@@ -68,26 +71,30 @@ public class AlertaServiceImpl implements AlertaService {
     @Override
     @Transactional(readOnly = true)
     public Page<AlertaSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return alertaRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return alertaRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(AlertaSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<AlertaSimpleDTO> listarNoLeidasPaginadas(Long farmaciaId, Pageable pageable) {
-        return alertaRepository.findByFarmacia_FarmaciaIdAndAlertaLeidaFalse(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return alertaRepository.findBySucursal_SucursalIdAndAlertaLeidaFalse(sucursal.getSucursalId(), pageable)
                 .map(AlertaSimpleDTO::fromEntity);
     }
     @Override
     @Transactional(readOnly = true)
     public Page<AlertaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
-        return alertaRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return alertaRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(AlertaSimpleDTO::fromEntity);
     }
 
     @Override
     public AlertaResponseDTO actualizar(Long farmaciaId, Long id, AlertaUpdateDTO dto) {
-        Alerta alerta = alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Alerta alerta = alertaRepository.findByAlertaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Alerta no encontrada ID: " + id));
 
         if (dto.getLeida() != null) {
@@ -99,7 +106,8 @@ public class AlertaServiceImpl implements AlertaService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id) {
-        Alerta alerta = alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Alerta alerta = alertaRepository.findByAlertaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Alerta no encontrada ID: " + id));
         alerta.setAlertaLeida(!alerta.getAlertaLeida());
         alertaRepository.save(alerta);
@@ -107,25 +115,26 @@ public class AlertaServiceImpl implements AlertaService {
 
     @Override
     public void eliminar(Long farmaciaId, Long id) {
-        Alerta alerta = alertaRepository.findByAlertaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Alerta alerta = alertaRepository.findByAlertaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Alerta no encontrada ID: " + id));
         alertaRepository.delete(alerta);
     }
 
     // Métodos auxiliares privados
-    private Producto buscarProducto(Long farmaciaId, Long id) {
+    private Producto buscarProducto(Long sucursalId, Long id) {
         return productoRepository.findById(id)
-                .filter(p -> p.getFarmacia().getFarmaciaId().equals(farmaciaId))
+                .filter(p -> p.getSucursal().getSucursalId().equals(sucursalId))
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 
-    private Sucursal buscarSucursal(Long farmaciaId, Long id) {
-        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
+    private Sucursal buscarSucursal(Long farmaciaId) {
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " ));
     }
 
-    private InventarioLotes buscarInventarioLotes(Long farmaciaId, Long id) {
-        return inventarioLotesRepository.findByLoteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+    private InventarioLotes buscarInventarioLotes(Long sucursalId, Long id) {
+        return inventarioLotesRepository.findByLoteIdAndSucursal_SucursalId(id, sucursalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado en tu farmacia ID: " + id));
     }
 }

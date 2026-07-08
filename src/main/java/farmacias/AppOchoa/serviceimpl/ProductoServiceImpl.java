@@ -8,13 +8,13 @@ import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.exception.DuplicateResourceException;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
 import farmacias.AppOchoa.model.Categoria;
-import farmacias.AppOchoa.model.Farmacia;
 import farmacias.AppOchoa.model.Presentacion;
 import farmacias.AppOchoa.model.Producto;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.repository.CategoriaRepository;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
 import farmacias.AppOchoa.repository.PresentacionRepository;
 import farmacias.AppOchoa.repository.ProductoRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.services.ProductoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,39 +28,39 @@ public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
     private final PresentacionRepository presentacionRepository;
-    private final FarmaciaRepository farmaciaRepository;
+    private final SucursalRepository sucursalRepository;
 
     public ProductoServiceImpl(
             ProductoRepository productoRepository,
             CategoriaRepository categoriaRepository,
             PresentacionRepository presentacionRepository,
-            FarmaciaRepository farmaciaRepository) {
+            SucursalRepository sucursalRepository) {
         this.productoRepository = productoRepository;
         this.categoriaRepository = categoriaRepository;
         this.presentacionRepository = presentacionRepository;
-        this.farmaciaRepository = farmaciaRepository;
+        this.sucursalRepository = sucursalRepository;
     }
 
-    private Farmacia buscarFarmacia(Long farmaciaId) {
-        return farmaciaRepository.findById(farmaciaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Farmacia no encontrada con ID: " + farmaciaId));
+    private Sucursal buscarSucursal(Long farmaciaId) {
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada para tu farmacia"));
     }
 
     @Override
     public ProductoResponseDTO agregarProducto(Long farmaciaId, ProductoCreateDTO dto) {
-        Farmacia farmacia = buscarFarmacia(farmaciaId);
+        Sucursal sucursal = buscarSucursal(farmaciaId);
 
-        if (productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, dto.getNombre())) {
+        if (productoRepository.existsBySucursal_SucursalIdAndProductoNombre(sucursal.getSucursalId(), dto.getNombre())) {
             throw new DuplicateResourceException("Ya existe un producto con el nombre: " + dto.getNombre());
         }
 
         if (dto.getCodigoBarras() != null && !dto.getCodigoBarras().isBlank() &&
-                productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, dto.getCodigoBarras())) {
+                productoRepository.existsBySucursal_SucursalIdAndProductoCodigoBarras(sucursal.getSucursalId(), dto.getCodigoBarras())) {
             throw new DuplicateResourceException("El código de barras ya está registrado: " + dto.getCodigoBarras());
         }
 
-        Categoria categoria = buscarCategoria(farmaciaId, dto.getCategoriaId());
-        Presentacion presentacion = buscarPresentacion(farmaciaId, dto.getPresentacionId());
+        Categoria categoria = buscarCategoria(sucursal.getSucursalId(), dto.getCategoriaId());
+        Presentacion presentacion = buscarPresentacion(sucursal.getSucursalId(), dto.getPresentacionId());
 
         Producto producto = Producto.builder()
                 .productoNombre(dto.getNombre())
@@ -72,7 +72,8 @@ public class ProductoServiceImpl implements ProductoService {
                 .productoEstado(true)
                 .categoria(categoria)
                 .presentacion(presentacion)
-                .farmacia(farmacia)
+                .farmacia(sucursal.getFarmacia())
+                .sucursal(sucursal)
                 .build();
 
         return ProductoResponseDTO.fromEntity(productoRepository.save(producto));
@@ -80,6 +81,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoResponseDTO actualizarProducto(Long farmaciaId, Long id, ProductoUpdateDTO dto) {
+        Sucursal sucursal = buscarSucursal(farmaciaId);
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
@@ -88,18 +90,18 @@ public class ProductoServiceImpl implements ProductoService {
         }
 
         if (!producto.getProductoNombre().equalsIgnoreCase(dto.getNombre()) &&
-                productoRepository.existsByFarmacia_FarmaciaIdAndProductoNombre(farmaciaId, dto.getNombre())) {
+                productoRepository.existsBySucursal_SucursalIdAndProductoNombre(sucursal.getSucursalId(), dto.getNombre())) {
             throw new DuplicateResourceException("Ya existe otro producto con el nombre: " + dto.getNombre());
         }
 
         if (dto.getCodigoBarras() != null &&
                 !dto.getCodigoBarras().equals(producto.getProductoCodigoBarras()) &&
-                productoRepository.existsByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, dto.getCodigoBarras())) {
+                productoRepository.existsBySucursal_SucursalIdAndProductoCodigoBarras(sucursal.getSucursalId(), dto.getCodigoBarras())) {
             throw new DuplicateResourceException("El código de barras ya pertenece a otro producto: " + dto.getCodigoBarras());
         }
 
-        producto.setCategoria(buscarCategoria(farmaciaId, dto.getCategoriaId()));
-        producto.setPresentacion(buscarPresentacion(farmaciaId, dto.getPresentacionId()));
+        producto.setCategoria(buscarCategoria(sucursal.getSucursalId(), dto.getCategoriaId()));
+        producto.setPresentacion(buscarPresentacion(sucursal.getSucursalId(), dto.getPresentacionId()));
         producto.setProductoNombre(dto.getNombre());
         producto.setProductoCodigoBarras(dto.getCodigoBarras());
         producto.setProductoPrecioCompra(dto.getPrecioCompra());
@@ -133,7 +135,8 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional(readOnly = true)
     public ProductoResponseDTO obtenerPorCodigoBarras(Long farmaciaId, String codigo) {
-        return productoRepository.findByFarmacia_FarmaciaIdAndProductoCodigoBarras(farmaciaId, codigo)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return productoRepository.findBySucursal_SucursalIdAndProductoCodigoBarras(sucursal.getSucursalId(), codigo)
                 .map(ProductoResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con código de barras: " + codigo));
     }
@@ -141,7 +144,8 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductoSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return productoRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return productoRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(ProductoSimpleDTO::fromEntity);
     }
 
@@ -161,19 +165,20 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductoSimpleDTO> listarProductosActivos(Long farmaciaId, Pageable pageable) {
-        return productoRepository.findByFarmacia_FarmaciaIdAndProductoEstadoTrue(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return productoRepository.findBySucursal_SucursalIdAndProductoEstadoTrue(sucursal.getSucursalId(), pageable)
                 .map(ProductoSimpleDTO::fromEntity);
     }
 
-    private Categoria buscarCategoria(Long farmaciaId, Long id) {
+    private Categoria buscarCategoria(Long sucursalId, Long id) {
         if (id == null) return null;
-        return categoriaRepository.findByCategoriaIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        return categoriaRepository.findByCategoriaIdAndSucursal_SucursalId(id, sucursalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada en tu farmacia con ID: " + id));
     }
 
-    private Presentacion buscarPresentacion(Long farmaciaId, Long id) {
+    private Presentacion buscarPresentacion(Long sucursalId, Long id) {
         if (id == null) return null;
-        return presentacionRepository.findByPresentacionIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        return presentacionRepository.findByPresentacionIdAndSucursal_SucursalId(id, sucursalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Presentación no encontrada en tu farmacia con ID: " + id));
     }
 }
