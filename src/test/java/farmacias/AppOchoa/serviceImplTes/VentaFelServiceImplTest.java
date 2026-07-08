@@ -4,9 +4,10 @@ import farmacias.AppOchoa.dto.ventafel.VentaFelCreateDTO;
 import farmacias.AppOchoa.dto.ventafel.VentaFelResponseDTO;
 import farmacias.AppOchoa.dto.ventafel.VentaFelSimpleDTO;
 import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Venta;
 import farmacias.AppOchoa.model.VentaFel;
-import farmacias.AppOchoa.repository.FarmaciaRepository;
+import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.VentaFelRepository;
 import farmacias.AppOchoa.repository.VentaRepository;
 import farmacias.AppOchoa.serviceimpl.VentaFelServiceImpl;
@@ -36,11 +37,21 @@ public class VentaFelServiceImplTest {
     @Mock
     private VentaFelRepository ventaFelRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
     @Mock
     private VentaRepository ventaRepository;
     @InjectMocks
     private VentaFelServiceImpl ventaFelService;
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
+    }
 
     @Test
     @DisplayName("Deberia crear una venta correctamente")
@@ -54,13 +65,12 @@ public class VentaFelServiceImplTest {
         VentaFel ventaFel = new VentaFel();
         ventaFel.setFelId(1L);
 
-        Farmacia farmacia = new Farmacia();
-        farmacia.setFarmaciaId(1L);
-
         Venta venta = new Venta();
         venta.setVentaId(1L);
 
-        when(ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(1L, farmaciaId)).thenReturn(Optional.of(venta));
+        Long sucursalId = 1L;
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaRepository.findByVentaIdAndSucursal_SucursalId(1L, sucursalId)).thenReturn(Optional.of(venta));
         when(ventaFelRepository.save(any(VentaFel.class))).thenReturn(ventaFel);
 
         VentaFelResponseDTO resultado = ventaFelService.crear(farmaciaId, dto);
@@ -83,8 +93,10 @@ public class VentaFelServiceImplTest {
         VentaFel ventaFel = new VentaFel();
         ventaFel.setFelId(1L);
 
+        Long sucursalId = 1L;
         Page<VentaFel> ventaFe = new PageImpl<>(List.of(ventaFel));
-        when(ventaFelRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(ventaFe);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(ventaFelRepository.buscarPorTexto(sucursalId, texto, pageable)).thenReturn(ventaFe);
 
         Page<VentaFelSimpleDTO> resultado = ventaFelService.buscarPorTexto(farmaciaId, texto, pageable);
 

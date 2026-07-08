@@ -41,4 +41,14 @@ public class CompraDetalle {
     @JoinColumn(name = "lote_id")
     private InventarioLotes loteId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sucursal_id")
+    private Sucursal sucursal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "farmacia_id", nullable = false)
+    private Farmacia farmacia;
+
+
+
 }

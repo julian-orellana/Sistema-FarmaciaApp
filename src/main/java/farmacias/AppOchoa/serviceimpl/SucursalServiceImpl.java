@@ -48,6 +48,7 @@ public class SucursalServiceImpl implements SucursalService {
 
         Sucursal sucursal = Sucursal.builder()
                 .sucursalNombre(dto.getNombre())
+                .sucursalNit(dto.getSucursalNit())
                 .sucursalDireccion(dto.getDireccion())
                 .sucursalTelefono(dto.getTelefono())
                 .sucursalEstado(true)
@@ -98,7 +99,7 @@ public class SucursalServiceImpl implements SucursalService {
             }
             sucursal.setSucursalNombre(nuevoNombre);
         }
-
+        sucursal.setSucursalNit(dto.getSucursalNit());
         sucursal.setSucursalDireccion(dto.getDireccion());
         sucursal.setSucursalTelefono(dto.getTelefono());
 

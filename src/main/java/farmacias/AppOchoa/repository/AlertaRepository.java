@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface AlertaRepository extends JpaRepository<Alerta, Long> {
     Page<Alerta> findByProducto_ProductoId(Long productoId, Pageable pageable);
@@ -18,7 +20,11 @@ public interface AlertaRepository extends JpaRepository<Alerta, Long> {
             "LOWER(a.alertaMensaje) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Alerta> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
 
-    @Query("SELECT a FROM Alerta a WHERE a.farmacia.farmaciaId = :farmaciaId AND " +
+    @Query("SELECT a FROM Alerta a WHERE a.sucursal.sucursalId = :sucursalId AND " +
             "LOWER(a.alertaMensaje) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    Page<Alerta> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    Page<Alerta> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
+
+    //Métodos nuevos
+    Optional<Alerta> findByAlertaIdAndSucursal_SucursalId(Long alertaId, Long sucursalId);
+    Page<Alerta>findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
 }

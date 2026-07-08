@@ -5,6 +5,8 @@ import farmacias.AppOchoa.dto.cajacorte.CajaCorteResponseDTO;
 import farmacias.AppOchoa.dto.cajacorte.CajaCorteSimpleDTO;
 import farmacias.AppOchoa.model.CajaCorte;
 import farmacias.AppOchoa.model.CajaSesiones;
+import farmacias.AppOchoa.model.Farmacia;
+import farmacias.AppOchoa.model.Sucursal;
 import farmacias.AppOchoa.model.Usuario;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.CajaCorteServiceImpl;
@@ -45,13 +47,23 @@ public class CajaCorteServiceImplTest {
     @Mock
     private VentaPagoRepository ventaPagoRepository;
     @Mock
-    private FarmaciaRepository farmaciaRepository;
+    private SucursalRepository sucursalRepository;
     @InjectMocks
     private CajaCorteServiceImpl cajaCorteService;
 
     @AfterEach
     void limpiarContextoSeguridad() {
         SecurityContextHolder.clearContext();
+    }
+
+    // Sucursal 1:1 con la farmacia; el service la resuelve desde farmaciaId
+    private Sucursal sucursalDePrueba(Long farmaciaId, Long sucursalId) {
+        Farmacia farmacia = new Farmacia();
+        farmacia.setFarmaciaId(farmaciaId);
+        Sucursal sucursal = new Sucursal();
+        sucursal.setSucursalId(sucursalId);
+        sucursal.setFarmacia(farmacia);
+        return sucursal;
     }
 
     @Test
@@ -78,7 +90,8 @@ public class CajaCorteServiceImplTest {
         cajaCorte.setCorteId(1L);
         cajaCorte.setCorteTotalEfectivo(new BigDecimal(800.00));
 
-        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(any(), eq(1L))).thenReturn(Optional.of(cajaSesiones));
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, 1L)));
+        when(cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(any(), eq(1L))).thenReturn(Optional.of(cajaSesiones));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(any(), eq(1L))).thenReturn(Optional.of(usuario));
         when(ventaPagoRepository.sumarPorSesionYMetodo(any(), any())).thenReturn(BigDecimal.ZERO);
         when(ventaPagoRepository.sumarTotalPorSesion(any())).thenReturn(BigDecimal.ZERO);
@@ -104,8 +117,10 @@ public class CajaCorteServiceImplTest {
         CajaCorte cajaCorte = new CajaCorte();
         cajaCorte.setCorteId(1L);
 
+        Long sucursalId = 1L;
         Page<CajaCorte> page = new PageImpl<>(List.of(cajaCorte));
-        when(cajaCortesRepository.buscarPorTexto(farmaciaId, texto, pageable)).thenReturn(page);
+        when(sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)).thenReturn(Optional.of(sucursalDePrueba(farmaciaId, sucursalId)));
+        when(cajaCortesRepository.buscarPorTexto(sucursalId, texto, pageable)).thenReturn(page);
 
         Page<CajaCorteSimpleDTO> resultado = cajaCorteService.buscarPorTexto(farmaciaId, texto, pageable);
         assertNotNull(resultado);

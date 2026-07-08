@@ -56,7 +56,7 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     public CompraResponseDTO crear(Long farmaciaId, CompraCreateDTO dto) {
-        Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        Sucursal sucursal = buscarSucursal(farmaciaId);
 
         // El registrador se extrae del contexto de seguridad para evitar
         // que el cliente pueda suplantar otro usuario en el request body
@@ -81,7 +81,7 @@ public class CompraServiceImpl implements CompraService {
         Map<Long, Integer> stockAnteriorMap = new HashMap<>();
 
         for (CompraDetalleCreateDTO detDto : dto.getDetalles()) {
-            Producto producto = buscarProducto(farmaciaId, detDto.getProductoId());
+            Producto producto = buscarProducto(sucursal.getSucursalId(), detDto.getProductoId());
 
             int stockActual = inventarioRepository
                     .findByProductoYSucursalForUpdate(producto.getProductoId(), sucursal.getSucursalId())
@@ -151,7 +151,8 @@ public class CompraServiceImpl implements CompraService {
     @Override
     @Transactional(readOnly = true)
     public CompraResponseDTO listarPorId(Long farmaciaId, Long id) {
-        Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Compra compra = compraRepository.findByCompraIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
         return CompraResponseDTO.fromEntity(compra);
     }
@@ -159,27 +160,31 @@ public class CompraServiceImpl implements CompraService {
     @Override
     @Transactional(readOnly = true)
     public Page<CompraSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return compraRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return compraRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(CompraSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CompraSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return compraRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return compraRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(CompraSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CompraSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return compraRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return compraRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(CompraSimpleDTO::fromEntity);
     }
 
     @Override
     public CompraResponseDTO actualizar(Long farmaciaId, Long id, CompraUpdateDTO dto) {
-        Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Compra compra = compraRepository.findByCompraIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
 
         if (dto.getObservaciones() != null) {
@@ -191,7 +196,8 @@ public class CompraServiceImpl implements CompraService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, CompraEstado nuevoEstado) {
-        Compra compra = compraRepository.findByCompraIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Compra compra = compraRepository.findByCompraIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada ID: " + id));
 
         if (nuevoEstado == CompraEstado.anulada && compra.getCompraEstado() == CompraEstado.activa) {
@@ -199,7 +205,7 @@ public class CompraServiceImpl implements CompraService {
                 // Lock pesimista para evitar race condition entre la anulación
                 // y una venta concurrente que descuente el mismo lote
                 InventarioLotes lote = loteRepository
-                        .findByLoteIdAndFarmaciaIdForUpdate(detalle.getLoteId().getLoteId(), farmaciaId)
+                        .findByLoteIdAndSucursalIdForUpdate(detalle.getLoteId().getLoteId(), sucursal.getSucursalId())
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Lote no encontrado en tu farmacia ID: " + detalle.getLoteId().getLoteId()));
 
@@ -230,9 +236,9 @@ public class CompraServiceImpl implements CompraService {
         cambiarEstado(farmaciaId, id, CompraEstado.anulada);
     }
 
-    private Sucursal buscarSucursal(Long farmaciaId, Long id) {
-        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
+    private Sucursal buscarSucursal(Long farmaciaId) {
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: "));
     }
 
     private Usuario buscarUsuario(Long farmaciaId, Long id) {
@@ -240,9 +246,9 @@ public class CompraServiceImpl implements CompraService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado en tu farmacia ID: " + id));
     }
 
-    private Producto buscarProducto(Long farmaciaId, Long id) {
+    private Producto buscarProducto(Long sucursalId, Long id) {
         return productoRepository.findById(id)
-                .filter(p -> p.getFarmacia().getFarmaciaId().equals(farmaciaId))
+                .filter(p -> p.getSucursal().getSucursalId().equals(sucursalId))
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado en tu farmacia ID: " + id));
     }
 

@@ -50,7 +50,7 @@ public class InventarioLotes {
     private Sucursal sucursal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "farmacia_id")
+    @JoinColumn(name = "farmacia_id", nullable = false)
     private Farmacia farmacia;
 
 

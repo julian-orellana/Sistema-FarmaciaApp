@@ -46,13 +46,14 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
     Page<Inventario> findActivosPaginado(Pageable pageable);
     Page<Inventario> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     Optional<Inventario> findByInventarioIdAndFarmacia_FarmaciaId(Long inventarioId, Long farmaciaId);
+    Optional<Inventario> findByInventarioIdAndSucursal_SucursalId(Long inventarioId, Long sucursalId);
     @Query("SELECT i FROM Inventario i WHERE " +
             "LOWER(i.producto.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(i.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%'))")
     Page<Inventario> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
 
-    @Query("SELECT i FROM Inventario i WHERE i.farmacia.farmaciaId = :farmaciaId AND (" +
+    @Query("SELECT i FROM Inventario i WHERE i.sucursal.sucursalId = :sucursalId AND (" +
             "LOWER(i.producto.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(i.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%')))")
-    Page<Inventario> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
+    Page<Inventario> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
 }

@@ -61,6 +61,7 @@ public class CompraServiceImplInventarioTest {
         producto = new Producto();
         producto.setProductoId(PRODUCTO_ID);
         producto.setFarmacia(farmacia);
+        producto.setSucursal(sucursal);
         usuario = new Usuario();
         usuario.setUsuarioId(USUARIO_ID);
         usuario.setFarmacia(farmacia);
@@ -70,7 +71,7 @@ public class CompraServiceImplInventarioTest {
     }
 
     private void stubCrearComun() {
-        when(sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(SUCURSAL_ID, FARMACIA_ID))
+        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
                 .thenReturn(Optional.of(sucursal));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(USUARIO_ID, FARMACIA_ID))
                 .thenReturn(Optional.of(usuario));
@@ -183,9 +184,11 @@ public class CompraServiceImplInventarioTest {
                 .farmacia(farmacia)
                 .build();
 
-        when(compraRepository.findByCompraIdAndFarmacia_FarmaciaId(7L, FARMACIA_ID))
+        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
+                .thenReturn(Optional.of(sucursal));
+        when(compraRepository.findByCompraIdAndSucursal_SucursalId(7L, SUCURSAL_ID))
                 .thenReturn(Optional.of(compra));
-        when(loteRepository.findByLoteIdAndFarmaciaIdForUpdate(LOTE_ID, FARMACIA_ID))
+        when(loteRepository.findByLoteIdAndSucursalIdForUpdate(LOTE_ID, SUCURSAL_ID))
                 .thenReturn(Optional.of(lote(28)));
         Inventario inv = Inventario.builder()
                 .producto(producto).sucursal(sucursal).farmacia(farmacia)

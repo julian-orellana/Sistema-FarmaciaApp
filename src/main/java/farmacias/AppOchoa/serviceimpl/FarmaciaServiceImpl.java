@@ -26,13 +26,12 @@ public class FarmaciaServiceImpl implements FarmaciaService {
 
     @Override
     public FarmaciaResponseDTO crear(FarmaciaCreateDTO dto){
-        if(farmaciaRepository.existsByFarmaciaNit(dto.getFarmaciaNit())){
-            throw new DuplicateResourceException("El NIT ya está en uso: " + dto.getFarmaciaNit());
+        if(farmaciaRepository.existsByFarmaciaTelefono(dto.getFarmaciaTelefono())){
+            throw new DuplicateResourceException("El teléfono ya está en uso: " + dto.getFarmaciaTelefono());
         }
 
         Farmacia farmacia = Farmacia.builder()
                 .farmaciaNombre(dto.getFarmaciaNombre())
-                .farmaciaNit(dto.getFarmaciaNit())
                 .farmaciaEmail(dto.getFarmaciaEmail())
                 .farmaciaTelefono(dto.getFarmaciaTelefono())
                 .pruebaHasta(dto.getPruebaHasta())
@@ -50,16 +49,12 @@ public class FarmaciaServiceImpl implements FarmaciaService {
     private int resolverMaxSucursales(PlanTipo plan) {
         return switch (plan) {
             case basico -> 1;
-            case pro -> 3;
-            case chain -> 10;
         };
     }
 
     private int resolverMaxUsuarios(PlanTipo plan) {
         return switch (plan) {
-            case basico -> 2;
-            case pro -> 5;
-            case chain -> 20;
+            case basico -> 3;
         };
     }
 

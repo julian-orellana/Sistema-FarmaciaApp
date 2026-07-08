@@ -20,6 +20,10 @@ public class SucursalCreateDTO {
     @Size(max = 100, message = "El nombre de la sucursal no debe tener mas de 100 caracteres")
     private String nombre;
 
+    @NotBlank(message =  "El nit de la sucursal es obligatorio")
+    @Size(max = 9, message = "el nit de la sucursal no debe tener mas de 9 digitos")
+    private String sucursalNit;
+
     @NotBlank(message = "La direccion de la sucursal es obligatoria")
     @Size(max = 200, message = "La direccion no debe tener mas de 200 caracteres ")
     private String direccion;

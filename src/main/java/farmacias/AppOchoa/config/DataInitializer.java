@@ -45,10 +45,9 @@ public class DataInitializer {
             // 1. Crear farmacia base del sistema
             Farmacia farmacia = Farmacia.builder()
                     .farmaciaNombre("Farmacia Principal")
-                    .farmaciaNit("000000000")
                     .farmaciaEmail("admin@farmacloud.software")
                     .farmaciaTelefono("00000000")
-                    .planTipo(PlanTipo.pro)
+                    .planTipo(PlanTipo.basico)
                     .farmaciaActiva(true)
                     .enPeriodoPrueba(true)
                     .pruebaHasta(LocalDate.now().plusDays(30))

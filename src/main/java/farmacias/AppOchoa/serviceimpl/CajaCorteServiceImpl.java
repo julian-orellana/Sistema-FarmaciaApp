@@ -23,35 +23,37 @@ public class CajaCorteServiceImpl implements CajaCorteService {
     private final CajaSesionesRepository cajaSesionesRepository;
     private final UsuarioRepository usuarioRepository;
     private final VentaPagoRepository ventaPagoRepository;
-    private final FarmaciaRepository farmaciaRepository;
+    private final SucursalRepository sucursalRepository;
 
     public CajaCorteServiceImpl(
             CajaCortesRepository cajaCortesRepository,
             CajaSesionesRepository cajaSesionesRepository,
             UsuarioRepository usuarioRepository,
             VentaPagoRepository ventaPagoRepository,
-            FarmaciaRepository farmaciaRepository) {
+            SucursalRepository sucursalRepository) {
         this.cajaCortesRepository = cajaCortesRepository;
         this.cajaSesionesRepository = cajaSesionesRepository;
         this.usuarioRepository = usuarioRepository;
         this.ventaPagoRepository = ventaPagoRepository;
-        this.farmaciaRepository = farmaciaRepository;
+        this.sucursalRepository = sucursalRepository;
+    }
+
+    private Sucursal buscarSucursal(Long farmaciaId) {
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada para tu farmacia"));
     }
 
     @Override
     public CajaCorteResponseDTO crear(Long farmaciaId, CajaCorteCreateDTO dto) {
-        CajaSesiones cajaSesiones = buscarSesiones(farmaciaId, dto.getSesionId());
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        CajaSesiones cajaSesiones = buscarSesiones(sucursal.getSucursalId(), dto.getSesionId());
 
-        // El corte lo registra el cajero autenticado; no hay supervisor en tiempo
-        // real, el admin revisa los cortes despues desde los reportes (M4)
         Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = buscarUsuario(farmaciaId, solicitante.getUsuarioId());
 
         BigDecimal totalCredito = ventaPagoRepository.sumarPorSesionYMetodo(cajaSesiones.getSesionId(), MetodoPagoEstado.tarjetaDeCredito);
         BigDecimal totalDebito = ventaPagoRepository.sumarPorSesionYMetodo(cajaSesiones.getSesionId(), MetodoPagoEstado.tarjetaDeDebito);
         BigDecimal totalVentas = ventaPagoRepository.sumarTotalPorSesion(cajaSesiones.getSesionId());
-
-        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         CajaCorte cajaCorte = CajaCorte.builder()
                 .cajaSesiones(cajaSesiones)
@@ -60,16 +62,17 @@ public class CajaCorteServiceImpl implements CajaCorteService {
                 .corteTotalTarjetaCredito(totalCredito)
                 .corteTotalTarjetaDebito(totalDebito)
                 .corteTotalVentas(totalVentas)
-                .farmacia(farmacia)
+                .farmacia(sucursal.getFarmacia())
+                .sucursal(sucursal)
                 .build();
 
         return CajaCorteResponseDTO.fromEntity(cajaCortesRepository.save(cajaCorte));
     }
-    // Metodos Auxiliares
-    private CajaSesiones buscarSesiones(Long farmaciaId, Long id) {
+
+    private CajaSesiones buscarSesiones(Long sucursalId, Long id) {
         if (id == null) return null;
-        return cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(id, farmaciaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesion no encontrada en tu farmacia"));
+        return cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(id, sucursalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada en tu farmacia"));
     }
 
     private Usuario buscarUsuario(Long farmaciaId, Long id) {
@@ -77,17 +80,20 @@ public class CajaCorteServiceImpl implements CajaCorteService {
         return usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(id, farmaciaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado en tu farmacia"));
     }
+
     @Override
     @Transactional(readOnly = true)
     public Page<CajaCorteSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return cajaCortesRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return cajaCortesRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(CajaCorteSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public CajaCorteResponseDTO buscarPorId(Long farmaciaId, Long id) {
-        return cajaCortesRepository.findByCorteIdAndFarmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return cajaCortesRepository.findByCorteIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .map(CajaCorteResponseDTO::fromEntity)
                 .orElseThrow(() -> new ResourceNotFoundException("Corte no encontrado por ID"));
     }
@@ -95,7 +101,8 @@ public class CajaCorteServiceImpl implements CajaCorteService {
     @Override
     @Transactional(readOnly = true)
     public Page<CajaCorteSimpleDTO> listarCortes(Long farmaciaId, Pageable pageable) {
-        return cajaCortesRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return cajaCortesRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(CajaCorteSimpleDTO::fromEntity);
     }
 

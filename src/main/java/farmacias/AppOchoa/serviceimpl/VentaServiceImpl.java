@@ -32,7 +32,6 @@ public class VentaServiceImpl implements VentaService {
     private final ProductoRepository productoRepository;
     private final InventarioLotesRepository loteRepository;
     private final InventarioRepository inventarioRepository;
-    private final FarmaciaRepository farmaciaRepository;
     private final KardexService kardexService;
 
     public VentaServiceImpl(
@@ -42,7 +41,6 @@ public class VentaServiceImpl implements VentaService {
             ProductoRepository productoRepository,
             InventarioLotesRepository loteRepository,
             InventarioRepository inventarioRepository,
-            FarmaciaRepository farmaciaRepository,
             KardexService kardexService) {
         this.ventaRepository = ventaRepository;
         this.sucursalRepository = sucursalRepository;
@@ -50,19 +48,19 @@ public class VentaServiceImpl implements VentaService {
         this.productoRepository = productoRepository;
         this.loteRepository = loteRepository;
         this.inventarioRepository = inventarioRepository;
-        this.farmaciaRepository = farmaciaRepository;
         this.kardexService = kardexService;
     }
 
     @Override
     public VentaResponseDTO crear(Long farmaciaId, VentaCreateDTO dto) {
-        Sucursal sucursal = buscarSucursal(farmaciaId, dto.getSucursalId());
+        // Sucursal 1:1 con la farmacia: se deriva del tenant, no se acepta del cliente
+        Sucursal sucursal = buscarSucursal(farmaciaId);
 
         // El cajero se extrae del contexto de seguridad para evitar
         // que el cliente pueda suplantar otro usuario en el request body
         Usuario solicitante = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = buscarUsuario(farmaciaId, solicitante.getUsuarioId());
-        Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
+        Farmacia farmacia = sucursal.getFarmacia();
 
         Venta venta = Venta.builder()
                 .sucursal(sucursal)
@@ -84,7 +82,7 @@ public class VentaServiceImpl implements VentaService {
 
         for (VentaDetalleCreateDTO detalleDto : detallesOrdenados) {
             Producto producto = buscarProducto(farmaciaId, detalleDto.getProductoId());
-            InventarioLotes lote = buscarLote(farmaciaId, detalleDto.getLoteId());
+            InventarioLotes lote = buscarLote(sucursal.getSucursalId(), detalleDto.getLoteId());
 
             // Validar que el lote pertenece al producto indicado; de lo contrario
             // se estaría descontando stock de un producto y cobrando el precio de otro
@@ -176,7 +174,8 @@ public class VentaServiceImpl implements VentaService {
     @Override
     @Transactional(readOnly = true)
     public VentaResponseDTO listarPorId(Long farmaciaId, Long id) {
-        Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Venta venta = ventaRepository.findByVentaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
         return VentaResponseDTO.fromEntity(venta);
     }
@@ -184,27 +183,31 @@ public class VentaServiceImpl implements VentaService {
     @Override
     @Transactional(readOnly = true)
     public Page<VentaSimpleDTO> listarTodasPaginadas(Long farmaciaId, Pageable pageable) {
-        return ventaRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return ventaRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(VentaSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<VentaSimpleDTO> listarActivasPaginadas(Long farmaciaId, Pageable pageable) {
-        return ventaRepository.findByFarmacia_FarmaciaId(farmaciaId, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return ventaRepository.findBySucursal_SucursalId(sucursal.getSucursalId(), pageable)
                 .map(VentaSimpleDTO::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<VentaSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
-        return ventaRepository.buscarPorTexto(farmaciaId, texto, pageable)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return ventaRepository.buscarPorTexto(sucursal.getSucursalId(), texto, pageable)
                 .map(VentaSimpleDTO::fromEntity);
     }
 
     @Override
     public VentaResponseDTO actualizar(Long farmaciaId, Long id, VentaUpdateDTO dto) {
-        Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Venta venta = ventaRepository.findByVentaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
 
         if (dto.getNombreCliente() != null) venta.setVentaNombreCliente(dto.getNombreCliente());
@@ -215,7 +218,8 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     public void cambiarEstado(Long farmaciaId, Long id, VentaEstado nuevoEstado) {
-        Venta venta = ventaRepository.findByVentaIdAndSucursal_Farmacia_FarmaciaId(id, farmaciaId)
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        Venta venta = ventaRepository.findByVentaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada ID: " + id));
 
         // Reactivar una venta anulada corrompería el inventario
@@ -267,9 +271,9 @@ public class VentaServiceImpl implements VentaService {
         cambiarEstado(farmaciaId, id, VentaEstado.anulada);
     }
 
-    private Sucursal buscarSucursal(Long farmaciaId, Long id) {
-        return sucursalRepository.findBySucursalIdAndFarmacia_FarmaciaId(id, farmaciaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada en tu farmacia ID: " + id));
+    private Sucursal buscarSucursal(Long farmaciaId) {
+        return sucursalRepository.findByFarmacia_FarmaciaId(farmaciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada para tu farmacia"));
     }
 
     private Usuario buscarUsuario(Long farmaciaId, Long id) {
@@ -285,8 +289,8 @@ public class VentaServiceImpl implements VentaService {
 
     // Lock pesimista sobre el lote: la fila queda bloqueada hasta el commit
     // para evitar que una venta concurrente descuente el mismo lote simultáneamente
-    private InventarioLotes buscarLote(Long farmaciaId, Long id) {
-        return loteRepository.findByLoteIdAndFarmaciaIdForUpdate(id, farmaciaId)
+    private InventarioLotes buscarLote(Long sucursalId, Long id) {
+        return loteRepository.findByLoteIdAndSucursalIdForUpdate(id, sucursalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lote no encontrado en tu farmacia ID: " + id));
     }
 

@@ -23,4 +23,13 @@ public interface AutorizacionRepository extends JpaRepository<Autorizacion, Long
     Page<Autorizacion> buscarPorTexto(@Param("farmaciaId") Long farmaciaId, @Param("texto") String texto, Pageable pageable);
     Page<Autorizacion> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<Autorizacion> findByAutorizacionIdAndFarmacia_FarmaciaId(Long autorizacionId, Long farmaciaId);
+
+    @Query("SELECT a FROM Autorizacion a WHERE " +
+            "a.sucursal.sucursalId = :sucursalId AND (" +
+            "LOWER(a.cajero.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(a.supervisor.nombreUsuarioUsuario) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(CAST(a.autorizacionTipo AS string)) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Autorizacion> buscarPorTextoPorSucursal(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
+    Page<Autorizacion> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
+    java.util.Optional<Autorizacion> findByAutorizacionIdAndSucursal_SucursalId(Long autorizacionId, Long sucursalId);
 }

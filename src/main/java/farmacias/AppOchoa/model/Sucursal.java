@@ -23,6 +23,9 @@ public class Sucursal {
     @Column(name = "sucursal_nombre", nullable = false, length = 100)
     private String sucursalNombre;
 
+    @Column(name = "sucursal_nit", nullable = false, unique = true)
+    private String sucursalNit;
+
     @Column(name = "sucursal_direccion", nullable = false, length = 200)
     private String sucursalDireccion;
 
@@ -38,7 +41,7 @@ public class Sucursal {
     private LocalDateTime auditoriaFechaCreacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "farmacia_id", nullable = false)
+    @JoinColumn(name = "farmacia_id", nullable = false, unique = true)
     private Farmacia farmacia;
 }
 
