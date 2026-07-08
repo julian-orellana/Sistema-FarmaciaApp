@@ -5,6 +5,7 @@ out/
 .env
 *.zip
 *.jar
+backup_*.sql
 mailmap.txt
 
 src/test/java/tmp/

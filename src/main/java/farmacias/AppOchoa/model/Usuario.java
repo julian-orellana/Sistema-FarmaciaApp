@@ -45,7 +45,7 @@ public class Usuario implements UserDetails {
     @Builder.Default
     private Boolean usuarioEstado = true;
 
-    // M2: lockout por intentos fallidos
+    //lockout por intentos fallidos
     @Column(name = "usuario_intentos_fallidos", nullable = false)
     @Builder.Default
     private Integer usuarioIntentosFallidos = 0;

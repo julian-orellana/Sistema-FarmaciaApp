@@ -1,5 +1,7 @@
 package farmacias.AppOchoa.serviceImplTes;
 
+import farmacias.AppOchoa.dto.venta.VentaCobroResponseDTO;
+import farmacias.AppOchoa.dto.venta.VentaCreateCobroDTO;
 import farmacias.AppOchoa.dto.venta.VentaCreateDTO;
 import farmacias.AppOchoa.dto.ventadetalle.VentaDetalleCreateDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
@@ -36,12 +38,18 @@ public class VentaServiceImplInventarioTest {
     private static final Long LOTE_ID = 1000L;
     private static final Long USUARIO_ID = 5L;
 
+    private static final Long CAJA_SESION_ID = 77L;
+
     @Mock private VentaRepository ventaRepository;
     @Mock private SucursalRepository sucursalRepository;
     @Mock private UsuarioRepository usuarioRepository;
     @Mock private ProductoRepository productoRepository;
     @Mock private InventarioLotesRepository loteRepository;
     @Mock private InventarioRepository inventarioRepository;
+    @Mock private FarmaciaRepository farmaciaRepository;
+    @Mock private VentaFelRepository ventaFelRepository;
+    @Mock private VentaPagoRepository ventaPagoRepository;
+    @Mock private CajaSesionesRepository cajaSesionesRepository;
     @Mock private KardexService kardexService;
     @InjectMocks private VentaServiceImpl ventaService;
 
@@ -173,5 +181,57 @@ public class VentaServiceImplInventarioTest {
 
         assertEquals(50, inv.getInventarioCantidadActual());
         verify(inventarioRepository).save(inv);
+    }
+
+    @Test
+    @DisplayName("crearConCobro (EFECTIVO) resuelve la sucursal 1:1 y persiste venta, pago y FEL")
+    void crearConCobroEfectivoHappyPath() {
+        // Sucursal derivada desde farmaciaId (patrón 1:1, un solo argumento)
+        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
+                .thenReturn(Optional.of(sucursal));
+        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(USUARIO_ID, FARMACIA_ID))
+                .thenReturn(Optional.of(usuario));
+        when(farmaciaRepository.getReferenceById(FARMACIA_ID)).thenReturn(farmacia);
+        when(productoRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(producto));
+        when(loteRepository.findByLoteIdAndSucursalIdForUpdate(LOTE_ID, SUCURSAL_ID))
+                .thenReturn(Optional.of(lote(50)));
+        when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
+                .thenReturn(Optional.of(inventario(50)));
+
+        CajaSesiones sesion = new CajaSesiones();
+        sesion.setSesionId(CAJA_SESION_ID);
+        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(CAJA_SESION_ID, FARMACIA_ID))
+                .thenReturn(Optional.of(sesion));
+
+        when(ventaRepository.save(any(Venta.class))).thenAnswer(a -> {
+            Venta v = a.getArgument(0);
+            v.setVentaId(999L);
+            return v;
+        });
+        when(ventaPagoRepository.save(any(VentaPago.class))).thenAnswer(a -> a.getArgument(0));
+
+        VentaFel felGuardado = VentaFel.builder().felId(555L).build();
+        when(ventaFelRepository.save(any(VentaFel.class))).thenReturn(felGuardado);
+
+        // 1 unidad a 10.00 => total 10.00; el cliente paga 20.00 en efectivo
+        VentaDetalleCreateDTO det = new VentaDetalleCreateDTO();
+        det.setProductoId(PRODUCTO_ID);
+        det.setLoteId(LOTE_ID);
+        det.setCantidad(1);
+
+        VentaCreateCobroDTO dto = new VentaCreateCobroDTO();
+        dto.setSucursalId(SUCURSAL_ID);
+        dto.setDetalles(List.of(det));
+        dto.setCajaSesionId(CAJA_SESION_ID);
+        dto.setMetodoPago(MetodoPagoEstado.EFECTIVO);
+        dto.setMontoRecibido(new BigDecimal("20.00"));
+
+        VentaCobroResponseDTO resultado = ventaService.crearConCobro(FARMACIA_ID, dto);
+
+        assertNotNull(resultado);
+        assertEquals(999L, resultado.getVentaId());
+        verify(ventaRepository).save(any(Venta.class));
+        verify(ventaPagoRepository).save(any(VentaPago.class));
+        verify(ventaFelRepository).save(any(VentaFel.class));
     }
 }

@@ -53,7 +53,7 @@ class UsuarioServiceImplTest {
         dto.setContrasena("password123");
         dto.setNombre("Steve");
         dto.setApellido("Leon");
-        dto.setRol(UsuarioRol.encargado);
+        dto.setRol(UsuarioRol.administrador);
         dto.setSucursalId(null);
 
         when(usuarioRepository.existsByNombreUsuarioUsuario("steveSenior"))
@@ -76,7 +76,7 @@ class UsuarioServiceImplTest {
                 .usuarioContrasenaHash("$2a$10$hashedPassword")
                 .usuarioNombre("Steve")
                 .usuarioApellido("Leon")
-                .usuarioRol(UsuarioRol.encargado)
+                .usuarioRol(UsuarioRol.administrador)
                 .usuarioEstado(true)
                 .sucursal(null)
                 .build();
@@ -91,7 +91,7 @@ class UsuarioServiceImplTest {
         assertEquals("steveSenior", resultado.getNombreUsuario());
         assertEquals("Steve", resultado.getNombre());
         assertEquals("Leon", resultado.getApellido());
-        assertEquals(UsuarioRol.encargado, resultado.getRol());
+        assertEquals(UsuarioRol.administrador, resultado.getRol());
         assertTrue(resultado.getEstado());
 
         verify(usuarioRepository, times(1))
@@ -145,7 +145,7 @@ class UsuarioServiceImplTest {
         dto.setNombreUsuario("steveSenior");
         dto.setNombre("Steve");
         dto.setApellido("Leon");
-        dto.setRol(UsuarioRol.encargado);
+        dto.setRol(UsuarioRol.administrador);
         dto.setSucursalId(null);
 
         Usuario usuarioRegistrado = Usuario.builder()
@@ -199,5 +199,30 @@ class UsuarioServiceImplTest {
         assertEquals("No se puede asignar el rol superadmin", exception.getMessage());
 
         verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+
+    @Test
+    @DisplayName("Deberia lanzar excepcion cuando encargado no tiene sucursal asignada")
+    void crearUsuario_FallaCuandoEncargadoSinSucursal() {
+
+        Long farmaciaId = 1L;
+        UsuarioCreateDTO dto = new UsuarioCreateDTO();
+        dto.setNombreUsuario("mariaEncargada");
+        dto.setContrasena("password123");
+        dto.setNombre("Maria");
+        dto.setApellido("Lopez");
+        dto.setRol(UsuarioRol.encargado);
+        dto.setSucursalId(null);
+
+        when(usuarioRepository.existsByNombreUsuarioUsuario("mariaEncargada"))
+                .thenReturn(false);
+
+        BadRequestException exception = assertThrows(BadRequestException.class, () ->
+                usuarioService.crearUsuario(farmaciaId, dto));
+
+        assertEquals("Un encargado debe tener una sucursal asignada", exception.getMessage());
+
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+        verify(passwordEncoder, never()).encode(any());
     }
 }

@@ -56,6 +56,10 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
             throw new BadRequestException("No se puede asignar el rol superadmin");
         }
 
+        if (dto.getRol() == UsuarioRol.encargado && dto.getSucursalId() == null) {
+            throw new BadRequestException("Un encargado debe tener una sucursal asignada");
+        }
+
         Farmacia farmacia = farmaciaRepository.getReferenceById(farmaciaId);
 
         validarCupoUsuarios(farmaciaId, farmacia.getMaxUsuarios());
@@ -96,7 +100,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UsuarioSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable){
+    public Page<UsuarioSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable) {
         return usuarioRepository.buscarPorTexto(farmaciaId, texto, pageable)
                 .map(UsuarioSimpleDTO::fromEntity);
     }
@@ -115,6 +119,9 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
         if (dto.getRol() == UsuarioRol.superadmin) {
             throw new BadRequestException("No se puede asignar el rol superadmin");
+        }
+        if (dto.getRol() == UsuarioRol.encargado && dto.getSucursalId() == null) {
+            throw new BadRequestException("Un encargado debe tener una sucursal asignada");
         }
 
         if (dto.getSucursalId() != null) {
@@ -196,7 +203,13 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByNombreUsuarioUsuario(username)
+        Usuario usuario = usuarioRepository.findByNombreUsuarioUsuario(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+
+        if (usuario.getSucursal() != null) {
+            usuario.getSucursal().getSucursalId();
+        }
+
+        return usuario;
     }
 }

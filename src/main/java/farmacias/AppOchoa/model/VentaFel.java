@@ -26,7 +26,7 @@ public class VentaFel {
     @Enumerated(EnumType.STRING)
     @Column(name = "fel_estado", nullable = false)
     @Builder.Default
-    private VentaFelEstado felEstado = VentaFelEstado.Pendiente;
+    private VentaFelEstado felEstado = VentaFelEstado.PENDIENTE;
 
     @Column(name = "fel_uuid", length = 36)
     private String felUuid;

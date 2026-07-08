@@ -5,6 +5,8 @@ import farmacias.AppOchoa.dto.sucursal.SucursalSimpleDTO;
 import farmacias.AppOchoa.model.Inventario;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +18,11 @@ public class InventarioResponseDTO {
     private SucursalSimpleDTO sucursal;
     private Integer cantidadActual;
     private Integer cantidadMinima;
+    private String productoNombre;
+    private String productoCodigoBarras;
+    private BigDecimal productoPrecioCompra;
+    private BigDecimal productoPrecioVenta;
+    private BigDecimal productoIva;
 
     public static InventarioResponseDTO fromEntity(Inventario inventario) {
         return InventarioResponseDTO.builder()
@@ -26,6 +33,12 @@ public class InventarioResponseDTO {
                         SucursalSimpleDTO.fromEntity(inventario.getSucursal()) : null)
                 .cantidadActual(inventario.getInventarioCantidadActual())
                 .cantidadMinima(inventario.getInventarioCantidadMinima())
+                .productoNombre(inventario.getProducto().getProductoNombre())
+                .productoNombre(inventario.getProducto().getProductoNombre())
+                .productoCodigoBarras(inventario.getProducto().getProductoCodigoBarras())
+                .productoPrecioCompra(inventario.getProducto().getProductoPrecioCompra())
+                .productoPrecioVenta(inventario.getProducto().getProductoPrecioVenta())
+                .productoIva(inventario.getProducto().getProductoIva())
                 .build();
     }
 }

@@ -49,12 +49,16 @@ public class FarmaciaServiceImpl implements FarmaciaService {
     private int resolverMaxSucursales(PlanTipo plan) {
         return switch (plan) {
             case basico -> 1;
+            case pro -> 3;
+            case chain -> 5;
         };
     }
 
     private int resolverMaxUsuarios(PlanTipo plan) {
         return switch (plan) {
-            case basico -> 3;
+            case basico -> 2;
+            case pro -> 5;
+            case chain -> 8;
         };
     }
 

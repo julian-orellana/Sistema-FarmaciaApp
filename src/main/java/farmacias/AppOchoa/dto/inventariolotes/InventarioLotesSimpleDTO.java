@@ -1,9 +1,12 @@
 package farmacias.AppOchoa.dto.inventariolotes;
 
+import farmacias.AppOchoa.model.Inventario;
 import farmacias.AppOchoa.model.InventarioLotes;
 import farmacias.AppOchoa.model.LoteEstado;
 import lombok.*;
+import org.apache.poi.ss.usermodel.Row;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -13,14 +16,14 @@ import java.time.LocalDate;
 public class InventarioLotesSimpleDTO {
 
     private Long loteId;
-
     private String numeroLote;
-
     private LocalDate fechaVencimiento;
-
     private Integer cantidadActual;
-
     private LoteEstado estado;
+    private Long productoId;
+    private String productoNombre;
+    private Integer cantidadInicial;
+    private BigDecimal precioCompra;
 
     public static InventarioLotesSimpleDTO fromEntity(InventarioLotes lote) {
         return InventarioLotesSimpleDTO.builder()
@@ -29,6 +32,11 @@ public class InventarioLotesSimpleDTO {
                 .fechaVencimiento(lote.getLoteFechaVencimiento())
                 .cantidadActual(lote.getLoteCantidadActual())
                 .estado(lote.getLoteEstado())
+                .productoId(lote.getProducto().getProductoId())
+                .productoNombre(lote.getProducto().getProductoNombre())
+                .cantidadInicial(lote.getLoteCantidadInicial())
+                .precioCompra(lote.getLotePrecioCompra())
                 .build();
     }
 }
+

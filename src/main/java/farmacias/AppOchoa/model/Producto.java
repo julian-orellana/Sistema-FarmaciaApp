@@ -31,7 +31,6 @@ public class Producto {
     @Column(name = "producto_precio_venta", nullable = false, precision = 12, scale = 2)
     private BigDecimal productoPrecioVenta;
 
-    // Nuevo campo de IVA sincronizado con el SQL DECIMAL(5,2)
     @Column(name = "producto_iva", nullable = false, precision = 5, scale = 2)
     @Builder.Default
     private BigDecimal productoIva = BigDecimal.ZERO;
