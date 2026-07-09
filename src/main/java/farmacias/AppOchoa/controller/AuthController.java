@@ -59,7 +59,9 @@ public class AuthController {
         claims.put("rol", usuario.getUsuarioRol().name());
         claims.put("nombre", usuario.getUsuarioNombre());
         claims.put("apellido", usuario.getUsuarioApellido());
-        claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+        if (usuario.getFarmacia() != null) {
+            claims.put("farmaciaId", usuario.getFarmacia().getFarmaciaId());
+        }
 
         if (usuario.getSucursal() != null) {
             claims.put("sucursalId", usuario.getSucursal().getSucursalId());
