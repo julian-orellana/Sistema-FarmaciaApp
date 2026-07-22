@@ -1,4 +1,4 @@
--- V11_agregar_sucursal_id_autorizaciones.sql
+-- V16__agregar_sucursal_id_autorizaciones.sql
 -- Agrega sucursal_id NOT NULL a autorizaciones para homologar el tenancy por sucursal.
 -- Dev sin datos reales: se trunca la tabla para poder agregar la columna NOT NULL.
 

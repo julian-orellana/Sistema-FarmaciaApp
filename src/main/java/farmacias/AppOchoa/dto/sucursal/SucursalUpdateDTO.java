@@ -30,4 +30,19 @@ public class SucursalUpdateDTO {
     @NotNull(message = "El estado es obligatorio")
     private Boolean estado;
 
+    @NotBlank(message = "El codigo del establecimiento es obligatorio")
+    private String codigoEstablecimiento;
+
+    @NotBlank(message = "La afiliacion IVA es obligatoria")
+    private String afiliacionIva;
+
+    @NotBlank(message = "El municipio es obligatorio")
+    private String municipio;
+
+    @NotBlank(message = "El departamento es obligatorio")
+    private String departamento;
+
+    @NotBlank(message = "codigo_postal")
+    private String codigoPostal;
+
 }

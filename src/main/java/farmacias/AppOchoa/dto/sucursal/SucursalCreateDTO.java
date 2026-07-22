@@ -34,6 +34,21 @@ public class SucursalCreateDTO {
     @NotNull(message = "El ID de la farmacia es obligatorio")
     private Long farmaciaId;
 
+    @NotBlank(message = "El código del establecimiento es obligatorio")
+    private String codigoEstablecimiento;
+
+    @NotBlank(message = "La afiliación IVA es obligatoria")
+    private String afiliacionIva;
+
+    @NotBlank(message = "El municipio es obligatorio")
+    private String municipio;
+
+    @NotBlank(message = "El departamento es obligatorio")
+    private String departamento;
+
+    @NotBlank(message = "El código postal es obligatorio")
+    private String codigoPostal;
+
 }
 
 

@@ -21,6 +21,11 @@ public class SucursalResponseDTO {
     private String direccion;
     private String telefono;
     private Boolean estado;
+    private String municipio;
+    private String departamento;
+    private String codigoEstablecimiento;
+    private String afiliacionIva;
+    private String codigoPostal;
     private LocalDateTime fechaCreacion;
 
     public static SucursalResponseDTO fromEntity(farmacias.AppOchoa.model.Sucursal sucursal){
@@ -31,6 +36,11 @@ public class SucursalResponseDTO {
                 .direccion(sucursal.getSucursalDireccion())
                 .telefono(sucursal.getSucursalTelefono())
                 .estado(sucursal.getSucursalEstado())
+                .departamento(sucursal.getDepartamento())
+                .municipio(sucursal.getMunicipio())
+                .codigoEstablecimiento(sucursal.getCodigoEstablecimiento())
+                .afiliacionIva(sucursal.getAfiliacionIva())
+                .codigoPostal(sucursal.getCodigoPostal())
                 .fechaCreacion(sucursal.getAuditoriaFechaCreacion())
                 .build();
 

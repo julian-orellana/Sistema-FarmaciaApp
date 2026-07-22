@@ -26,7 +26,7 @@ public interface VentaFelRepository extends JpaRepository<VentaFel, Long> {
     Page<VentaFel> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<VentaFel> findByFelIdAndFarmacia_FarmaciaId(Long felId, Long farmaciaId);
 
-    // Métodos por sucursal (eje de tenancy operativo)
     Page<VentaFel> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
     java.util.Optional<VentaFel> findByFelIdAndSucursal_SucursalId(Long felId, Long sucursalId);
+
 }
