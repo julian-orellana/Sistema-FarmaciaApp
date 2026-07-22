@@ -40,6 +40,21 @@ public class Sucursal {
     @CreationTimestamp
     private LocalDateTime auditoriaFechaCreacion;
 
+    @Column(name = "codigo_establecimiento", nullable = false)
+    private String codigoEstablecimiento;
+
+    @Column(name = "afiliacion_iva", nullable = false)
+    private String afiliacionIva;
+
+    @Column(name = "municipio", nullable = false)
+    private String municipio;
+
+    @Column(name = "departamento", nullable = false)
+    private String departamento;
+
+    @Column(name = "codigo_postal", nullable = false)
+    private String codigoPostal;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "farmacia_id", nullable = false, unique = true)
     private Farmacia farmacia;

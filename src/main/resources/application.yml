@@ -45,6 +45,13 @@ jwt:
   expiration: ${JWT_EXPIRATION:900000}
   refresh-expiration: ${REFRESH_TOKEN_EXPIRATION:604800000}
 
+fel:
+  encryption:
+    key: ${FEL_ENCRYPTION_KEY}
+  tekra:
+    id-origen: "Sistema Facturación"
+    ip-origen: ${TEKRA_IP_ORIGEN}
+
 management:
   endpoints:
     web:
