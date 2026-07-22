@@ -5,12 +5,14 @@ import farmacias.AppOchoa.dto.usuario.UsuarioCreateDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioUpdateDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioResponseDTO;
 import farmacias.AppOchoa.dto.usuario.UsuarioSimpleDTO;
+import farmacias.AppOchoa.model.Farmacia;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UsuarioService {
 
     UsuarioResponseDTO crearUsuario(Long farmaciaId, UsuarioCreateDTO dto);
+    UsuarioResponseDTO crearAdminInicial(UsuarioCreateDTO dto, Farmacia farmacia);
     UsuarioResponseDTO obtenerPorId(Long farmaciaId, Long id);
     Page<UsuarioSimpleDTO> listarUsuariosActivosPaginado(Long farmaciaId, Pageable pageable);
     Page<UsuarioSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable);
