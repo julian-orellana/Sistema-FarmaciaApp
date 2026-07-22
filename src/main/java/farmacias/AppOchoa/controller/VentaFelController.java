@@ -54,4 +54,9 @@ public class VentaFelController extends  BaseController{
         ventaFelService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/certificar")
+    public ResponseEntity<VentaFelResponseDTO> certificar(@PathVariable Long id) {
+        return ResponseEntity.ok(ventaFelService.certificar(getFarmaciaId(), id));
+    }
 }

@@ -52,6 +52,11 @@ public class SucursalServiceImpl implements SucursalService {
                 .sucursalNit(dto.getSucursalNit())
                 .sucursalDireccion(dto.getDireccion())
                 .sucursalTelefono(dto.getTelefono())
+                .codigoEstablecimiento(dto.getCodigoEstablecimiento())
+                .afiliacionIva(dto.getAfiliacionIva())
+                .municipio(dto.getMunicipio())
+                .departamento(dto.getDepartamento())
+                .codigoPostal(dto.getCodigoPostal())
                 .sucursalEstado(true)
                 .farmacia(farmacia)
                 .build();
@@ -102,6 +107,11 @@ public class SucursalServiceImpl implements SucursalService {
         sucursal.setSucursalNit(dto.getSucursalNit());
         sucursal.setSucursalDireccion(dto.getDireccion());
         sucursal.setSucursalTelefono(dto.getTelefono());
+        sucursal.setCodigoEstablecimiento(dto.getCodigoEstablecimiento());
+        sucursal.setAfiliacionIva(dto.getAfiliacionIva());
+        sucursal.setMunicipio(dto.getMunicipio());
+        sucursal.setDepartamento(dto.getDepartamento());
+        sucursal.setCodigoPostal(dto.getCodigoPostal());
 
         if(dto.getEstado() != null){
             sucursal.setSucursalEstado(dto.getEstado());

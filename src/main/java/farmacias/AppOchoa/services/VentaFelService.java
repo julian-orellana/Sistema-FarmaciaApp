@@ -12,4 +12,5 @@ public interface VentaFelService {
     Page<VentaFelSimpleDTO> listarActivas(Long farmaciaId, Pageable pageable);
     Page<VentaFelSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable);
     void eliminar(Long farmaciaId, Long id);
+    VentaFelResponseDTO certificar(Long farmaciaId, Long id);
 }

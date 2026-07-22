@@ -1,8 +1,9 @@
--- V9__eliminar_rol_vendedor.sql
+-- V14__eliminar_rol_usuario.sql
+
 ALTER TABLE usuarios
     MODIFY COLUMN usuario_rol ENUM('administrador','encargado','superadmin') NOT NULL;
 
+UPDATE farmacias SET plan = 'basico' WHERE plan = 'pro';
 
--- V10__eliminar_planes_pro_y_chain.sql
-    ALTER TABLE farmacias
-        MODIFY COLUMN plan ENUM('basico') NOT NULL;
+ALTER TABLE farmacias
+    MODIFY COLUMN plan ENUM('basico') NOT NULL;
