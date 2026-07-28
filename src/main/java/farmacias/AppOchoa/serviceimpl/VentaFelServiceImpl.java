@@ -131,9 +131,7 @@ public class VentaFelServiceImpl implements VentaFelService {
 
             String dteXml = dteXmlBuilder.construir(venta);
             String sobreSoap = tekraSoapBuilder.construirSobre(credenciales, usuarioPlano, clavePlano, dteXml);
-            System.out.println(sobreSoap);
             String respuestaSoap = tekraClient.certificar(sobreSoap);
-            System.out.println(respuestaSoap);
             TekraCertificacionResultado resultado = tekraResponseParser.parsear(respuestaSoap);
 
             if (resultado.isExitoso()) {
@@ -192,9 +190,7 @@ public class VentaFelServiceImpl implements VentaFelService {
 
             String dteXml = dteXmlAnulacionBuilder.construir(ventaFel, motivo);
             String sobreSoap = tekraSoapBuilder.construirSobreAnulacion(credenciales, usuarioPlano,  clavePlano, dteXml);
-            System.out.println(sobreSoap);
             String respuestaSoap = tekraClient.anular(sobreSoap);
-            System.out.println(respuestaSoap);
             TekraCertificacionResultado resultado = tekraResponseParser.parsearAnulacion(respuestaSoap);
 
             if(resultado.isExitoso()) {
