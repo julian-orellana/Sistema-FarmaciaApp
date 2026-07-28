@@ -494,4 +494,6 @@ public class VentaServiceImpl implements VentaService {
         inventarioRepository.save(inventario);
     }
 
+
+
 }

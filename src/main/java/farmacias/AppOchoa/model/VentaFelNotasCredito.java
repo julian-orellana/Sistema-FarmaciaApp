@@ -21,7 +21,7 @@ public class VentaFelNotasCredito {
     @Column(name = "nota_uuid", length = 36)
     private String notaUuid;
 
-    @Column(name = "nota_numero_autorizacion", nullable = false, length = 50)
+    @Column(name = "nota_numero_autorizacion")
     private String notaNumeroAutorizacion;
 
     @Column(name = "nota_motivo", columnDefinition = "TEXT", nullable = false)

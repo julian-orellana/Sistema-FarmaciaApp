@@ -48,4 +48,7 @@ public interface VentaFelNotasCreditoRepository extends JpaRepository<VentaFelNo
     Page<VentaFelNotasCredito> findBySucursal_SucursalIdAndNotaEstadoAndAuditoriaFechaCreacionBetween(Long sucursalId, NotaEstado notaEstado, LocalDateTime inicio, LocalDateTime fin, Pageable pageable);
     Page<VentaFelNotasCredito> findBySucursal_SucursalIdAndNotaEstado(Long sucursalId, NotaEstado notaEstado, Pageable pageable);
     Page<VentaFelNotasCredito> findBySucursal_SucursalIdAndAuditoriaFechaCreacionBetween(Long sucursalId, LocalDateTime inicio, LocalDateTime fin, Pageable pageable);
+    boolean existsByVentaFel_FelIdAndNotaEstado(Long felId, NotaEstado notaEstado);
+
+
 }

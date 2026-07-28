@@ -1,0 +1,44 @@
+# Perfil QA: entorno de pruebas previo a produccion.
+# Usa una base de datos SEPARADA de prod (cluster QA), definida por env vars.
+# Se parece a prod (ddl-auto validate, Flyway manda el esquema) pero deja
+# Swagger y health details activos para poder verificar/depurar en QA.
+app:
+  cors:
+    # Sobreescribible por env var; permite el frontend de QA y localhost para pruebas.
+    allowed-origins: "${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:3000}"
+
+spring:
+  jpa:
+    hibernate:
+      # validate como prod: el esquema lo controla Flyway, no Hibernate.
+      # Asi QA valida las mismas migraciones que iran a produccion.
+      ddl-auto: validate
+    show-sql: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    farmacias.AppOchoa: DEBUG
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+
+# En QA si dejamos Swagger para poder probar la API antes de prod.
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+
+loki:
+  url: ${LOKI_URL:}
+  username: ${LOKI_USERNAME:}
+  password: ${LOKI_PASSWORD:}

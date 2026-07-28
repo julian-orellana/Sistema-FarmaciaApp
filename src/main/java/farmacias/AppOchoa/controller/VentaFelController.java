@@ -1,5 +1,6 @@
 package farmacias.AppOchoa.controller;
 
+import farmacias.AppOchoa.dto.ventafel.AnulacionRequestDTO;
 import farmacias.AppOchoa.dto.ventafel.VentaFelCreateDTO;
 import farmacias.AppOchoa.dto.ventafel.VentaFelResponseDTO;
 import farmacias.AppOchoa.dto.ventafel.VentaFelSimpleDTO;
@@ -58,5 +59,13 @@ public class VentaFelController extends  BaseController{
     @PostMapping("/{id}/certificar")
     public ResponseEntity<VentaFelResponseDTO> certificar(@PathVariable Long id) {
         return ResponseEntity.ok(ventaFelService.certificar(getFarmaciaId(), id));
+    }
+
+    @PostMapping("/{id}/anular")
+    public ResponseEntity<VentaFelResponseDTO> anular(
+            @PathVariable Long id,
+            @RequestBody @Valid AnulacionRequestDTO dto){
+        return ResponseEntity.ok(ventaFelService.anular(getFarmaciaId(), id, dto.motivo()));
+
     }
 }

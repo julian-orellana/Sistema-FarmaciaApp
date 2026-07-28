@@ -32,6 +32,9 @@ public class TekraCertificacionResultado {
     public static  TekraCertificacionResultado error(int codigoError, String mensajeError){
         return new TekraCertificacionResultado(false, codigoError, mensajeError,  null, null, null, null, null);
     }
+    public static TekraCertificacionResultado exitoAnulacion(){
+        return new TekraCertificacionResultado(true, 0, null, null, null, null, null, null);
+    }
 
     public boolean isExitoso() {return exitoso;}
     public int getCodigoError() {return codigoError;}

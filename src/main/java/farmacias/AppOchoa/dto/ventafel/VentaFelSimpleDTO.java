@@ -13,6 +13,8 @@ public class VentaFelSimpleDTO {
     private Long felId;
     private VentaFelEstado felEstado;
     private String felUuid;
+    private String felSerie;
+    private String felNumeroAutorizacion;
 
     public static VentaFelSimpleDTO fromEntity(VentaFel ventaFel) {
         return VentaFelSimpleDTO.builder()

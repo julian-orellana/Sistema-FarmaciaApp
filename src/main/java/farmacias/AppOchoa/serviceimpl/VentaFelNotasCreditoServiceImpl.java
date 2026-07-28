@@ -1,17 +1,18 @@
 package farmacias.AppOchoa.serviceimpl;
 
+import farmacias.AppOchoa.dto.ventafel.VentaFelResponseDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoCreateDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoResponseDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoSimpleDTO;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
-import farmacias.AppOchoa.model.NotaEstado;
-import farmacias.AppOchoa.model.Sucursal;
-import farmacias.AppOchoa.model.VentaFel;
-import farmacias.AppOchoa.model.VentaFelNotasCredito;
+import farmacias.AppOchoa.integracionfel.*;
+import farmacias.AppOchoa.model.*;
+import farmacias.AppOchoa.repository.CredencialesRepository;
 import farmacias.AppOchoa.repository.SucursalRepository;
 import farmacias.AppOchoa.repository.VentaFelNotasCreditoRepository;
 import farmacias.AppOchoa.repository.VentaFelRepository;
 import farmacias.AppOchoa.services.VentaFelNotasCreditoService;
+import farmacias.AppOchoa.util.EncryptionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,32 @@ public class VentaFelNotasCreditoServiceImpl implements VentaFelNotasCreditoServ
     private final VentaFelNotasCreditoRepository ventaFelNotasCreditoRepository;
     private final VentaFelRepository ventaFelRepository;
     private final SucursalRepository sucursalRepository;
+    private final CredencialesRepository credencialesRepository;
+    private final EncryptionService encryptionService;
+    private final DteXmlNotaCreditoBuilder dteXmlNotaCreditoBuilder;
+    private final TekraSoapBuilder tekraSoapBuilder;
+    private final TekraClient tekraClient;
+    private final TekraResponseParser tekraResponseParser;
 
     public VentaFelNotasCreditoServiceImpl(
             VentaFelNotasCreditoRepository ventaFelNotasCreditoRepository,
             VentaFelRepository ventaFelRepository,
-            SucursalRepository sucursalRepository){
+            SucursalRepository sucursalRepository,
+            CredencialesRepository credencialesRepository,
+            EncryptionService encryptionService,
+            DteXmlNotaCreditoBuilder dteXmlNotaCreditoBuilder,
+            TekraSoapBuilder tekraSoapBuilder,
+            TekraClient tekraClient,
+            TekraResponseParser tekraResponseParser){
         this.ventaFelNotasCreditoRepository = ventaFelNotasCreditoRepository;
         this.ventaFelRepository = ventaFelRepository;
         this.sucursalRepository = sucursalRepository;
+        this.credencialesRepository = credencialesRepository;
+        this.encryptionService = encryptionService;
+        this.dteXmlNotaCreditoBuilder = dteXmlNotaCreditoBuilder;
+        this.tekraSoapBuilder = tekraSoapBuilder;
+        this.tekraClient = tekraClient;
+        this.tekraResponseParser = tekraResponseParser;
     }
 
     private Sucursal buscarSucursal(Long farmaciaId){
@@ -107,6 +126,48 @@ public class VentaFelNotasCreditoServiceImpl implements VentaFelNotasCreditoServ
     @Override
     public void eliminar(Long farmaciaId, Long id) {
         throw new UnsupportedOperationException("Por reglas de auditoría financiera, este registro es histórico y no puede ser eliminado ni modificado.");
+    }
+
+    @Override
+    public VentaFelNotasCreditoResponseDTO notaCredito(Long farmaciaId, Long id){
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        VentaFelNotasCredito ventaFelNotasCredito =  ventaFelNotasCreditoRepository.findByNotaIdAndSucursal_SucursalId(id, sucursal.getSucursalId())
+                .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado por ID"));
+
+        VentaFel ventaFel = ventaFelNotasCredito.getVentaFel();
+
+
+        CredencialesFel credencialesFel = credencialesRepository
+                .findBySucursal_SucursalIdAndAmbienteAndActivaTrue(sucursal.getSucursalId(), "pruebas")
+                .orElseThrow(() -> new ResourceNotFoundException("No hay credenciales FEL activas para esta sucursal"));
+
+        try{
+            String usuarioPlano = encryptionService.decrypt(credencialesFel.getCredencialUsuarioCifrado());
+            String clavePlano = encryptionService.decrypt(credencialesFel.getCredencialSecretoCifrado());
+
+            String dteXml = dteXmlNotaCreditoBuilder.construir(ventaFelNotasCredito.getVentaFel());
+            String sobreSoap = tekraSoapBuilder.construirSobre(credencialesFel, usuarioPlano, clavePlano, dteXml);
+            System.out.println(sobreSoap);
+            String respuestaSoap = tekraClient.certificar(sobreSoap);
+            System.out.println(respuestaSoap);
+            TekraCertificacionResultado resultado = tekraResponseParser.parsear(respuestaSoap);
+
+            if(resultado.isExitoso()){
+                ventaFelNotasCredito.setNotaEstado(NotaEstado.CERTIFICADA);
+                ventaFelNotasCredito.setNotaUuid(resultado.getUuid());
+                ventaFelNotasCredito.setNotaNumeroAutorizacion(resultado.getNumero());
+                ventaFelNotasCredito.setNotaXml(resultado.getXmlCertificado());
+
+            } else{
+                ventaFelNotasCredito.setNotaEstado(NotaEstado.ERROR);
+                ventaFelNotasCredito.setNotaMotivo(resultado.getMensajeError());
+            }
+        } catch (Exception e){
+            ventaFelNotasCredito.setNotaEstado(NotaEstado.ERROR);
+            ventaFelNotasCredito.setNotaMotivo("Error de comunicacion con TEKRA: " + e.getMessage());
+        }
+
+        return  VentaFelNotasCreditoResponseDTO.fromEntity(ventaFelNotasCreditoRepository.save(ventaFelNotasCredito));
     }
 
 }

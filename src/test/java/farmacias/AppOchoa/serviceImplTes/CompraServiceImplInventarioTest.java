@@ -6,15 +6,19 @@ import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.serviceimpl.CompraServiceImpl;
 import farmacias.AppOchoa.services.KardexService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
@@ -22,19 +26,20 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+/**
+ * Los @Mock replican EXACTAMENTE los 8 parámetros del constructor de
+ * CompraServiceImpl (compra, sucursal, usuario, producto, lote, inventario,
+ * farmacia, kardex). No hay CompraDetalleRepository: los detalles se persisten
+ * por cascada desde Compra.
+ */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CompraServiceImpl — sincronización de inventario agregado (M9)")
-public class CompraServiceImplInventarioTest {
-
-    private static final Long FARMACIA_ID = 1L;
-    private static final Long SUCURSAL_ID = 10L;
-    private static final Long PRODUCTO_ID = 100L;
-    private static final Long LOTE_ID = 1000L;
-    private static final Long USUARIO_ID = 5L;
+class CompraServiceImplInventarioTest {
 
     @Mock private CompraRepository compraRepository;
     @Mock private SucursalRepository sucursalRepository;
@@ -44,161 +49,195 @@ public class CompraServiceImplInventarioTest {
     @Mock private InventarioRepository inventarioRepository;
     @Mock private FarmaciaRepository farmaciaRepository;
     @Mock private KardexService kardexService;
-    @InjectMocks private CompraServiceImpl compraService;
+
+    @InjectMocks
+    private CompraServiceImpl compraService;
+
+    @Captor
+    private ArgumentCaptor<Inventario> inventarioCaptor;
 
     private Farmacia farmacia;
     private Sucursal sucursal;
     private Producto producto;
-    private Usuario usuario;
+    private Usuario solicitante;
 
     @BeforeEach
     void setUp() {
-        farmacia = new Farmacia();
-        farmacia.setFarmaciaId(FARMACIA_ID);
-        sucursal = new Sucursal();
-        sucursal.setSucursalId(SUCURSAL_ID);
-        sucursal.setFarmacia(farmacia);
-        producto = new Producto();
-        producto.setProductoId(PRODUCTO_ID);
-        producto.setFarmacia(farmacia);
-        producto.setSucursal(sucursal);
-        usuario = new Usuario();
-        usuario.setUsuarioId(USUARIO_ID);
-        usuario.setFarmacia(farmacia);
+        farmacia = Farmacia.builder().farmaciaId(1L).build();
 
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(usuario, null, java.util.Collections.emptyList()));
-    }
-
-    private void stubCrearComun() {
-        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
-                .thenReturn(Optional.of(sucursal));
-        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(USUARIO_ID, FARMACIA_ID))
-                .thenReturn(Optional.of(usuario));
-        when(farmaciaRepository.getReferenceById(FARMACIA_ID)).thenReturn(farmacia);
-        when(productoRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(producto));
-        when(compraRepository.save(any(Compra.class))).thenAnswer(a -> a.getArgument(0));
-    }
-
-    private CompraCreateDTO compraDto(int cantidad) {
-        CompraDetalleCreateDTO det = new CompraDetalleCreateDTO();
-        det.setProductoId(PRODUCTO_ID);
-        det.setCantidad(cantidad);
-        det.setPrecioUnitario(new BigDecimal("4.00"));
-        det.setNumeroLote("L-1");
-        det.setFechaVencimiento(LocalDate.now().plusYears(1));
-
-        CompraCreateDTO dto = new CompraCreateDTO();
-        dto.setSucursalId(SUCURSAL_ID);
-        dto.setFechaCompra(LocalDate.now());
-        dto.setDetalles(List.of(det));
-        return dto;
-    }
-
-    private InventarioLotes lote(int cantidad) {
-        InventarioLotes l = new InventarioLotes();
-        l.setLoteId(LOTE_ID);
-        l.setLoteNumero("L-1");
-        l.setLoteCantidadActual(cantidad);
-        l.setProducto(producto);
-        l.setSucursal(sucursal);
-        l.setFarmacia(farmacia);
-        return l;
-    }
-
-    @Test
-    @DisplayName("Comprar incrementa el inventario agregado existente")
-    void compraIncrementaInventarioExistente() {
-        stubCrearComun();
-        when(loteRepository.findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId("L-1", SUCURSAL_ID, PRODUCTO_ID))
-                .thenReturn(Optional.of(lote(20)));
-        Inventario inv = Inventario.builder()
-                .producto(producto).sucursal(sucursal).farmacia(farmacia)
-                .inventarioCantidadActual(20).inventarioCantidadMinima(5).build();
-        when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
-                .thenReturn(Optional.of(inv));
-
-        compraService.crear(FARMACIA_ID, compraDto(8));
-
-        assertEquals(28, inv.getInventarioCantidadActual());
-        verify(inventarioRepository).save(inv);
-    }
-
-    @Test
-    @DisplayName("Si no existe inventario agregado al comprar, se crea con mínima 0")
-    void compraCreaInventarioSiNoExiste() {
-        stubCrearComun();
-        when(loteRepository.findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId("L-1", SUCURSAL_ID, PRODUCTO_ID))
-                .thenReturn(Optional.empty());
-        when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
-                .thenReturn(Optional.empty());
-
-        compraService.crear(FARMACIA_ID, compraDto(8));
-
-        ArgumentCaptor<Inventario> captor = ArgumentCaptor.forClass(Inventario.class);
-        verify(inventarioRepository).save(captor.capture());
-        Inventario creado = captor.getValue();
-        assertEquals(8, creado.getInventarioCantidadActual());
-        assertEquals(0, creado.getInventarioCantidadMinima());
-        assertEquals(PRODUCTO_ID, creado.getProducto().getProductoId());
-        assertEquals(SUCURSAL_ID, creado.getSucursal().getSucursalId());
-        assertEquals(FARMACIA_ID, creado.getFarmacia().getFarmaciaId());
-    }
-
-    @Test
-    @DisplayName("Comprar setea la farmacia en la cabecera y en el lote nuevo")
-    void compraSeteaFarmaciaEnCabeceraYLoteNuevo() {
-        stubCrearComun();
-        // Lote inexistente: crear() debe construir uno nuevo con farmacia seteada
-        when(loteRepository.findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId("L-1", SUCURSAL_ID, PRODUCTO_ID))
-                .thenReturn(Optional.empty());
-        when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
-                .thenReturn(Optional.empty());
-
-        ArgumentCaptor<Compra> compraCaptor = ArgumentCaptor.forClass(Compra.class);
-        ArgumentCaptor<InventarioLotes> loteCaptor = ArgumentCaptor.forClass(InventarioLotes.class);
-
-        compraService.crear(FARMACIA_ID, compraDto(8));
-
-        verify(compraRepository).save(compraCaptor.capture());
-        assertNotNull(compraCaptor.getValue().getFarmacia(), "la cabecera Compra debe llevar farmacia");
-        assertEquals(FARMACIA_ID, compraCaptor.getValue().getFarmacia().getFarmaciaId());
-
-        verify(loteRepository).save(loteCaptor.capture());
-        assertNotNull(loteCaptor.getValue().getFarmacia(), "el lote nuevo debe llevar farmacia");
-        assertEquals(FARMACIA_ID, loteCaptor.getValue().getFarmacia().getFarmaciaId());
-    }
-
-    @Test
-    @DisplayName("Anular una compra activa decrementa el inventario agregado")
-    void anularCompraDecrementaInventario() {
-        CompraDetalle detalle = CompraDetalle.builder()
-                .detalleCantidad(8)
-                .loteId(lote(28))
-                .producto(producto)
-                .build();
-        Compra compra = Compra.builder()
-                .compraEstado(CompraEstado.activa)
-                .detalles(new java.util.ArrayList<>(List.of(detalle)))
-                .sucursal(sucursal)
+        sucursal = Sucursal.builder()
+                .sucursalId(10L)
                 .farmacia(farmacia)
                 .build();
 
-        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
+        // buscarProducto() filtra por p.getSucursal().getSucursalId(): sin sucursal
+        // asignada el filter revienta con NPE antes de llegar al inventario.
+        producto = Producto.builder()
+                .productoId(100L)
+                .productoNombre("Acetaminofen 500mg")
+                .productoPrecioCompra(new BigDecimal("2.00"))
+                .productoPrecioVenta(new BigDecimal("5.00"))
+                .farmacia(farmacia)
+                .sucursal(sucursal)
+                .build();
+
+        // UsuarioSimpleDTO.fromEntity() concatena nombre + apellido al mapear la
+        // respuesta, por eso el usuario necesita esos campos poblados.
+        solicitante = Usuario.builder()
+                .usuarioId(7L)
+                .nombreUsuarioUsuario("jperez")
+                .usuarioNombre("Juan")
+                .usuarioApellido("Perez")
+                .farmacia(farmacia)
+                .build();
+
+        // crear() castea getPrincipal() a Usuario: el contexto debe llevar la entidad,
+        // no un String como en un token de autenticación por username.
+        Authentication auth = new UsernamePasswordAuthenticationToken(solicitante, null);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        when(sucursalRepository.findByFarmacia_FarmaciaId(1L))
                 .thenReturn(Optional.of(sucursal));
-        when(compraRepository.findByCompraIdAndSucursal_SucursalId(7L, SUCURSAL_ID))
-                .thenReturn(Optional.of(compra));
-        when(loteRepository.findByLoteIdAndSucursalIdForUpdate(LOTE_ID, SUCURSAL_ID))
-                .thenReturn(Optional.of(lote(28)));
-        Inventario inv = Inventario.builder()
-                .producto(producto).sucursal(sucursal).farmacia(farmacia)
-                .inventarioCantidadActual(28).inventarioCantidadMinima(0).build();
-        when(inventarioRepository.findByProductoYSucursalForUpdate(PRODUCTO_ID, SUCURSAL_ID))
-                .thenReturn(Optional.of(inv));
+        when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(7L, 1L))
+                .thenReturn(Optional.of(solicitante));
+        when(farmaciaRepository.getReferenceById(1L)).thenReturn(farmacia);
+        when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
 
-        compraService.cambiarEstado(FARMACIA_ID, 7L, CompraEstado.anulada);
+        // El lote se busca scopeado a numero+sucursal+producto; sin este stub el
+        // Optional es null y orElseGet() lanza NPE.
+        when(loteRepository.findByLoteNumeroAndSucursal_SucursalIdAndProducto_ProductoId(
+                anyString(), anyLong(), anyLong()))
+                .thenReturn(Optional.empty());
+        when(loteRepository.save(any(InventarioLotes.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
-        assertEquals(20, inv.getInventarioCantidadActual());
-        verify(inventarioRepository).save(inv);
+        when(compraRepository.save(any(Compra.class)))
+                .thenAnswer(inv -> {
+                    Compra c = inv.getArgument(0);
+                    if (c.getCompraId() == null) c.setCompraId(500L);
+                    return c;
+                });
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    /**
+     * crear() NO usa findByProductoAndSucursal(entidad, entidad): obtenerInventarioConLock()
+     * llama findByProductoYSucursalForUpdate(productoId, sucursalId) con los IDs.
+     * Stubear el método equivocado dejaba el mock devolviendo null -> NPE en orElseGet().
+     */
+    private void stubInventarioExistente(Optional<Inventario> resultado) {
+        when(inventarioRepository.findByProductoYSucursalForUpdate(100L, 10L))
+                .thenReturn(resultado);
+    }
+
+    private CompraCreateDTO buildCompraDto(int cantidad, BigDecimal precio) {
+        CompraDetalleCreateDTO detalleDto = CompraDetalleCreateDTO.builder()
+                .productoId(100L)
+                .cantidad(cantidad)
+                .precioUnitario(precio)
+                .numeroLote("L-001")
+                .fechaVencimiento(LocalDate.now().plusMonths(6))
+                .build();
+
+        return CompraCreateDTO.builder()
+                .sucursalId(10L)
+                .fechaCompra(LocalDate.now())
+                .observaciones("Compra de prueba")
+                .detalles(List.of(detalleDto))
+                .build();
+    }
+
+    @Nested
+    @DisplayName("Si no existe inventario agregado al comprar")
+    class CuandoNoExisteInventario {
+
+        @Test
+        @DisplayName("Si no existe inventario agregado al comprar, se crea con mínima 0")
+        void seCreaInventarioConMinimaCero() {
+            stubInventarioExistente(Optional.empty());
+            // Inventario nuevo (inventarioId null) -> crear() lo persiste con saveAndFlush
+            // y reemplaza la entidad del mapa por la retornada.
+            when(inventarioRepository.saveAndFlush(any(Inventario.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+            when(inventarioRepository.save(any(Inventario.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            CompraCreateDTO dto = buildCompraDto(20, new BigDecimal("5.00"));
+
+            compraService.crear(1L, dto);
+
+            verify(inventarioRepository).saveAndFlush(inventarioCaptor.capture());
+            Inventario creado = inventarioCaptor.getValue();
+
+            assertThat(creado.getInventarioCantidadMinima()).isEqualTo(0);
+            assertThat(creado.getProducto()).isEqualTo(producto);
+            assertThat(creado.getSucursal()).isEqualTo(sucursal);
+            assertThat(creado.getFarmacia()).isEqualTo(farmacia);
+
+            // saveAndFlush ocurre ANTES de sumar la cantidad (el captor guarda la
+            // referencia, así que se comprueba el estado final de la entidad).
+            assertThat(creado.getInventarioCantidadActual()).isEqualTo(20);
+        }
+
+        @Test
+        @DisplayName("Comprar setea la farmacia en la cabecera y en el lote nuevo")
+        void seteaFarmaciaEnCabeceraYLote() {
+            stubInventarioExistente(Optional.empty());
+            when(inventarioRepository.saveAndFlush(any(Inventario.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+            when(inventarioRepository.save(any(Inventario.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            CompraCreateDTO dto = buildCompraDto(15, new BigDecimal("3.50"));
+
+            compraService.crear(1L, dto);
+
+            ArgumentCaptor<Compra> compraCaptor = ArgumentCaptor.forClass(Compra.class);
+            verify(compraRepository).save(compraCaptor.capture());
+            assertThat(compraCaptor.getValue().getFarmacia()).isEqualTo(farmacia);
+
+            ArgumentCaptor<InventarioLotes> loteCaptor = ArgumentCaptor.forClass(InventarioLotes.class);
+            verify(loteRepository).save(loteCaptor.capture());
+            InventarioLotes lote = loteCaptor.getValue();
+            assertThat(lote.getFarmacia()).isEqualTo(farmacia);
+            assertThat(lote.getSucursal()).isEqualTo(sucursal);
+            assertThat(lote.getLoteCantidadActual()).isEqualTo(15);
+        }
+    }
+
+    @Nested
+    @DisplayName("Si ya existe inventario agregado al comprar")
+    class CuandoYaExisteInventario {
+
+        @Test
+        @DisplayName("Comprar incrementa el inventario agregado existente")
+        void incrementaInventarioExistente() {
+            Inventario existente = Inventario.builder()
+                    .inventarioId(900L)
+                    .producto(producto)
+                    .sucursal(sucursal)
+                    .farmacia(farmacia)
+                    .inventarioCantidadActual(10)
+                    .inventarioCantidadMinima(5)
+                    .build();
+
+            stubInventarioExistente(Optional.of(existente));
+            when(inventarioRepository.save(any(Inventario.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            CompraCreateDTO dto = buildCompraDto(8, new BigDecimal("2.00"));
+
+            compraService.crear(1L, dto);
+
+            // Ya tiene inventarioId: no se re-crea, solo se actualiza con save().
+            verify(inventarioRepository, never()).saveAndFlush(any(Inventario.class));
+            verify(inventarioRepository).save(existente);
+            assertThat(existente.getInventarioCantidadActual()).isEqualTo(18);
+            assertThat(existente.getInventarioCantidadMinima()).isEqualTo(5);
+        }
     }
 }

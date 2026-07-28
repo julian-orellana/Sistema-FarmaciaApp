@@ -3,6 +3,10 @@ build/
 .idea/
 out/
 .env
+.env.local
+.env.qa
+.env.prod
+!.env.example
 *.zip
 *.jar
 backup_*.sql
