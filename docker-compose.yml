@@ -20,6 +20,8 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       SUPERADMIN_USER: ${SUPERADMIN_USER}
       SUPERADMIN_PASS: ${SUPERADMIN_PASS}
+      FEL_ENCRYPTION_KEY: ${FEL_ENCRYPTION_KEY}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
 
       # Area a revisar: ajustar MaxRAMPercentage según carga real en producción
       JAVA_OPTS: >-

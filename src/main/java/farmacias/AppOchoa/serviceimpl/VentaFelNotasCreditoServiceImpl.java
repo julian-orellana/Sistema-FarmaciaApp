@@ -147,9 +147,7 @@ public class VentaFelNotasCreditoServiceImpl implements VentaFelNotasCreditoServ
 
             String dteXml = dteXmlNotaCreditoBuilder.construir(ventaFelNotasCredito.getVentaFel());
             String sobreSoap = tekraSoapBuilder.construirSobre(credencialesFel, usuarioPlano, clavePlano, dteXml);
-            System.out.println(sobreSoap);
             String respuestaSoap = tekraClient.certificar(sobreSoap);
-            System.out.println(respuestaSoap);
             TekraCertificacionResultado resultado = tekraResponseParser.parsear(respuestaSoap);
 
             if(resultado.isExitoso()){
