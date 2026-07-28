@@ -52,4 +52,9 @@ public class VentaFelNotasCreditoController extends  BaseController {
         ventaFelNotasCreditoService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/certificar")
+    public ResponseEntity<VentaFelNotasCreditoResponseDTO> notaCredito(@PathVariable Long id){
+        return ResponseEntity.ok(ventaFelNotasCreditoService.notaCredito(getFarmaciaId(), id));
+    }
 }

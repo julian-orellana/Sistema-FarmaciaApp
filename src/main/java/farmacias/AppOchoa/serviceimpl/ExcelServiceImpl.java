@@ -120,7 +120,9 @@ public class ExcelServiceImpl implements ExcelService {
 
             int rowNum = 1;
             for (InventarioLotes item : inventarioLotes) {
-                Inventario inv = item.getInventario();
+                Inventario inv = inventarioRepository
+                        .findByProductoAndSucursal(item.getProducto(), item.getSucursal())
+                        .orElse(null);
                 Integer cantidadActual = inv != null ? inv.getInventarioCantidadActual() : 0;
                 Integer cantidadMinima = inv != null ? inv.getInventarioCantidadMinima() : 0;
 

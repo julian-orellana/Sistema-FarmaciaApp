@@ -100,6 +100,12 @@ public class CompraServiceImpl implements CompraService {
                     producto.getProductoId(),
                     pid -> obtenerInventarioConLock(farmacia, producto, sucursal));
 
+            // //Guarda el inventario de ese producto si todavia no existe
+            if(inventario.getInventarioId() == null){
+                inventario = inventarioRepository.saveAndFlush(inventario);
+                inventarioPorProducto.put(producto.getProductoId(), inventario);
+            }
+
             int stockAnterior = inventario.getInventarioCantidadActual();
             int stockPosterior = stockAnterior + detDto.getCantidad();
             inventario.setInventarioCantidadActual(stockPosterior);
@@ -131,6 +137,8 @@ public class CompraServiceImpl implements CompraService {
             CompraDetalle detalle = CompraDetalle.builder()
                     .compra(compra)
                     .producto(producto)
+                    .farmacia(farmacia)
+                    .sucursal(sucursal)
                     .loteId(lote)
                     .detalleCantidad(detDto.getCantidad())
                     .detallePrecioUnitario(detDto.getPrecioUnitario())

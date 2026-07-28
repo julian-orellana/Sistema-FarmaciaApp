@@ -36,14 +36,11 @@ public class TekraResponseParser {
             // DocumentoCertificado. El manual también menciona campos "NumeroAutorizacion"/
             // "SerieDocumento" sueltos a nivel superior, pero no aparecen así en el
             // ejemplo real que tenemos — falta confirmar contra una respuesta real de TEKRA.
-            Element numeroAutorizacionEl = (Element) doc.getElementsByTagName("dte:NumeroAutorizacion").item(0);
-            String uuid = numeroAutorizacionEl.getTextContent();
-            String serie = numeroAutorizacionEl.getAttribute("Serie");
-            String numero = numeroAutorizacionEl.getAttribute("Numero");
-
-            String fechaCertificacion = textoDeEtiqueta(doc, "dte:FechaHoraCertificacion");
-
-            String xmlCertificado = extraerEntre(respuestaSoap, "<DocumentoCertificado>", "</DocumentoCertificado>");
+            String uuid = textoDeEtiqueta(doc, "NumeroAutorizacion");
+            String serie = textoDeEtiqueta(doc, "SerieDocumento");
+            String numero = textoDeEtiqueta(doc, "NumeroDocumento");
+            String fechaCertificacion = textoDeEtiqueta(doc, "FechaHoraCertificacion");
+            String xmlCertificado = textoDeEtiqueta(doc, "DocumentoCertificado");
 
             return TekraCertificacionResultado.exito(uuid, serie, numero, fechaCertificacion, xmlCertificado);
 
@@ -73,5 +70,27 @@ public class TekraResponseParser {
             return null;
         }
         return texto.substring(desde + inicio.length(), hasta);
+    }
+
+    public TekraCertificacionResultado parsearAnulacion(String respuestaSoap) {
+        try {
+            Document doc = parseXml(respuestaSoap);
+
+            String resultadoJson = textoDeEtiqueta(doc, "ResultadoAnulacion");
+            JsonNode resultado = objectMapper.readTree(resultadoJson);
+            int codigoError = resultado.get("error").asInt();
+
+            if (codigoError != 0) {
+                String detalle = resultado.has("frases") && !resultado.get("frases").isNull()
+                        ? resultado.get("frases").toString()
+                        : resultadoJson;
+                return TekraCertificacionResultado.error(codigoError, detalle);
+            }
+
+            return TekraCertificacionResultado.exitoAnulacion();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al parsear la respuesta de anulación de TEKRA", e);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package farmacias.AppOchoa.services;
 
+import farmacias.AppOchoa.dto.ventafel.VentaFelResponseDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoCreateDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoResponseDTO;
 import farmacias.AppOchoa.dto.ventafelnotascredito.VentaFelNotasCreditoSimpleDTO;
@@ -16,4 +17,5 @@ public interface VentaFelNotasCreditoService {
     Page<VentaFelNotasCreditoSimpleDTO> buscarPorFiltros(Long farmaciaId, NotaEstado estado, LocalDateTime fechaInicio, LocalDateTime fechaFin, Pageable pageable);
     Page<VentaFelNotasCreditoSimpleDTO> buscarPorTexto(Long farmaciaId, String texto, Pageable pageable);
     void eliminar(Long farmaciaId, Long id);
+    VentaFelNotasCreditoResponseDTO notaCredito(Long farmaciaId, Long id);
 }

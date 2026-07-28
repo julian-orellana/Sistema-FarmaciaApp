@@ -1,5 +1,6 @@
 package farmacias.AppOchoa.repository;
 
+import farmacias.AppOchoa.model.NotaEstado;
 import farmacias.AppOchoa.model.VentaFel;
 import farmacias.AppOchoa.model.VentaFelEstado;
 import org.springframework.data.domain.Page;
@@ -28,5 +29,4 @@ public interface VentaFelRepository extends JpaRepository<VentaFel, Long> {
 
     Page<VentaFel> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
     java.util.Optional<VentaFel> findByFelIdAndSucursal_SucursalId(Long felId, Long sucursalId);
-
 }

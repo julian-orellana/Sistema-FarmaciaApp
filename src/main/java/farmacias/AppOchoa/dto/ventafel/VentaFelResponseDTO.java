@@ -20,6 +20,7 @@ public class VentaFelResponseDTO {
     private LocalDateTime felFechaCertificacion;
     private String felErrorDescripcion;
     private Integer felIntentos;
+    private String felSerie;
     private LocalDateTime auditoriaFechaCreacion;
 
     public static VentaFelResponseDTO fromEntity(VentaFel ventaFel) {
@@ -28,6 +29,8 @@ public class VentaFelResponseDTO {
                 .ventaId(ventaFel.getVenta() != null ? ventaFel.getVenta().getVentaId() : null)
                 .felEstado(ventaFel.getFelEstado())
                 .felUuid(ventaFel.getFelUuid())
+                .felSerie(ventaFel.getFelSerie())
+                .felNumeroAutorizacion(ventaFel.getFelNumeroAutorizacion())
                 .felNumeroAutorizacion(ventaFel.getFelNumeroAutorizacion())
                 .felFechaCertificacion(ventaFel.getFelFechaCertificacion())
                 .felErrorDescripcion(ventaFel.getFelErrorDescripcion())

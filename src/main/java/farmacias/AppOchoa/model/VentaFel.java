@@ -31,6 +31,16 @@ public class VentaFel {
     @Column(name = "fel_uuid", length = 36)
     private String felUuid;
 
+    //agregados en el refactory
+    @Column(name = "fel_serie", length = 50)
+    private String felSerie;
+
+    @Column(name = "fel_numero_documento", length =  50)
+    private String felNumeroDocumento;
+
+    @Column(name = "fel_fecha_emision")
+    private LocalDateTime felFechaEmision;
+
     @Column(name = "fel_numero_autorizacion", length = 50)
     private String felNumeroAutorizacion;
 

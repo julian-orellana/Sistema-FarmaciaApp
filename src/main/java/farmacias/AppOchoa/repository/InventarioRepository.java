@@ -1,6 +1,8 @@
 package farmacias.AppOchoa.repository;
 
 import farmacias.AppOchoa.model.Inventario;
+import farmacias.AppOchoa.model.Producto;
+import farmacias.AppOchoa.model.Sucursal;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,4 +63,5 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
             "LOWER(i.producto.productoNombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(i.sucursal.sucursalNombre) LIKE LOWER(CONCAT('%', :texto, '%')))")
     Page<Inventario> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
+    Optional<Inventario> findByProductoAndSucursal(Producto producto, Sucursal sucursal);
 }
