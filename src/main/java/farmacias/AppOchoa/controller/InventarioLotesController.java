@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/inventarioslotes")
@@ -73,4 +74,11 @@ public class InventarioLotesController extends  BaseController{
         inventarioLotesService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/por-producto")
+    public ResponseEntity<List<InventarioLotesSimpleDTO>> buscarPorProductoFEFO(
+            @RequestParam Long productoId){
+        return ResponseEntity.ok(inventarioLotesService.buscarPorProductoFEFO(getFarmaciaId(), productoId));
+    }
+
 }
