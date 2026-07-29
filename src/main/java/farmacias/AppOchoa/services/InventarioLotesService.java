@@ -18,5 +18,5 @@ public interface InventarioLotesService {
     InventarioLotesResponseDTO actualizar(Long farmaciaId, Long id, InventarioLotesUpdateDTO dto);
     Page<InventarioLotesSimpleDTO> listarProximosAVencerPaginado(Long farmaciaId, LocalDate fechaLimite, Pageable pageable);
     void eliminar(Long farmaciaId, Long id);
-    List<InventarioLotesSimpleDTO> buscarPorProductoFEFO(Long farmaciaId, Long productoId, Long sucursalId);
+    List<InventarioLotesSimpleDTO> buscarPorProductoFEFO(Long farmaciaId, Long productoId);
 }
