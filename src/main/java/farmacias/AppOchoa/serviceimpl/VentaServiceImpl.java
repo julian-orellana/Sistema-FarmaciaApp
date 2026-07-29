@@ -317,10 +317,10 @@ public class VentaServiceImpl implements VentaService {
                 .montoVuelto(vueltoCalculado)
                 .referenciaTransaccion(dto.getReferenciaTransaccion())
                 .cajaSesiones(cajaSesionesRepository
-                        .findBySesionIdAndFarmacia_FarmaciaId(
-                                dto.getCajaSesionId(), farmaciaId)
+                        .findBySesionIdAndSucursal_SucursalId(
+                                dto.getCajaSesionId(), sucursal.getSucursalId())
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "Sesión de caja no encontrada en tu farmacia ID: "
+                                "Sesión de caja no encontrada en tu sucursal ID: "
                                         + dto.getCajaSesionId())))
                 .build();
 
