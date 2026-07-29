@@ -180,6 +180,7 @@ public class VentaServiceImpl implements VentaService {
     }
 
     @Override
+    @Transactional
     public VentaCobroResponseDTO crearConCobro(Long farmaciaId, VentaCreateCobroDTO dto) {
 
         // El cajero se extrae del contexto de seguridad para evitar
