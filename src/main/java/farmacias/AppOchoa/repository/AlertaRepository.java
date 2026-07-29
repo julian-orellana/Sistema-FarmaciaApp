@@ -16,9 +16,6 @@ public interface AlertaRepository extends JpaRepository<Alerta, Long> {
     Page<Alerta> findByFarmacia_FarmaciaIdAndAlertaLeidaFalse(Long farmaciaId, Pageable pageable);
     Page<Alerta> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
     java.util.Optional<Alerta> findByAlertaIdAndFarmacia_FarmaciaId(Long alertaId, Long farmaciaId);
-    @Query("SELECT a FROM Alerta a WHERE " +
-            "LOWER(a.alertaMensaje) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    Page<Alerta> buscarPorTexto(@Param("texto") String texto, Pageable pageable);
 
     @Query("SELECT a FROM Alerta a WHERE a.sucursal.sucursalId = :sucursalId AND " +
             "LOWER(a.alertaMensaje) LIKE LOWER(CONCAT('%', :texto, '%'))")

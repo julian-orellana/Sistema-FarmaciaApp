@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 public class VentaPagosController extends  BaseController{
     private final VentaPagoService ventaPagoService;
     private final JwtUtil jwtUtil;
-
 
 
     @GetMapping
@@ -53,4 +51,5 @@ public class VentaPagosController extends  BaseController{
         ventaPagoService.eliminar(getFarmaciaId(), id);
         return ResponseEntity.noContent().build();
     }
+
 }
