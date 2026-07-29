@@ -68,10 +68,11 @@ public class InventarioLotesServiceImpl implements InventarioLotesService {
     }
     @Override
     @Transactional(readOnly = true)
-    public List<InventarioLotesSimpleDTO> buscarPorProductoFEFO(Long farmaciaId, Long productoId, Long sucursalId) {
-        return inventarioLotesRepository
-                .findByProducto_ProductoIdAndSucursal_SucursalIdAndFarmacia_FarmaciaIdAndLoteEstadoAndLoteCantidadActualGreaterThan(
-                        productoId, sucursalId, farmaciaId, LoteEstado.disponible, 0,
+    public List<InventarioLotesSimpleDTO> buscarPorProductoFEFO(Long farmaciaId, Long productoId) {
+        Sucursal sucursal = buscarSucursal(farmaciaId);
+        return inventarioLotesRepository.
+                findByProducto_ProductoIdAndSucursal_SucursalIdAndFarmacia_FarmaciaIdAndLoteEstadoAndLoteCantidadActualGreaterThan(
+                        productoId, sucursal.getSucursalId(), farmaciaId, LoteEstado.disponible, 0,
                         Sort.by("loteFechaVencimiento").ascending())
                 .stream()
                 .map(InventarioLotesSimpleDTO::fromEntity)
