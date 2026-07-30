@@ -326,11 +326,10 @@ public class VentaServiceImpl implements VentaService {
 
         ventaPagoRepository.save(pago);
 
-        // El registro FEL nace en PENDIENTE dentro del mismo commit;
-        // la certificación real ocurre de forma asíncrona después del cobro
+        // El registro nace pendiente y alguien tiene que llamar a certificar
         VentaFel fel = VentaFel.builder()
                 .venta(guardada)
-                .farmacia(farmacia)
+                .sucursal(sucursal)
                 .build();
 
         VentaFel felGuardado = ventaFelRepository.save(fel);
