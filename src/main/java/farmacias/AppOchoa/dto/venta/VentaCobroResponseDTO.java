@@ -20,7 +20,6 @@ public class VentaCobroResponseDTO {
     private Long ventaId;
     private String ventaUuid;
     private BigDecimal ventaTotal;
-    private VentaFelEstado felEstado;
     private VentaFelSimpleDTO ventaFel;
 
     public static VentaCobroResponseDTO fromEntity(Venta venta, VentaFel ventaFel){
