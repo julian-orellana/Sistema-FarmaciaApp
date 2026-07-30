@@ -69,6 +69,7 @@ class AlertaServiceImplTest {
         producto.setProductoId(1L);
         producto.setFarmacia(farmacia);
         producto.setSucursal(sucursal);
+        inventarioLotes.setProducto(producto);
 
         // Resultado simulado de save
         Alerta alertaGuardada = new Alerta();

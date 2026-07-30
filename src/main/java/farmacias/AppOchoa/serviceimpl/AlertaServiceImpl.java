@@ -4,6 +4,7 @@ import farmacias.AppOchoa.dto.alerta.AlertaCreateDTO;
 import farmacias.AppOchoa.dto.alerta.AlertaResponseDTO;
 import farmacias.AppOchoa.dto.alerta.AlertaSimpleDTO;
 import farmacias.AppOchoa.dto.alerta.AlertaUpdateDTO;
+import farmacias.AppOchoa.exception.BadRequestException;
 import farmacias.AppOchoa.model.*;
 import farmacias.AppOchoa.repository.*;
 import farmacias.AppOchoa.exception.ResourceNotFoundException;
@@ -45,7 +46,12 @@ public class AlertaServiceImpl implements AlertaService {
         InventarioLotes lote = null;
         if (dto.getLoteId() != null) {
             lote = buscarInventarioLotes(sucursal.getSucursalId(), dto.getLoteId());
+
+            if(lote.getProducto() == null || !lote.getProducto().getProductoId().equals(producto.getProductoId()))
+                throw new BadRequestException("el lote" + lote.getLoteNumero() + " no pertenece al  indicado");
         }
+
+
 
         Alerta alerta = Alerta.builder()
                 .alertaMensaje(dto.getMensaje())
