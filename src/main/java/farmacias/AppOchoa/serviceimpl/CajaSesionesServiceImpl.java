@@ -60,6 +60,7 @@ public class CajaSesionesServiceImpl implements CajaSesionesService {
                 .usuario(usuario)
                 .sesionFondoInicial(dto.getSesionFondoInicial())
                 .sucursal(sucursal)
+
                 .build();
 
         return CajaSesionesResponseDTO.fromEntity(cajaSesionesRepository.save(cajaSesiones));
