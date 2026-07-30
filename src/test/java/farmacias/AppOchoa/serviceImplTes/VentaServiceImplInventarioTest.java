@@ -29,13 +29,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("VentaServiceImpl — sincronización de inventario agregado (M9)")
+@DisplayName("VentaServiceImpl — sincronización de inventario agregado")
 public class VentaServiceImplInventarioTest {
 
-    private static final Long FARMACIA_ID = 1L;
+    private static final Long FARMACIA_ID = 10L;
     private static final Long SUCURSAL_ID = 10L;
     private static final Long PRODUCTO_ID = 100L;
-    private static final Long LOTE_ID = 1000L;
+    private static final Long LOTE_ID = 1000L;D
     private static final Long USUARIO_ID = 5L;
 
     private static final Long CAJA_SESION_ID = 77L;
@@ -187,7 +187,7 @@ public class VentaServiceImplInventarioTest {
     @DisplayName("crearConCobro (EFECTIVO) resuelve la sucursal 1:1 y persiste venta, pago y FEL")
     void crearConCobroEfectivoHappyPath() {
         // Sucursal derivada desde farmaciaId (patrón 1:1, un solo argumento)
-        when(sucursalRepository.findByFarmacia_FarmaciaId(FARMACIA_ID))
+        when(sucursalRepository.findByFarmacia_FarmaciaId(SUCURSAL_ID))
                 .thenReturn(Optional.of(sucursal));
         when(usuarioRepository.findByUsuarioIdAndFarmacia_FarmaciaId(USUARIO_ID, FARMACIA_ID))
                 .thenReturn(Optional.of(usuario));
@@ -200,7 +200,7 @@ public class VentaServiceImplInventarioTest {
 
         CajaSesiones sesion = new CajaSesiones();
         sesion.setSesionId(CAJA_SESION_ID);
-        when(cajaSesionesRepository.findBySesionIdAndFarmacia_FarmaciaId(CAJA_SESION_ID, FARMACIA_ID))
+        when(cajaSesionesRepository.findBySesionIdAndSucursal_SucursalId(CAJA_SESION_ID, SUCURSAL_ID))
                 .thenReturn(Optional.of(sesion));
 
         when(ventaRepository.save(any(Venta.class))).thenAnswer(a -> {
