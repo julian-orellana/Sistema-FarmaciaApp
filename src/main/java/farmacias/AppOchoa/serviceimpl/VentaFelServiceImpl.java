@@ -71,7 +71,6 @@ public class VentaFelServiceImpl implements VentaFelService {
 
         VentaFel ventaFel = VentaFel.builder()
                 .venta(venta)
-                .farmacia(sucursal.getFarmacia())
                 .sucursal(sucursal)
                 .build();
         return VentaFelResponseDTO.fromEntity(ventaFelRepository.save(ventaFel));

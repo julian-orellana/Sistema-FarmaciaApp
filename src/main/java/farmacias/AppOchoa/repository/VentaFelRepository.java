@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface VentaFelRepository extends JpaRepository<VentaFel, Long> {
 
@@ -24,9 +25,7 @@ public interface VentaFelRepository extends JpaRepository<VentaFel, Long> {
             "LOWER(f.venta.ventaNombreCliente) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
             "LOWER(CAST(f.felEstado AS string)) LIKE LOWER(CONCAT('%', :texto, '%')))")
     Page<VentaFel> buscarPorTexto(@Param("sucursalId") Long sucursalId, @Param("texto") String texto, Pageable pageable);
-    Page<VentaFel> findByFarmacia_FarmaciaId(Long farmaciaId, Pageable pageable);
-    java.util.Optional<VentaFel> findByFelIdAndFarmacia_FarmaciaId(Long felId, Long farmaciaId);
 
     Page<VentaFel> findBySucursal_SucursalId(Long sucursalId, Pageable pageable);
-    java.util.Optional<VentaFel> findByFelIdAndSucursal_SucursalId(Long felId, Long sucursalId);
+    Optional<VentaFel> findByFelIdAndSucursal_SucursalId(Long felId, Long sucursalId);
 }

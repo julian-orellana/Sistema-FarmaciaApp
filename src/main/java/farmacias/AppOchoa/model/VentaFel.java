@@ -61,12 +61,10 @@ public class VentaFel {
     @CreationTimestamp
     private LocalDateTime auditoriaFechaCreacion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "farmacia_id", nullable = false)
-    private Farmacia farmacia;
+    // eliminación de relación con farmacia (reglas de negocio)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sucursal_id")
+    @JoinColumn(name = "sucursal_id", nullable = false)
     private Sucursal sucursal;
 
 }

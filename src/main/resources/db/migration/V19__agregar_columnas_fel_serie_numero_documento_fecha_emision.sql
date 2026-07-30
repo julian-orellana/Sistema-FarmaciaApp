@@ -1,5 +1,5 @@
 
---Nuevas columnas (Complemento para funcionamiento de Tekra)
+   -- Nuevas columnas (Complemento para funcionamiento de Tekra)
 
 ALTER TABLE ventas_fel
     ADD COLUMN fel_serie VARCHAR(50)  NULL,
