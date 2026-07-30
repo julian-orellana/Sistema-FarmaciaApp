@@ -35,7 +35,7 @@ public class VentaServiceImplInventarioTest {
     private static final Long FARMACIA_ID = 10L;
     private static final Long SUCURSAL_ID = 10L;
     private static final Long PRODUCTO_ID = 100L;
-    private static final Long LOTE_ID = 1000L;D
+    private static final Long LOTE_ID = 1000L;
     private static final Long USUARIO_ID = 5L;
 
     private static final Long CAJA_SESION_ID = 77L;
